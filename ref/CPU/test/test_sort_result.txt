@@ -1,0 +1,212 @@
+run 400 us
+Cycle PC=0  instr=0x20006293  alu_out=0x00000200  flags=00001
+Cycle PC=4  instr=0x00406313  alu_out=0x00000004  flags=00000
+Cycle PC=8  instr=0x0062a023  alu_out=0x00000200  flags=00001
+Cycle PC=12  instr=0x00206313  alu_out=0x00000002  flags=00000
+Cycle PC=16  instr=0x0062a223  alu_out=0x00000204  flags=00000
+Cycle PC=20  instr=0x00506313  alu_out=0x00000005  flags=00001
+Cycle PC=24  instr=0x0062a423  alu_out=0x00000208  flags=00000
+Cycle PC=28  instr=0x00106313  alu_out=0x00000001  flags=00000
+Cycle PC=32  instr=0x0062a623  alu_out=0x0000020c  flags=00001
+Cycle PC=36  instr=0x00306313  alu_out=0x00000003  flags=00001
+Cycle PC=40  instr=0x0062a823  alu_out=0x00000210  flags=00000
+Cycle PC=44  instr=0x7ff06993  alu_out=0x000007ff  flags=00001
+Cycle PC=48  instr=0x00406413  alu_out=0x00000004  flags=00000
+Cycle PC=52  instr=0x00106493  alu_out=0x00000001  flags=00000
+Cycle PC=56  instr=0x00006313  alu_out=0x00000000  flags=10001
+Cycle PC=60  instr=0x04830863  alu_out=0xfffffffc  flags=01101
+Cycle PC=64  instr=0x00006393  alu_out=0x00000000  flags=10001
+Cycle PC=68  instr=0x40640933  alu_out=0x00000004  flags=00000
+Cycle PC=72  instr=0x03238e63  alu_out=0xfffffffc  flags=01101
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000000  flags=10001
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000000  flags=10001
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000200  flags=00001
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000200  flags=00001
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000204  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0xfffffffe  flags=01100
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0xffffffff  flags=01001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000000  flags=10101
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000000  flags=10001
+Cycle PC=116  instr=0x01fea023  alu_out=0x00000200  flags=00001
+Cycle PC=120  instr=0x01eea223  alu_out=0x00000204  flags=00000
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000001  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0xfffffffd  flags=01100
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000002  flags=00000
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000004  flags=00000
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000204  flags=00000
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000204  flags=00000
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000208  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0x00000001  flags=00000
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0x000007ff  flags=00001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000800  flags=00001
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000800  flags=00001
+Cycle PC=112  instr=0x00000663  alu_out=0x00000000  flags=10001
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000002  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0xfffffffe  flags=01100
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000004  flags=00000
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000008  flags=00000
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000208  flags=00000
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000208  flags=00000
+Cycle PC=92  instr=0x004eaf83  alu_out=0x0000020c  flags=00001
+Cycle PC=96  instr=0x41ef8e33  alu_out=0xfffffffc  flags=01101
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0xffffffff  flags=01001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000000  flags=10101
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000000  flags=10001
+Cycle PC=116  instr=0x01fea023  alu_out=0x00000208  flags=00000
+Cycle PC=120  instr=0x01eea223  alu_out=0x0000020c  flags=00001
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000003  flags=00001
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0xffffffff  flags=01101
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000006  flags=00001
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x0000000c  flags=00001
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x0000020c  flags=00001
+Cycle PC=88  instr=0x000eaf03  alu_out=0x0000020c  flags=00001
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000210  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0xfffffffe  flags=01100
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0xffffffff  flags=01001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000000  flags=10101
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000000  flags=10001
+Cycle PC=116  instr=0x01fea023  alu_out=0x0000020c  flags=00001
+Cycle PC=120  instr=0x01eea223  alu_out=0x00000210  flags=00000
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000004  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0x00000000  flags=10001
+Cycle PC=132  instr=0x00930333  alu_out=0x00000001  flags=00000
+Cycle PC=136  instr=0xfa000ae3  alu_out=0x00000000  flags=10001
+Cycle PC=60  instr=0x04830863  alu_out=0xfffffffd  flags=01100
+Cycle PC=64  instr=0x00006393  alu_out=0x00000000  flags=10001
+Cycle PC=68  instr=0x40640933  alu_out=0x00000003  flags=00001
+Cycle PC=72  instr=0x03238e63  alu_out=0xfffffffd  flags=01100
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000000  flags=10001
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000000  flags=10001
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000200  flags=00001
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000200  flags=00001
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000204  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0x00000002  flags=00000
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0x000007ff  flags=00001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000800  flags=00001
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000800  flags=00001
+Cycle PC=112  instr=0x00000663  alu_out=0x00000000  flags=10001
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000001  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0xfffffffe  flags=01100
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000002  flags=00000
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000004  flags=00000
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000204  flags=00000
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000204  flags=00000
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000208  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0xfffffffd  flags=01100
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0xffffffff  flags=01001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000000  flags=10101
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000000  flags=10001
+Cycle PC=116  instr=0x01fea023  alu_out=0x00000204  flags=00000
+Cycle PC=120  instr=0x01eea223  alu_out=0x00000208  flags=00000
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000002  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0xffffffff  flags=01101
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000004  flags=00000
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000008  flags=00000
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000208  flags=00000
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000208  flags=00000
+Cycle PC=92  instr=0x004eaf83  alu_out=0x0000020c  flags=00001
+Cycle PC=96  instr=0x41ef8e33  alu_out=0xffffffff  flags=01101
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0xffffffff  flags=01001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000000  flags=10101
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000000  flags=10001
+Cycle PC=116  instr=0x01fea023  alu_out=0x00000208  flags=00000
+Cycle PC=120  instr=0x01eea223  alu_out=0x0000020c  flags=00001
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000003  flags=00001
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0x00000000  flags=10001
+Cycle PC=132  instr=0x00930333  alu_out=0x00000002  flags=00000
+Cycle PC=136  instr=0xfa000ae3  alu_out=0x00000000  flags=10001
+Cycle PC=60  instr=0x04830863  alu_out=0xfffffffe  flags=01100
+Cycle PC=64  instr=0x00006393  alu_out=0x00000000  flags=10001
+Cycle PC=68  instr=0x40640933  alu_out=0x00000002  flags=00000
+Cycle PC=72  instr=0x03238e63  alu_out=0xfffffffe  flags=01100
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000000  flags=10001
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000000  flags=10001
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000200  flags=00001
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000200  flags=00001
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000204  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0xffffffff  flags=01101
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0xffffffff  flags=01001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000000  flags=10101
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000000  flags=10001
+Cycle PC=116  instr=0x01fea023  alu_out=0x00000200  flags=00001
+Cycle PC=120  instr=0x01eea223  alu_out=0x00000204  flags=00000
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000001  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0xffffffff  flags=01101
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000002  flags=00000
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000004  flags=00000
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000204  flags=00000
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000204  flags=00000
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000208  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0x00000001  flags=00000
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0x000007ff  flags=00001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000800  flags=00001
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000800  flags=00001
+Cycle PC=112  instr=0x00000663  alu_out=0x00000000  flags=10001
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000002  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0x00000000  flags=10001
+Cycle PC=132  instr=0x00930333  alu_out=0x00000003  flags=00001
+Cycle PC=136  instr=0xfa000ae3  alu_out=0x00000000  flags=10001
+Cycle PC=60  instr=0x04830863  alu_out=0xffffffff  flags=01101
+Cycle PC=64  instr=0x00006393  alu_out=0x00000000  flags=10001
+Cycle PC=68  instr=0x40640933  alu_out=0x00000001  flags=00000
+Cycle PC=72  instr=0x03238e63  alu_out=0xffffffff  flags=01101
+Cycle PC=76  instr=0x00738e33  alu_out=0x00000000  flags=10001
+Cycle PC=80  instr=0x01ce0e33  alu_out=0x00000000  flags=10001
+Cycle PC=84  instr=0x01c28eb3  alu_out=0x00000200  flags=00001
+Cycle PC=88  instr=0x000eaf03  alu_out=0x00000200  flags=00001
+Cycle PC=92  instr=0x004eaf83  alu_out=0x00000204  flags=00000
+Cycle PC=96  instr=0x41ef8e33  alu_out=0x00000001  flags=00000
+Cycle PC=100  instr=0x7ffe6e13  alu_out=0x000007ff  flags=00001
+Cycle PC=104  instr=0x009e0e33  alu_out=0x00000800  flags=00001
+Cycle PC=108  instr=0x000e0463  alu_out=0x00000800  flags=00001
+Cycle PC=112  instr=0x00000663  alu_out=0x00000000  flags=10001
+Cycle PC=124  instr=0x009383b3  alu_out=0x00000001  flags=00000
+Cycle PC=128  instr=0xfc0004e3  alu_out=0x00000000  flags=10001
+Cycle PC=72  instr=0x03238e63  alu_out=0x00000000  flags=10001
+Cycle PC=132  instr=0x00930333  alu_out=0x00000004  flags=00000
+Cycle PC=136  instr=0xfa000ae3  alu_out=0x00000000  flags=10001
+Cycle PC=60  instr=0x04830863  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=140  instr=0x00000063  alu_out=0x00000000  flags=10001
+
+========================================
+  Bubble Sort Test End
+========================================
+PC = 0x0000008c
+
+--- Registers ---
+ t0 = 0x00000200  (expect 0x00000200)
+ t1 = 0x00000004  (expect 0x00000004)
+ s0 = 0x00000004  (expect 0x00000004)
+ s1 = 0x00000001  (expect 0x00000001)
+
+--- Sort Results (RAM 0x200 ~ 0x210) ---
+ mem[0x200] = 1  (expect 1 : PASS)
+ mem[0x204] = 2  (expect 2 : PASS)
+ mem[0x208] = 3  (expect 3 : PASS)
+ mem[0x20C] = 4  (expect 4 : PASS)
+ mem[0x210] = 5  (expect 5 : PASS)
+
+>>> Overall: PASS (sort correct) <<<
+$finish called at time : 390 us : File "D:/MyProjects/CO/src/lab2/cpu_tb_sort.v" Line 79

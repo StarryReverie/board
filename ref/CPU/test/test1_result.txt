@@ -1,0 +1,52 @@
+run 70 us
+Cycle PC=0  instr=0x00106293  alu_out=0x00000001  flags=00000
+Cycle PC=4  instr=0x00206313  alu_out=0x00000002  flags=00000
+Cycle PC=8  instr=0x10006513  alu_out=0x00000100  flags=00001
+Cycle PC=12  instr=0x006283b3  alu_out=0x00000003  flags=00001
+Cycle PC=16  instr=0x40530233  alu_out=0x00000001  flags=00000
+Cycle PC=20  instr=0x00752023  alu_out=0x00000100  flags=00001
+Cycle PC=24  instr=0x00052403  alu_out=0x00000100  flags=00001
+Cycle PC=28  instr=0x005404b3  alu_out=0x00000004  flags=00000
+Cycle PC=32  instr=0x406485b3  alu_out=0x00000002  flags=00000
+Cycle PC=36  instr=0x00b52223  alu_out=0x00000104  flags=00000
+Cycle PC=40  instr=0x00452683  alu_out=0x00000104  flags=00000
+Cycle PC=44  instr=0x00006713  alu_out=0x00000000  flags=10001
+Cycle PC=48  instr=0x00e00463  alu_out=0x00000000  flags=10001
+Cycle PC=56  instr=0x00628c63  alu_out=0xffffffff  flags=01101
+Cycle PC=60  instr=0x0ff06793  alu_out=0x000000ff  flags=00001
+Cycle PC=64  instr=0x00578833  alu_out=0x00000100  flags=00001
+Cycle PC=68  instr=0x406808b3  alu_out=0x000000fe  flags=00000
+Cycle PC=72  instr=0x01152423  alu_out=0x00000108  flags=00000
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+Cycle PC=76  instr=0x00000063  alu_out=0x00000000  flags=10001
+=== Simulation End ===
+PC = 0x0000004c
+--- Registers ---
+ t0 = 0x00000001  (expect 0x00000001)
+ t1 = 0x00000002  (expect 0x00000002)
+ t2 = 0x00000003  (expect 0x00000003)
+ tp = 0x00000001  (expect 0x00000001)
+ s0 = 0x00000003  (expect 0x00000003)
+ s1 = 0x00000004  (expect 0x00000004)
+ a0 = 0x00000100  (expect 0x00000100)
+ a1 = 0x00000002  (expect 0x00000002)
+ a3 = 0x00000002  (expect 0x00000002)
+ a4 = 0x00000000  (expect 0x00000000)
+ a5 = 0x000000ff  (expect 0x000000FF)
+ a6 = 0x00000100  (expect 0x00000100)
+ a7 = 0x000000fe  (expect 0x000000FE)
+--- Memory ---
+ mem[0x100] = 0x00000003  (expect 0x00000003)
+ mem[0x104] = 0x00000002  (expect 0x00000002)
+ mem[0x108] = 0x000000fe  (expect 0x000000FE)
+$finish called at time : 70 us : File "D:/MyProjects/CO/src/lab2/cpu_tb1.v" Line 63
