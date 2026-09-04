@@ -53,6 +53,10 @@ $outDir = Join-Path $PSScriptRoot 'out'
 if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }
 New-Item -ItemType Directory -Path $outDir | Out-Null
 
+# 程序回归 TB 用 $readmemh 按文件名读 .hex（仿真 cwd=outDir）→ 拷贝镜像
+Get-ChildItem -Path (Join-Path $root 'test') -Filter '*.hex' -File |
+    Copy-Item -Destination $outDir -Force
+
 # ---- 生成批处理（单一 cmd 会话以保持 settings64 环境） ----------------------
 $bat = Join-Path $outDir 'run.bat'
 $sb = New-Object System.Text.StringBuilder
