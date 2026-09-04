@@ -14,12 +14,16 @@
 | out | reg_off | 2 | MMIO 槽内寄存器偏移（TX/STAT/RX…，组合） |
 | out | rdata | 32 | 回写数据 → mem_wb（`cs_dmem? dmem_rdata : (cs_mmio? mmio_rdata : 0)`） |
 
-## 地址分区（实验二定稿并回写 isa.md §4；示例与 top_design §9.2 一致）
-| 地址 | 目标 | 判定（示例） |
+## 地址分区（**定稿 v1.4**，与 isa.md §4 / top_design §9.2 一致）
+| 地址 | 目标 | 判定 |
 |---|---|---|
-| `0x0000_0000` +（`addr < DMEM_BYTES`，默认 4096） | cs_dmem | 数据 RAM |
-| MMIO 窗口（如 `0x0000_4000` +） | cs_mmio | `addr` 命中窗口，低位再拆 `reg_off`（TX/STAT/RX） |
+| `0x0000_0000`–`0x0000_0FFF`（`addr < DMEM_BYTES`，默认 4096） | cs_dmem | 数据 RAM |
+| `0x0000_4000` + 0x0 | cs_mmio · TX 槽 | `reg_off=00`；写=待发字节（低 8 位），读=0 |
+| `0x0000_4000` + 0x4 | cs_mmio · STAT 槽 | `reg_off=01`；读 bit0=TX_BUSY、bit1=RX_VALID，写无操作 |
+| `0x0000_4000` + 0x8 | cs_mmio · RX 槽 | `reg_off=10`；读=收到字节（低 8 位，读后清 RX_VALID），写无操作 |
 | 其余 | 无操作 | `rdata=0`、写丢弃（程序不应访问；无定义但无害） |
+
+- **编址口径：统一编址（方案 B 定稿）**——`lw`=外设读（in/r）、`sw`=外设写（out/w），读写方向由指令天然区分，**无专用 in/out 指令**；`reg_off[1:0]` 仅对 `cs_mmio` 有效（00=TX、01=STAT、10=RX、11=保留）。
 
 ## 时序/语义
 - 纯组合、无寄存器：读在 MEM 周期内稳定（沿前供 mem_wb 锁存），写与 dmem 同步写同一沿 → 插入后**流水级数与冒险策略不变**（top_design §9.2）。
@@ -31,4 +35,4 @@
 
 ## 验收
 - 低区行为与"dmem 直连"完全一致（实验一回归 H1–H5 不变）。
-- 高区：写 TX/STAT/RX 槽落到 uart 寄存器、读回状态字正确；未映射地址返回 0 且不产生写。
+- 窗口按上表命中 TX/STAT/RX 槽：写 TX 触发发送（忙时丢弃语义在 uart_ctrl 侧）、STAT/RX 读回位义正确、RX 读后清 RX_VALID；未映射地址返回 0 且不产生写。

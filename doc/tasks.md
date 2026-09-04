@@ -31,7 +31,7 @@
 | 控制器结构三选一 | 硬布线（见 top_design.md） |
 | 附加功能 ≥1 | 溢出判断 `flags[OF]`（T14，可观测出口） |
 | 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | **后追加**（引用 `ref/CPU/` 数据） |
-| 汇编与接口/外设控制器/集成 | **后追加**（实验二 §6：T40–T45） |
+| 汇编与接口/外设控制器/集成 | **后追加**（实验二 §6：T40–T44） |
 | 提交物：源码/测试汇编+机器码/报告/PPT/视频/日志 | **后追加** |
 
 ---
@@ -93,18 +93,19 @@
 
 ---
 
-## 6. 实验二任务（预留：UART 集成 + 指令在线重载）
+## 6. 实验二任务（UART 集成：全双工从机 + 程序固化 console）
 
-> 架构口径与接口预留见 top_design §9（数据侧 MMIO 译码 + IMEM loader 写口）。启动门禁：**M1–M3（实验一）全绿后**。验收路径：精工板下板（Vivado 侧综合/上板）。编号 T40 起。
+> 架构口径见 top_design §9（数据侧统一编址 MMIO 译码 + 全双工 uart_ctrl + **程序固化单程序模型**：程序 .vh 固化、上电自跑；loader 在线重载已搁置）。启动门禁：**M1–M3（实验一）全绿后**。验收路径：EES-338 板下板（Vivado 侧综合/上板）。编号 T40 起。
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|
-| T40 | 数据侧总线译码：`dbus_decode.v`（MEM 段 `ex_mem→mem_wb` 间按地址选 {数据 RAM, MMIO 窗口}；rdata mux/片选） | `dbus_decode.v` + `doc/modules/dbus_decode.md` | 低区命中 dmem、高区命中外设槽；字访问正确；不新增气泡，回归 H1–H5 不变 |
-| T41 | UART 控制器从机封装（复用基础任务 IP）：字寄存器从机口 + 波特率（单域 clk_en） | `uart_ctrl.v` + 单测 TB | 收发逐位与字读回正确；波特率可配 |
-| T42 | IMEM loader 写口落核：核对 `imem.v` 写口与 `pipeline_top` 预留口（实验一 wen 恒 0）；loader 状态机（UART 收字节→拼字→写满→握手） | loader + TB | 复位期写满后读回一致；握手后 CPU 从 0 跑新程序 |
-| T43 | 固件/驱动：`.equ` 内存映射头、putc/getc、console 主循环（回显/命令）、默认固件 | `test/*.asm → *.hex/.vh` + verify | 上电自运行打印 banner；串口命令往返正确 |
-| T44 | 系统级 TB：行为级 UART 模型（收/发字节流）+ 整机跑默认固件 | `tb_soc_top.v` | banner 字节与注释期望相等；回显往返断言 PASS |
-| T45 | 下板：soc_top 例化 + 复位同步 + XDC（晶振/复位键/USB-UART 脚）+ 综合/时序 | 约束 + 工程 | 终端 115200-8-N-1 见 banner、回显正常；≤5 min 演示视频 |
+| T40 | 数据侧总线译码：`dbus_decode.v`（MEM 段按地址选 {数据 RAM, MMIO 窗口}；映射定稿见 top_design §9.2 / isa.md §4：TX/STAT/RX 槽） | `dbus_decode.v` + `doc/modules/dbus_decode.md` | 低区命中 dmem、窗口命中 uart 槽（TX 写触发/STAT 位义/RX 读清位）；字访问正确；不新增气泡，回归 H1–H5 不变 |
+| T41 | UART 全双工从机封装（复用基础任务 IP）：`uart_tx` + `uart_rx`（位中心采样） + TX/STAT/RX 字槽 + 忙写丢弃 / RX 读清位 | `uart_ctrl.v` + 单测 TB | 收发逐位与字读回正确；TX_BUSY/RX_VALID 位义符合 top_design §9.4；波特率可配（分频参数仿真可覆盖） |
+| T42 | 固件/驱动（**固定程序**，.vh 固化）：`.equ` 内存映射头、putc/getc、console 主循环（banner + 回显） | `test/*.asm → *.hex/.vh` + verify | 上电自运行打印 banner；键盘回显往返正确（无 reload 命令） |
+| T43 | 系统级 TB：行为级 UART 模型（双向收发）+ 整机跑固定固件 | `tb_soc_top.v` | banner 字节与注释期望相等；回显往返断言 PASS；复位重跑一致 |
+| T44 | 下板：soc_top 例化 + 复位同步 + XDC（T5 晶振 / P15 复位键 / T4 uart_tx / N5 uart_rx）+ 综合/时序 | 约束 + 工程 | 终端 115200-8-N-1 见 banner、键盘回显正常；≤5 min 演示视频 |
+
+> ~~原 T42（loader 在线重载）~~：固化单程序模型下取消；imem 写口保留预留（恒 0）。若未来恢复，先回写 top_design §9 与 tasks.md（触发条件见 `doc/future_extensions.md` §1/§2）。
 
 ---
 
@@ -123,6 +124,7 @@
 
 ## 8. 变更记录
 
+- 2026-09-04：实验二任务块按定稿改版（§6，T40–T44）：UART 全双工（T41）、固定固件 console（T42）、系统 TB（T43）、下板（T44）；取消 loader 在线重载（原 T42、原 T45 重载演示），imem 写口保留预留。
 - 2026-09-04：新增 `doc/future_extensions.md`（未来可拓展设想登记，§7 开放项挂接）。
 - 2026-09-04：登记实验二任务块（§6，T40–T45；架构 top_design §9）；指令存储命名 `imem_rom`→`imem`。
 - 2026-09-04：行文精简，任务与验收口径不变。
