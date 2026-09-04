@@ -1,6 +1,6 @@
 # decode 模块文档（译码组合：主译码 + 立即数扩展 + load-use 检测）
 
-- `rtl/decode.v`（译码段纯组合）。参考 `ref/CPU/instr_decoder.v`（拆字段）与 `ref/CPU/control.v`（译码）；改造：按 isa.md 指令清单 26 条全译码、控制信号成组输出。
+- `src/rtl/decode.v`（译码段纯组合）。参考 `ref/CPU/instr_decoder.v`（拆字段）与 `ref/CPU/control.v`（译码）；改造：按 isa.md 指令清单 26 条全译码、控制信号成组输出。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

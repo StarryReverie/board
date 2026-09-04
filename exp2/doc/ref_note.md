@@ -16,7 +16,7 @@
 | MMIO | 统一编址（方案 B），窗口 0x4000；`lw`=in/r、`sw`=out/w；rdata 无命中=0 | 汇编程序直接 lw/sw 访问外设，无自定义指令 |
 | 端口 | 实验二 build 穿出 cs_mmio/reg_off/mmio_we/mmio_wdata/mmio_rdata | uart_ctrl 只接这组信号，不依赖 core 内部信号 |
 
-> 计组 core 的 RTL 属于计组交付物（`rtl/`）；本实验**引用不复制**，soc_top 例化 pipeline_top。
+> 计组 core 的 RTL 属于计组交付物（`src/rtl/`）；本实验**引用不复制**，soc_top 例化 pipeline_top。
 
 ## 2. EES-338 板卡要点（依元素口袋计算机用户手册 v1.0）
 

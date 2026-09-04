@@ -1,6 +1,6 @@
 # id_ex 模块文档（ID/EX 段间寄存器）
 
-- `rtl/id_ex.v`（ID→EX 边界）。
+- `src/rtl/id_ex.v`（ID→EX 边界）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

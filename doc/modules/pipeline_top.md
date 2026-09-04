@@ -1,6 +1,6 @@
 # pipeline_top 模块文档（顶层装配）
 
-- `rtl/pipeline_top.v`：例化并互联全部模块；端口对齐参考 `ref/CPU/cpu_top.v`（仅 clk/rst，另加实验二预留/扩展口）。
+- `src/rtl/pipeline_top.v`：例化并互联全部模块；端口对齐参考 `ref/CPU/cpu_top.v`（仅 clk/rst，另加实验二预留/扩展口）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

@@ -1,6 +1,6 @@
 # dmem 模块文档（访存存储：数据 RAM）
 
-- `rtl/dmem.v`。参考 `ref/CPU/ram.v`（wmask 字节写），保留同步写、周期内组合读；与 IMEM 物理分离 → **结构冒险化解**。
+- `src/rtl/dmem.v`。参考 `ref/CPU/ram.v`（wmask 字节写），保留同步写、周期内组合读；与 IMEM 物理分离 → **结构冒险化解**。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

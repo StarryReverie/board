@@ -34,7 +34,7 @@
 
 ## 2. 模块编码任务（每模块：先文档→编码→单测 TB）
 
-> 仓库布局：RTL 于 `exp2/rtl/`；TB 于 `exp2/tb/`；固件汇编于 `exp2/asm/`；约束于 `exp2/xdc/`；文档 `exp2/doc/`。计组 core（pipeline_top 等）在计组 `rtl/`（计组交付），本工程引用不复制。
+> 仓库布局：RTL 于 `exp2/rtl/`；TB 于 `exp2/tb/`；固件汇编于 `exp2/asm/`；约束于 `exp2/xdc/`；文档 `exp2/doc/`。计组 core（pipeline_top 等）在计组 `src/rtl/`（计组交付），本工程引用不复制。
 
 | 任务 | 模块/文件 | 依赖 | 产出 | 验收标准（可测） |
 |---|---|---|---|---|

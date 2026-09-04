@@ -1,6 +1,6 @@
 # alu 模块文档（算术逻辑单元，组合）
 
-- `rtl/alu.v`（execute 内）。**近乎原样复用 `ref/CPU/alu.v`**，仅补 `zero` 输出与常量宏（`ALU_*` 见 `const_define.v`）。
+- `src/rtl/alu.v`（execute 内）。**近乎原样复用 `ref/CPU/alu.v`**，仅补 `zero` 输出与常量宏（`ALU_*` 见 `const_define.v`）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

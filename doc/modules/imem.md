@@ -1,6 +1,6 @@
 # imem 模块文档（指令存储：取指读口 + loader 写口）
 
-- `rtl/imem.v`。参考 `ref/CPU/rom.v` 字节数组结构；按 top_design §6/§9 实现为**带 .vh 初值（程序固化）**的指令存储：读口供取指（组合读）；**loader 写口为预留**（`imem_wen` 恒 0——固化单程序模型不启用；若未来恢复在线重载须先回写 top_design/tasks）。运行期行为等同只读 ROM。
+- `src/rtl/imem.v`。参考 `ref/CPU/rom.v` 字节数组结构；按 top_design §6/§9 实现为**带 .vh 初值（程序固化）**的指令存储：读口供取指（组合读）；**loader 写口为预留**（`imem_wen` 恒 0——固化单程序模型不启用；若未来恢复在线重载须先回写 top_design/tasks）。运行期行为等同只读 ROM。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
