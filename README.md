@@ -29,5 +29,20 @@ powershell -File src/scripts/build_asm.ps1
 vivado -mode batch -source src/scripts/synth_check.tcl
 ```
 
+# Vivado GUI（工程已按工程风格分组，可直接打开）
+```text
+双击 board/vivado/board.xpr（若不存在，先执行下方重建命令）
+  设计源 sources_1 : src/rtl/*.v          top = pipeline_top（综合/实现）
+  仿真源 sim_1     : src/test/tb_*.v      top = tb_pipeline_top（默认）
+  约束  constrs_1  : （实验一为空；实验二 XDC 放 exp2/xdc）
+  include 目录     : src/（VerilogDir=$PPRDIR/../src，`include "defines/…" 由此解析）
+```
+重建工程（工程不入 git，本机生成即可）：
+```powershell
+vivado -mode batch -source src/scripts/create_vivado_proj.tcl
+```
+
 > 说明：RTL 内 `` `include "defines/*.v"`` 以 **src/ 为 include 目录**解析；Vivado
-> 工程中把 include_dirs 指向 `src/` 即可直接读入 `src/rtl/` 全部源码。
+> 工程中把 include 目录指向 `src/` 即可直接读入 `src/rtl/` 全部源码。
+> 程序级回归 TB（tb_prog_*）经 $readmemh 按文件名读 .hex，GUI 直跑需把
+> `src/test/*.hex` 复制到 xsim 工作目录；**推荐用 run_tb.ps1 跑仿真**（自动拷贝）。
