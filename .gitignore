@@ -1,0 +1,31 @@
+# ---- Vivado / xsim 产物（本机与下板侧）----
+.Xil/
+xsim.dir/
+.cache/
+.hbs
+*.jou
+*.log
+*.wdb
+*.rpt
+*.backup*
+*.pb
+*.xpe
+*.xci.lock
+.ip_user_files/
+hw_handoff/
+*.bit
+*.ltx
+
+# ---- 仿真/综合临时 ----
+*.wcfg
+*.vcd
+*.fst
+scripts/out/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+
+# ---- 工具链/下载临时（tools 目录在仓库外，此处兜底）----
+*.zip
+*.tar.gz
