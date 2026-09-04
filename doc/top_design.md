@@ -1,7 +1,7 @@
 # 计算机系统顶层设计（实验一：流水线 CPU core · 实验二：UART 集成 SoC）
 
 - 版本：v1.4（2026-09-04：实验二模型定稿——统一编址 MMIO（方案 B：不加 in/out，`lw`=外设读 in/r、`sw`=外设写 out/w）、UART 全双工（TX/STAT/RX 槽位义定稿）、程序固化单程序模型（loader 在线重载搁置）；§1–§8=实验一 CPU core，§9=实验二整机 SoC）。
-- 布局：RTL `*.v` 于根、`defines/` 宏、`test/` 汇编/测试、`doc/` 文档；`ref/CPU/` 不改动。指令集：`doc/isa.md`（26 条 RV32I，统一编址 MMIO 不加指令）；参考：`doc/ref_note.md`。
+- 布局：RTL `*.v` 于 `rtl/`、`defines/` 宏、`test/` 汇编/测试、`doc/` 文档；`ref/CPU/` 不改动。指令集：`doc/isa.md`（26 条 RV32I，统一编址 MMIO 不加指令）；参考：`doc/ref_note.md`。
 
 ---
 

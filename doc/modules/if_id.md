@@ -1,6 +1,6 @@
 # if_id 模块文档（IF/ID 段间寄存器）
 
-- `if_id.v`。由 hazard_unit 统一控制 `en/flush`。
+- `rtl/if_id.v`。由 hazard_unit 统一控制 `en/flush`。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

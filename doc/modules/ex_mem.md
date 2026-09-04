@@ -1,6 +1,6 @@
 # ex_mem 模块文档（EX/MEM 段间寄存器）
 
-- `ex_mem.v`（EX→MEM 边界）。
+- `rtl/ex_mem.v`（EX→MEM 边界）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

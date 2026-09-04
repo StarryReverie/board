@@ -1,6 +1,6 @@
 # mem_wb 模块文档（MEM/WB 段间寄存器）
 
-- `mem_wb.v`（MEM→WB 边界）。
+- `rtl/mem_wb.v`（MEM→WB 边界）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

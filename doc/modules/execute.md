@@ -1,6 +1,6 @@
 # execute 模块文档（执行组合：前递 mux + ALU + 目标加法 + 分支判决）
 
-- `execute.v`（纯组合，内例化 `alu.v`）。
+- `rtl/execute.v`（纯组合，内例化 `alu.v`）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

@@ -1,6 +1,6 @@
 # regfile 模块文档（寄存器堆：ID 读口 + WB 写口）
 
-- `regfile.v`。参考 `ref/CPU/regfile.v`；改造：新增 **读旁路（write-first）**，消除 WB/ID 同拍写读陈旧。
+- `rtl/regfile.v`。参考 `ref/CPU/regfile.v`；改造：新增 **读旁路（write-first）**，消除 WB/ID 同拍写读陈旧。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

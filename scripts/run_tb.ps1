@@ -24,10 +24,10 @@ $settings = Join-Path $vivado 'settings64.bat'
 if (-not (Test-Path $settings)) { Write-Error "找不到 $settings（用 `$env:XVIVADO_ROOT 指定 Vivado 根目录）"; exit 1 }
 
 # ---- 收集源文件与 TB -----------------------------------------------------
-$rtlFiles = @(Get-ChildItem -Path $root -Filter '*.v' -File | Select-Object -ExpandProperty FullName)
+$rtlFiles = @(Get-ChildItem -Path (Join-Path $root 'rtl') -Filter '*.v' -File | Select-Object -ExpandProperty FullName)
 $tbFiles  = @(Get-ChildItem -Path (Join-Path $root 'test') -Filter 'tb_*.v' -File | Select-Object -ExpandProperty FullName)
 
-if ($rtlFiles.Count -eq 0) { Write-Host '[提示] 根目录暂无 RTL（*.v），先写模块再跑单测' }
+if ($rtlFiles.Count -eq 0) { Write-Host '[提示] rtl/ 暂无 RTL（*.v），先写模块再跑单测' }
 if ($tbFiles.Count  -eq 0) { Write-Host '[提示] test/ 暂无 tb_*.v 单测' }
 
 $tbNames = @($tbFiles | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) })

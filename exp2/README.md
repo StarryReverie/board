@@ -16,7 +16,7 @@ exp2/
  │   └─ modules/                 uart_tx / uart_rx / uart_ctrl /
  │                               soc_top(reset_sync) / dbus_decode
  ├─ rtl/        UART IP 与 SoC 装配：uart_tx.v、uart_rx.v、uart_ctrl.v、
- │              reset_sync.v、soc_top.v、dbus_decode.v（CPU core 在仓库根，按计组布局）
+ │              reset_sync.v、soc_top.v、dbus_decode.v（CPU core 在计组 `rtl/`，按计组布局）
  ├─ tb/         单元与系统 TB：uart_tx_tb、uart_rx_tb、uart_ctrl_tb、tb_soc_top
  ├─ asm/        汇编固件与机器码：console(banner+回显)、*.hex/*.vh（verify_hex.py 校验）
  └─ xdc/        EES-338 约束：T5(clk 100MHz)/T4(uart_tx)/N5(uart_rx)/P15(rst_n)

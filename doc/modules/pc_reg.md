@@ -1,6 +1,6 @@
 # pc_reg 模块文档（取指组合：PC 更新）
 
-- `pc_reg.v`。参考 `ref/CPU/pc_reg.v`：沿用 `pc_pred/pc_next/pc_src/pc_branch` 思路，新增 `en`（暂停）。
+- `rtl/pc_reg.v`。参考 `ref/CPU/pc_reg.v`：沿用 `pc_pred/pc_next/pc_src/pc_branch` 思路，新增 `en`（暂停）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
