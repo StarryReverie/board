@@ -1,7 +1,6 @@
-# alu（算术逻辑单元）模块文档
+# alu 模块文档（算术逻辑单元，组合）
 
-- 位置：`alu.v`（执行组合内）。**近乎原样复用 `ref/CPU/alu.v`**，仅补 `zero` 输出与常量宏。
-- ALU op 宏见 `const_define.v`（`ALU_ADD/SUB/SLT/AND/OR/XOR/SLL/SRL/SRA/SLTU`）。
+- `alu.v`（execute 内）。**近乎原样复用 `ref/CPU/alu.v`**，仅补 `zero` 输出与常量宏（`ALU_*` 见 `const_define.v`）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
@@ -13,8 +12,8 @@
 | out | zero | 1 | `alu_out==0`（分支比较） |
 
 ## 功能
-- 33 位进位 `result`：ADD/SUB 取有 33 位结果（CF=进位/借位）；SLT/SLTU 置 0/1；逻辑/移位按 `alu_b[4:0]`。
-- 溢出 `OF`：ADD=同号相加异号出；SUB=异号相减结果为减数符号时溢出 → 附加功能"溢出判断"用。
+- 33 位进位 `result`：ADD/SUB 取 33 位结果（CF=进位/借位）；SLT/SLTU 置 0/1；逻辑/移位按 `alu_b[4:0]`。
+- 溢出 `OF`：ADD=同号相加异号出；SUB=异号相减结果为减数符号时溢出 → 附加功能"溢出判断"。
 - `zero=1` 当 `alu_out==32'b0`（SUB 结果相等时为 1）。
 
 ## 连接

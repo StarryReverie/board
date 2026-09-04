@@ -1,6 +1,6 @@
-# ex_mem（EX/MEM 段间寄存器）模块文档
+# ex_mem 模块文档（EX/MEM 段间寄存器）
 
-- 位置：`ex_mem.v`（段间寄存器，EX→MEM 边界）。
+- `ex_mem.v`（EX→MEM 边界）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
@@ -16,11 +16,10 @@
 ```
 posedge clk：rst→全 0；else 锁存全部
 ```
-- 分支冲刷不清本寄存器（EX 段分支/跳转照常流入，其写回/访存正常完成）。
-- 分支 flush 后 EX 下一拍是气泡，其 ex_mem 值全 0，无副作用。
+- 分支冲刷不清本寄存器（EX 段分支/跳转照常流入，其写回/访存正常完成）；flush 后 EX 下一拍为气泡，ex_mem 值全 0，无副作用。
 
 ## 连接
-- din ← execute；dout → dmem_ram(地址/wdata/we)、mem_wb、hazard_unit（exmem.rd/reg_write/mem_read）。
+- din ← execute；dout → dmem(地址/wdata/we)、mem_wb、hazard_unit（rd/reg_write/mem_read）。
 
 ## 验收
 - 沿沿打入；rst 清零；wdata 为前递后的 rs2（sw 正确）。

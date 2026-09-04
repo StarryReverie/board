@@ -1,7 +1,6 @@
-# if_id（IF/ID 段间寄存器）模块文档
+# if_id 模块文档（IF/ID 段间寄存器）
 
-- 位置：`if_id.v`（段间寄存器，位于 IF→ID 边界）。
-- 由 hazard_unit 统一控制 `en/flush`。
+- `if_id.v`。由 hazard_unit 统一控制 `en/flush`。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
@@ -22,12 +21,11 @@ else if(en) begin pc<=pc_in;
                                : inst_in;
              end
 ```
-- en=0（load-use）时整拍保持，当前译码指令原样留到下一拍重译。
+- en=0（load-use）整拍保持，当前译码指令原样留到下一拍重译。
 - flush（分支 taken）本拍丢弃错误指令（置 NOP）；`en` 在 flush 时必为 1。
 
 ## 连接
-- en ← hazard.stall 取反；flush ← hazard.flush_branch（=EX br_taken）。
-- inst/pc → decode 与后续 id_ex（pc 供 idex_pc）。
+- en ← ~hazard.stall；flush ← hazard.flush_branch（=EX br_taken）；inst/pc → decode、id_ex（pc 作 idex_pc）。
 
 ## 验收
 - en=0 保持内容；flush 后 inst=0x00000013、pc 正常更新；rst 清零；常规沿沿打入。

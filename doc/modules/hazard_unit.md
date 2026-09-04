@@ -1,6 +1,6 @@
-# hazard_unit（冲突处理单元）模块文档
+# hazard_unit 模块文档（冲突处理单元，组合）
 
-- 位置：`hazard_unit.v`（段间协调，纯组合）。术语对照：数据相关→数据冒险(前递/暂停)、控制相关→控制冒险(冲刷)、结构相关→存储分离(见 top_design)。
+- `hazard_unit.v`。术语对照：数据相关→前递/暂停；控制相关→冲刷（top_design）；结构相关→存储分离。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
@@ -24,7 +24,7 @@
     else if (memwb_reg_write && memwb_rd!=0 && memwb_rd==x)                sel=2
     else                                                                   sel=0
   ```
-  EX/MEM 为 load（mem_read=1）时**不前递**（数据未就绪；依赖该 load 的消费者必已触发 load-use，不会到达 EX）。
+  EX/MEM 为 load（mem_read=1）时不前递（数据未就绪；依赖该 load 的消费者必已触发 load-use，不会到达 EX）。
 - **load-use 暂停**：
   ```
   load_use = idex_mem_read && idex_rd!=0 &&
@@ -32,13 +32,13 @@
   stall = load_use
   ```
   stall=1 → pc_reg.en=0、if_id.en=0、id_ex.bubble=1（恰 1 气泡）。
-- 优先级：flush_branch（br_taken）与 stall 不会同拍同时为 1（EX 段单指令不可能既是 load 又是分支），top 端 `id_ex.bubble = stall | br_taken`、`if_id.flush = br_taken`。
+- 优先级：flush_branch 与 stall 不会同拍同时为 1（EX 段单指令不可能既是 load 又是分支），top 端 `id_ex.bubble = stall | br_taken`、`if_id.flush = br_taken`。
 
-## 为什么恰 1 气泡/恰 2 冲刷
-见 top_design §3/§4 阶段时序推导（load 数据在 MEM/WB 就绪于其 WB 拍，消费者 EX 拍前递；分支 taken 清 IF/ID+ID/EX 两条）。
+## 为什么恰 1 气泡 / 恰 2 冲刷
+见 top_design §3/§4 时序推导：load 数据在 MEM/WB 就绪于其 WB 拍，消费者 EX 拍前递；分支 taken 清 IF/ID+ID/EX 两条。
 
 ## 连接
-- 输入 ← if_id/decode(rs1_id/rs2_id)、id_ex、ex_mem、mem_wb 输出；输出 → execute 前递 mux、pc_reg/if_id(id_ex)控制。
+- 输入 ← if_id/decode(rs1_id/rs2_id)、id_ex、ex_mem、mem_wb 输出；输出 → execute 前递 mux、pc_reg/if_id/id_ex 控制。
 
 ## 验收
-- H2 两前递路径选源正确（EX/MEM 优先）；H3 load-use 恰 1 气泡；H4 分支 taken 刷 2 条；H5 整程序与期望一致（寄存器堆旁路 + 前递 + 暂停 + 冲刷组合正确）。
+- H2 两前递路径选源正确（EX/MEM 优先）；H3 load-use 恰 1 气泡；H4 分支 taken 刷 2 条；H5 整程序与期望一致（旁路+前递+暂停+冲刷组合正确）。

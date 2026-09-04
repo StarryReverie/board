@@ -1,12 +1,12 @@
-# id_ex（ID/EX 段间寄存器）模块文档
+# id_ex 模块文档（ID/EX 段间寄存器）
 
-- 位置：`id_ex.v`（段间寄存器，ID→EX 边界）。
+- `id_ex.v`（ID→EX 边界）。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |
 |---|---|---|---|
 | in | clk / rst | 1 | rst 清全 0 |
-| in | bubble | 1 | 1=灌气泡：本拍全 0（load-use 或分支冲刷后 ID 的指令被丢弃） |
+| in | bubble | 1 | 1=灌气泡：本拍全 0（load-use 或分支冲刷丢弃 ID 指令） |
 | in | pc | 32 | ifid_pc |
 | in | rs1_data / rs2_data | 32/32 | regfile 读值 |
 | in | imm | 32 | decode 立即数 |
@@ -25,13 +25,11 @@ posedge clk：
   else if (bubble) → 全 0；      // 控制清零=气泡（数据亦 0，无害）
   else → 锁存全部输入
 ```
-- load-use 暂停：stall 拍把 ID/EX 清零（EX 灌气泡 1 拍）；
-- 分支冲刷：taken 拍也清零 ID/EX（丢弃分支后第 1 条误入 ID 的指令）。
-- 无独立 `en`：气泡由清零实现；不需要"保持"语义。
+- 无独立 `en`：气泡由清零实现，不需要"保持"语义。
+- load-use：stall 拍清 ID/EX（EX 灌 1 拍气泡）；分支冲刷：taken 拍同样清零（丢弃分支后误入 ID 的第 1 条指令）。
 
 ## 连接
-- din ← decode 输出 + regfile 读值 + if_id.pc；dout → execute、hazard_unit（load-use 判 idex.mem_read/rd、前递比较 idex.rs1/rs2、EX 取 idex_*）。
-- bubble ← hazard_unit（stall | flush_branch）。
+- din ← decode 输出 + regfile 读值 + if_id.pc；dout → execute、hazard_unit（load-use 判 mem_read/rd、前递比较 rs1/rs2）。bubble ← hazard_unit（stall | flush_branch）。
 
 ## 验收
 - bubble=1 后 EX 等效 NOP（无写/读/跳转副作用）；否则沿沿打入；rst 全 0。
