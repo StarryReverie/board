@@ -66,7 +66,7 @@ echo_main:
 
 ## 6. 镜像与机器码流程
 
-- `asm/*.S → (musl-as -march=rv32i) → objcopy -O verilog → *.hex`；`verify_hex.py` 生成 `.vh` 并校验两路一致、且全部指令在 26 条冻结集内（方案 B 无自定义指令，objdump 反查照常）；
+- `asm/*.S → (riscv-none-elf-as -march=rv32i，计组 scripts/build_asm.ps1) → objcopy -O verilog → *.hex`；镜像校验=反汇编清单/verify_hex.py，全部指令在 26 条冻结集内（方案 B 无自定义指令，objdump 反查照常）；
 - 上电路径：综合期 .vh 固化 → PC=0 自跑；换程序=重烧（见 top_design.md §6）。
 
 ## 7. 变更记录

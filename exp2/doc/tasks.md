@@ -15,7 +15,7 @@
 | 软件 | 程序查询（轮询 TX_BUSY/RX_VALID）；固定固件 console：banner + 键盘回显；全部指令限 26 条冻结集 |
 | 范围裁剪 | 无收发 FIFO、无中断、无 DMA、无硬件流控、无可配波特率寄存器（参数/分频综合前确定）；无 ILA（可选加分，U33）；无 loader/在线重载（换程序=重新生成 .vh→综合→重烧）；忙/溢出=软件轮询+丢弃 |
 | 板卡 | 依元素 EES-338（XC7A35T-1CSG324C）：clk=T5(100MHz)、uart_tx=T4、uart_rx=N5、rst_n=P15（极性以 demo XDC 为准） |
-| 语言/工具 | RTL=Verilog/SystemVerilog（Vivado 可混用）；汇编=musl-as `-march=rv32i` + objcopy；镜像校验=verify_hex.py（与计组共用） |
+| 语言/工具 | RTL=Verilog/SystemVerilog（Vivado 可混用）；汇编=`riscv-none-elf-as` `-march=rv32i`（计组侧已本地化）+ objcopy；镜像校验=verify_hex.py/反汇编清单（与计组共用） |
 | 本机职责 | 写 源码+文档+TB+固件镜像+XDC 草稿；综合/仿真/下板在装有 Vivado 的机器执行 |
 
 ---

@@ -34,7 +34,7 @@
 
 ## 3. 工具链要点
 
-- 汇编：`riscv64-linux-musl-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `.hex`；
+- 汇编：`riscv-none-elf-as -march=rv32i -mabi=ilp32`（计组侧已装，与 musl-as 等价）→ `objcopy -O verilog` → 字节式 `.hex`；构建脚本见计组 `scripts/build_asm.ps1`；
 - 固件镜像：`.hex`（仿真 $readmemh）+ `.vh`（综合 initial，verify_hex.py 生成/校验两路一致）；
 - 校验：verify_hex.py 用 objdump 反查——方案 B 无自定义指令，全流程照常（若未来引入自定义指令需改造，当前不做）。
 

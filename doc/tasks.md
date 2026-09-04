@@ -17,7 +17,7 @@
 | 控制器/附加 | 硬布线；溢出判断 `flags[OF]` |
 | 存储 | IMEM 指令存储运行期只读(.vh 初值装载)、预留 loader 写口(wen 恒 0)；DMEM 同步写；读均周期内组合（见 top_design §6/§9） |
 | 参考 | `ref/CPU/`（大三单周期，RV32I）——继承约定见 `doc/ref_note.md`；该工程不改动 |
-| 语言/工具 | Verilog(沿用参考工程 Verilog-2001)；`riscv64-linux-musl-as -march=rv32i` + `objcopy -O verilog` |
+| 语言/工具 | Verilog(沿用参考工程 Verilog-2001)；`riscv-none-elf-as -march=rv32i`（xPack GNU RISC-V，本机已装；与 musl-as 等价）+ `objcopy -O verilog` |
 | 本机职责 | 只写 源码+文档+TB+期望值+汇编镜像；仿真/综合在下板侧(Vivado) 执行 |
 
 ---
@@ -75,9 +75,9 @@
 | T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
 | T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
 
-汇编镜像脚本（本机可跑，T31 前置，属工具而非仿真器）：
-- `make -C test`：`as -march=rv32i` → `objcopy -O verilog` → 字节式 `.hex`；
-- `verify_hex.py`：解码 `.hex` 首条/末条与 `objdump -d` 对照，防工具链越界指令（见 `doc/ref_note.md`）。
+汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
+- `scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
+- `verify_hex.py`（规划）：解码 `.hex` 与 `objdump -d` 对照，防工具链越界指令（当前以 build_asm 的 .lst 反汇编清单核对，见 `scripts/out/asm/`）。
 
 ---
 
@@ -114,7 +114,7 @@
 | 开放项 | 默认假设/缓解 |
 |---|---|
 | 精工板型号/器件/Vivado 版本（本机无 Vivado） | 代码保持可综合、无厂商原语；综合在装有 Vivado 的机器进行 |
-| rv32i 汇编 | musl-as 已验(`-march=rv32i -mabi=ilp32`)；objcopy `-O verilog` 输出字节式 hex |
+| rv32i 汇编 | riscv-none-elf-as 已验(`-march=rv32i -mabi=ilp32`，as 2.45；与 musl-as 等价)；objcopy `-O verilog` 输出字节式 hex |
 | IMEM 综合初始化 | 用 `.vh`(initial 字面量) 装载；`.hex` 仅供仿真；两路一致性由脚本校验 |
 | 大三单周期数据 | `ref/CPU/` 保留作报告/性能对比引用，本阶段不动 |
 | HALT 停机约定 | 程序末尾自循环(`beq x0,x0,-`)，TB 检测 PC 不动即结束并比对结果 |
