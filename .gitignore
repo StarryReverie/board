@@ -21,6 +21,7 @@ hw_handoff/
 *.vcd
 *.fst
 scripts/out/
+src/scripts/out/
 
 # ---- Python ----
 __pycache__/
