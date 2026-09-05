@@ -22,6 +22,8 @@ hw_handoff/
 *.fst
 scripts/out/
 src/scripts/out/
+exp2/src/scripts/out/
+**/scripts/out/
 
 # ---- Python ----
 __pycache__/
