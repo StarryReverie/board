@@ -18,16 +18,20 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$root    = Split-Path -Parent $PSScriptRoot          # 仓库根
+$root    = Split-Path -Parent $PSScriptRoot          # exp2/src
+# 计组 core（被 soc_top / pipeline_top(SOC_BUILD=1) 例化；include 亦取自其 src）
+$board   = Split-Path -Parent (Split-Path -Parent $root)   # board
+$coreSrc = Join-Path $board 'src'
 $vivado  = if ($env:XVIVADO_ROOT) { $env:XVIVADO_ROOT } else { 'C:\Xilinx\Vivado\2019.2' }
 $settings = Join-Path $vivado 'settings64.bat'
 if (-not (Test-Path $settings)) { Write-Error "找不到 $settings（用 `$env:XVIVADO_ROOT 指定 Vivado 根目录）"; exit 1 }
 
 # ---- 收集源文件与 TB -----------------------------------------------------
 $rtlFiles = @(Get-ChildItem -Path (Join-Path $root 'rtl') -Filter '*.v' -File | Select-Object -ExpandProperty FullName)
+# 计组 core RTL（pipeline_top 等，SoC 类 TB 需要）
+$rtlFiles += @(Get-ChildItem -Path (Join-Path $coreSrc 'rtl') -Filter '*.v' -File | Select-Object -ExpandProperty FullName)
 $tbFiles  = @(Get-ChildItem -Path (Join-Path $root 'test') -Filter 'tb_*.v' -File | Select-Object -ExpandProperty FullName)
 
-if ($rtlFiles.Count -eq 0) { Write-Host '[提示] rtl/ 暂无 RTL（*.v），先写模块再跑单测' }
 if ($tbFiles.Count  -eq 0) { Write-Host '[提示] test/ 暂无 tb_*.v 单测' }
 
 $tbNames = @($tbFiles | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) })
@@ -68,7 +72,7 @@ $sb = New-Object System.Text.StringBuilder
 if (($rtlFiles.Count -gt 0) -or ($tbFiles.Count -gt 0)) {
     $all = @($rtlFiles) + @($tbFiles)
     $args = ($all | ForEach-Object { "`"$_`"" }) -join ' '
-    [void]$sb.AppendLine("call xvlog -i `"$root`" $args")
+    [void]$sb.AppendLine("call xvlog -i `"$root`" -i `"$coreSrc`" $args")
     [void]$sb.AppendLine('if errorlevel 1 ( echo [COMPILE_FAIL] & exit /b 2 )')
 }
 foreach ($tb in $tbNames) {

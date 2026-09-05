@@ -1,18 +1,21 @@
 `timescale 1ns/1ps
 //=============================================================================
-// pipeline_top.v — 顶层装配（实验一 CPU core：RV32I 5 级流水线）
+// pipeline_top.v — 顶层装配（RV32I 5 级流水线 CPU core）
 //   文档：doc/modules/pipeline_top.md（端口/互联权威）；doc/top_design.md §1–§8
-//   实验一 build：
-//     - dbus_decode 不例化：dmem.rdata 直连 mem_wb.rdata（H1–H5 口径不变）；
-//     - mmio 总线（cs_mmio/reg_off/mmio_we/mmio_wdata/mmio_rdata）恒 0/悬空，
-//       T40（实验二）再启用（先改文档后改代码）；
-//     - imem loader 写口：本实验恒 0（固化单程序模型下预留）。
+//   构建模式（参数 SOC_BUILD）：
+//     SOC_BUILD=0（实验一/默认）：dbus_decode 不例化——dmem.rdata 直连
+//       mem_wb.rdata；mmio 总线恒 0（H1–H5 口径不变）；
+//     SOC_BUILD=1（实验二 build，T40）：MEM 段例化 dbus_decode（代码在
+//       exp2/src/rtl/），rdata 经其 mux、dmem 写门控 we&cs_dmem、mmio 总线
+//       穿出（cs_mmio/reg_off/mmio_we/mmio_wdata → uart_ctrl 等从机）。
 //   冲突策略：前递(EX/MEM、MEM/WB→EX) + load-use 冻结(1 气泡) +
 //              分支 EX taken 冲刷 2 条（IF/ID 置 NOP、ID/EX 气泡）。
 //=============================================================================
 `include "defines/const_define.v"
 
-module pipeline_top (
+module pipeline_top #(
+    parameter SOC_BUILD = 0
+) (
     input  wire        clk,
     input  wire        rst,            // 异步高有效
     // ---- imem loader 写口（预留，本实验恒 0）----
@@ -75,11 +78,40 @@ module pipeline_top (
     wire        stall;
     wire [1:0]  fwd_a_sel, fwd_b_sel;
 
-    // ---- 实验一：mmio 总线恒 0（实验二由 dbus_decode 驱动）----
-    assign cs_mmio   = 1'b0;
-    assign reg_off   = 2'b00;
-    assign mmio_we   = 1'b0;
-    assign mmio_wdata = 32'b0;
+    // ---- 访存出口（两种 build 二选一，见 generate 段）----
+    wire [31:0] mem_rdata_sel;   // → mem_wb.rdata
+    wire        dmem_we_int;     // → dmem.we
+    wire        cs_dmem_i, cs_mmio_i;
+    wire [1:0]  reg_off_i;
+
+    generate
+        if (SOC_BUILD == 1) begin : soc_build
+            // 数据侧统一编址译码（T40；dbus_decode 代码在 exp2/src/rtl/）
+            dbus_decode u_dbus (
+                .addr       (exmem_alu_result),
+                .we         (exmem_mem_write),
+                .dmem_rdata (dmem_rdata),
+                .mmio_rdata (mmio_rdata),
+                .cs_dmem    (cs_dmem_i),
+                .cs_mmio    (cs_mmio_i),
+                .reg_off    (reg_off_i),
+                .rdata      (mem_rdata_sel)
+            );
+            assign dmem_we_int = exmem_mem_write & cs_dmem_i;
+            assign cs_mmio     = cs_mmio_i;
+            assign reg_off     = reg_off_i;
+            assign mmio_we     = exmem_mem_write & cs_mmio_i;
+            assign mmio_wdata  = exmem_wdata;
+        end else begin : std_build
+            // 实验一：dmem 直连，mmio 恒 0
+            assign mem_rdata_sel = dmem_rdata;
+            assign dmem_we_int   = exmem_mem_write;
+            assign cs_mmio       = 1'b0;
+            assign reg_off       = 2'b00;
+            assign mmio_we       = 1'b0;
+            assign mmio_wdata    = 32'b0;
+        end
+    endgenerate
 
     // ================= 例化 =================
     pc_reg u_pc_reg (
@@ -224,15 +256,15 @@ module pipeline_top (
         .addr  (exmem_alu_result),
         .wdata (exmem_wdata),
         .wmask (4'b1111),
-        .we    (exmem_mem_write),
+        .we    (dmem_we_int),
         .rdata (dmem_rdata)
     );
 
-    // 实验一：dmem 直连 mem_wb（实验二此处改经 dbus_decode，见 top_design §9.2）
+    // 访存数据进 WB：rdata 经 mem_rdata_sel（实验一=dmem 直连；SOC=dbus mux）
     mem_wb u_mem_wb (
         .clk             (clk),
         .rst             (rst),
-        .rdata           (dmem_rdata),
+        .rdata           (mem_rdata_sel),
         .alu_result      (exmem_alu_result),
         .rd              (exmem_rd),
         .mem_to_reg      (exmem_mem_to_reg),
