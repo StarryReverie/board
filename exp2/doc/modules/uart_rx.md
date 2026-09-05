@@ -1,6 +1,6 @@
 # uart_rx 模块文档（8N1 接收器）
 
-- 位置：`rtl/uart_rx.v`。UART 接收采样 FSM：检测起始位下降沿，按 `clk_en` 节拍在位中心采样 8 数据位 + 停止位校验，输出字节与 valid 脉冲。
+- 位置：`src/rtl/uart_rx.v`。UART 接收采样 FSM：检测起始位下降沿，按 `clk_en` 节拍在位中心采样 8 数据位 + 停止位校验，输出字节与 valid 脉冲。
 - 上游：板级引脚（经 soc_top ← N5，内部先打两拍防亚稳态）；下游：`uart_ctrl`（rx_data/valid）。
 
 ## 端口

@@ -1,7 +1,7 @@
 # SoC 顶层设计（汇编实验：UART 集成整机）
 
 - 版本：v1.0（2026-09-04）。总体入口：本目录文档体系（tasks/top_design/interface/firmware/modules）；原根目录 `../汇编实验设计方案.md` 内容已并入本目录文档并删除（2026-09-04）。本设计建立于计组交付的 CPU core 之上——core 口径见 `../../doc/top_design.md`（v1.4，§1–§8）；跨课程接口契约见 `interface.md`（本目录），其单源为计组 `isa.md` v1.3 / `modules/dbus_decode.md`。
-- 布局：RTL `../rtl/`、TB `../tb/`、固件 `../asm/`、约束 `../xdc/`、文档本目录。
+- 布局（参考实验1规范）：代码统一于 `src/`（RTL `src/rtl/`、TB/固件 `src/test/`、约束 `src/xdc/`、工具 `src/scripts/`）；文档本目录。
 
 ---
 
@@ -37,7 +37,7 @@
 | 本实验 | `uart_rx` | 8N1 接收采样 FSM | modules/uart_rx.md |
 | 本实验 | `reset_sync` / `soc_top` | 复位同步 / 整机装配 | modules/soc_top.md |
 
-> `dbus_decode` 代码由本实验交付（`../rtl/dbus_decode.v`），例化位置在 core 的 MEM 段（实验二 build）；契约单源=计组文档，见 interface.md。
+> `dbus_decode` 代码由本实验交付（`src/rtl/dbus_decode.v`），例化位置在 core 的 MEM 段（实验二 build）；契约单源=计组文档，见 interface.md。
 
 ## 3. 时钟与复位
 

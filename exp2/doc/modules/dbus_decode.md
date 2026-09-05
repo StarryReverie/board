@@ -1,6 +1,6 @@
 # dbus_decode 模块文档（数据侧译码——本目录交付指引）
 
-- 代码交付位置：`../rtl/dbus_decode.v`（**本实验交付**，成员 2）；例化位置：计组 `pipeline_top` 的 MEM 段（实验二 build，`ex_mem` 与 `mem_wb` 之间）。
+- 代码交付位置：`src/rtl/dbus_decode.v`（**本实验交付**，成员 2）；例化位置：计组 `pipeline_top` 的 MEM 段（实验二 build，`ex_mem` 与 `mem_wb` 之间）。
 - **契约单源**：`../../doc/modules/dbus_decode.md`（计组侧，含端口/地址分区/时序/验收全文）+ `../../doc/isa.md` §4 + `interface.md`（本目录）。**本文件只登记交付与装配要点，不重复定义**；两者不一致以单源为准并先改契约。
 
 ## 职责（速记）

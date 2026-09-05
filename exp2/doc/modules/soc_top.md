@@ -1,6 +1,6 @@
 # soc_top / reset_sync 模块文档（整机装配与复位同步）
 
-- 位置：`rtl/soc_top.v`（最顶层）、`rtl/reset_sync.v`。soc_top 例化计组 core（pipeline_top，实验二 build）＋ uart_ctrl ＋ reset_sync，引出板级引脚。程序固化模型：无 loader。
+- 位置：`src/rtl/soc_top.v`（最顶层）、`rtl/reset_sync.v`。soc_top 例化计组 core（pipeline_top，实验二 build）＋ uart_ctrl ＋ reset_sync，引出板级引脚。程序固化模型：无 loader。
 - 上游：无（顶层）；下游：板级（XDC）。
 
 ## soc_top 端口

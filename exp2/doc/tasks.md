@@ -34,15 +34,15 @@
 
 ## 2. 模块编码任务（每模块：先文档→编码→单测 TB）
 
-> 仓库布局：RTL 于 `exp2/rtl/`；TB 于 `exp2/tb/`；固件汇编于 `exp2/asm/`；约束于 `exp2/xdc/`；文档 `exp2/doc/`。计组 core（pipeline_top 等）在计组 `src/rtl/`（计组交付），本工程引用不复制。
+> 仓库布局（参考实验1规范）：代码统一于 `src/`——RTL `src/rtl/`、TB 与固件汇编 `src/test/`（`tb_*.v`、`*.S`、`*.hex`）、约束 `src/xdc/`、工具 `src/scripts/`；文档 `doc/`。计组 core 在计组 `src/rtl/`（引用不复制）。
 
 | 任务 | 模块/文件 | 依赖 | 产出 | 验收标准（可测） |
 |---|---|---|---|---|
-| U10 | `rtl/uart_tx.v`（8N1 发送 FSM + 可选内联分频 `clk_en`） | 方案 §3 | 发送状态机、`busy/tx` | 复位 TX=1、busy=0；start 后 1 起始+8 数据(LSB 先)+1 停止；每位=CLKS_PER_BIT 拍；done 脉冲；忙时 start 忽略 |
-| U11 | `rtl/uart_rx.v`（接收采样 FSM） | 方案 §3 | 采样状态机、`valid/rx_data` | 下降沿检测起始位；位中心采样逐位正确；停止位=1 才 valid；连续字节无丢；输入打两拍 |
-| U12 | `rtl/uart_ctrl.v`（MMIO 从机封装） | U10,U11 | TX/STAT/RX 字槽、位义逻辑 | 槽地址/位义与 interface.md 一致；忙写丢弃；读 RX 清 RX_VALID；未命中读 0/写无操作 |
-| U13 | `rtl/dbus_decode.v`（交付于本目录；例化于计组 pipeline_top MEM 段） | 计组 core M2 | 数据侧译码代码 | 规范单源=计组 `doc/modules/dbus_decode.md`；低区行为与 dmem 直连一致；窗口命中 TX/STAT/RX |
-| U14 | `rtl/reset_sync.v` + `rtl/soc_top.v` | U12,U13 + 计组 core | 整机装配、复位同步、引脚穿出 | soc_top=core+uart_ctrl+reset_sync 正确互联；rst_n(键)→异步置位/同步释放→rst(异步高有效)；无悬空；Vivado 综合通过 |
+| U10 | `src/rtl/uart_tx.v`（8N1 发送 FSM + 可选内联分频 `clk_en`） | 方案 §3 | 发送状态机、`busy/tx` | 复位 TX=1、busy=0；start 后 1 起始+8 数据(LSB 先)+1 停止；每位=CLKS_PER_BIT 拍；done 脉冲；忙时 start 忽略 |
+| U11 | `src/rtl/uart_rx.v`（接收采样 FSM） | 方案 §3 | 采样状态机、`valid/rx_data` | 下降沿检测起始位；位中心采样逐位正确；停止位=1 才 valid；连续字节无丢；输入打两拍 |
+| U12 | `src/rtl/uart_ctrl.v`（MMIO 从机封装） | U10,U11 | TX/STAT/RX 字槽、位义逻辑 | 槽地址/位义与 interface.md 一致；忙写丢弃；读 RX 清 RX_VALID；未命中读 0/写无操作 |
+| U13 | `src/rtl/dbus_decode.v`（交付于本目录；例化于计组 pipeline_top MEM 段） | 计组 core M2 | 数据侧译码代码 | 规范单源=计组 `doc/modules/dbus_decode.md`；低区行为与 dmem 直连一致；窗口命中 TX/STAT/RX |
+| U14 | `src/rtl/reset_sync.v` + `src/rtl/soc_top.v` | U12,U13 + 计组 core | 整机装配、复位同步、引脚穿出 | soc_top=core+uart_ctrl+reset_sync 正确互联；rst_n(键)→异步置位/同步释放→rst(异步高有效)；无悬空；Vivado 综合通过 |
 
 ---
 
@@ -50,9 +50,9 @@
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|
-| U30 | 模块单测 TB（每模块一份，自动断言） | `tb/uart_tx_tb.v`、`tb/uart_rx_tb.v`、`tb/uart_ctrl_tb.v` | 各 TB `$display` 全 PASS（下板侧 Vivado 运行） |
-| U31 | 系统级 TB：行为级串口模型（双向）+ 整机跑固定固件 | `tb/tb_soc_top.v` | banner 字节=注释期望；回显往返断言 PASS；复位重跑一致；长串无死锁（CLKS_PER_BIT 参数覆盖加速） |
-| U32 | 下板：综合/实现/时序 + 终端验收 + 演示视频 | `xdc/*.xdc`、工程、记录 | 终端 115200-8-N-1：banner、键盘回显、复位重跑；≤5min 视频；波形/日志留档 |
+| U30 | 模块单测 TB（每模块一份，自动断言） | `src/test/tb_uart_tx.v`、`src/test/tb_uart_rx.v`、`src/test/tb_uart_ctrl.v` | 各 TB `$display` 全 PASS（下板侧 Vivado 运行） |
+| U31 | 系统级 TB：行为级串口模型（双向）+ 整机跑固定固件 | `src/test/tb_soc_top.v` | banner 字节=注释期望；回显往返断言 PASS；复位重跑一致；长串无死锁（CLKS_PER_BIT 参数覆盖加速） |
+| U32 | 下板：综合/实现/时序 + 终端验收 + 演示视频 | `src/xdc/*.xdc`、工程、记录 | 终端 115200-8-N-1：banner、键盘回显、复位重跑；≤5min 视频；波形/日志留档 |
 | U33 | （可选加分）ILA 观测 uart 总线与 TX/RX 波形 | ILA 核 + 工程 | 答辩加分项；时间不足可放弃，不影响主线 |
 
 ### 3.1 下板验证流程（分层）与证据要求
@@ -82,8 +82,8 @@
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|
-| U40 | 汇编固件（固定程序 console）：`.equ` 内存映射头、putc/getc、banner+回显主循环 | `asm/console.S/.asm` → `.hex/.vh`（verify_hex.py 校验） | 上电自跑打印 banner；键盘回显往返正确；全指令在 26 条冻结集内；`.hex`/`.vh` 一致 |
-| U41 | 机器码与文档：指令展开说明、内存映射说明 | `asm/README` 或报告素材 | 机器码可 objdump/脚本核对（方案 B：无自定义指令） |
+| U40 | 汇编固件（固定程序 console）：`.equ` 内存映射头、putc/getc、banner+回显主循环 | `src/test/console.S` → `.hex/.vh`（verify_hex.py 校验） | 上电自跑打印 banner；键盘回显往返正确；全指令在 26 条冻结集内；`.hex`/`.vh` 一致 |
+| U41 | 机器码与文档：指令展开说明、内存映射说明 | `src/test/README` 或报告素材 | 机器码可 objdump/脚本核对（方案 B：无自定义指令） |
 
 ---
 
@@ -100,15 +100,15 @@
 
 | 成员 | 职责 | 交付 |
 |---|---|---|
-| 成员 1 | `uart_tx` + `uart_rx`（位中心采样）与波特率分频；两者时序单测；帧格式/误差分析 | `rtl/uart_tx.v`、`rtl/uart_rx.v`、分频逻辑、`tb/uart_tx_tb.v`、`tb/uart_rx_tb.v`、报告对应章节 |
-| 成员 2 | `uart_ctrl`（寄存器/位义/忙丢弃/读清位）+ `dbus_decode` 代码交付与从机口适配；从机单测 | `rtl/uart_ctrl.v`、`rtl/dbus_decode.v`、`tb/uart_ctrl_tb.v`、寄存器/位义说明 |
-| 成员 3 | 汇编固件（putc/getc/banner/echo）、机器码生成与校验、系统 TB 的串行监视器与断言 | `asm/*.S → .hex/.vh`、`tb/tb_soc_top.v` 软件部分、机器码说明（doc/firmware.md） |
-| 成员 4 | SoC 装配（soc_top/reset_sync）、XDC（T5/T4/N5/P15）、综合时序、下板与演示视频、提交物整合 | `rtl/soc_top.v`、`rtl/reset_sync.v`、`xdc/*.xdc`、下板记录、报告/PPT 格式统一 |
+| 成员 1 | `uart_tx` + `uart_rx`（位中心采样）与波特率分频；两者时序单测；帧格式/误差分析 | `src/rtl/uart_tx.v`、`src/rtl/uart_rx.v`、分频逻辑、`src/test/tb_uart_tx.v`、`src/test/tb_uart_rx.v`、报告对应章节 |
+| 成员 2 | `uart_ctrl`（寄存器/位义/忙丢弃/读清位）+ `dbus_decode` 代码交付与从机口适配；从机单测 | `src/rtl/uart_ctrl.v`、`src/rtl/dbus_decode.v`、`src/test/tb_uart_ctrl.v`、寄存器/位义说明 |
+| 成员 3 | 汇编固件（putc/getc/banner/echo）、机器码生成与校验、系统 TB 的串行监视器与断言 | `src/test/*.S → .hex/.vh`、`src/test/tb_soc_top.v` 软件部分、机器码说明（doc/firmware.md） |
+| 成员 4 | SoC 装配（soc_top/reset_sync）、XDC（T5/T4/N5/P15）、综合时序、下板与演示视频、提交物整合 | `src/rtl/soc_top.v`、`src/rtl/reset_sync.v`、`src/xdc/*.xdc`、下板记录、报告/PPT 格式统一 |
 
 技术章节各成员撰写，成员 4 只统一格式，不代写全部内容。
 
 提交物对照（成绩组成：团队提交 20/答辩 40/测试 20/日志 10/报告 10）：
-接口控制器设计实验报告（含编址方式对比、仿真与下板记录）、源码（exp2/rtl+tb+asm+xdc）、可复用 IP 核（uart_tx/uart_rx/uart_ctrl 打包 + 集成说明）、中期/验收 PPT、≤5min 下板演示视频、日志（每日）。
+接口控制器设计实验报告（含编址方式对比、仿真与下板记录）、源码（exp2/src：rtl+test+xdc）、可复用 IP 核（uart_tx/uart_rx/uart_ctrl 打包 + 集成说明）、中期/验收 PPT、≤5min 下板演示视频、日志（每日）。
 
 ---
 

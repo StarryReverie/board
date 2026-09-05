@@ -2,7 +2,7 @@
 
 存放汇编与接口课程设计的全部代码与工程文件。**设计文档在本目录 `doc/`**（tasks/top_design/interface/firmware/ref_note/future_extensions/modules，仿 board/doc 体系）；根目录原 `汇编实验设计方案.md`（v1.0/v1.1）内容已全部并入 `doc/` 后删除（2026-09-04）。跨课程架构口径以 `../doc/top_design.md` v1.4、`../doc/isa.md` v1.3、`../doc/tasks.md` §6 为准。
 
-## 建议目录结构（随实现补充）
+## 目录结构（参考实验 1 src/ 规范）
 
 ```text
 exp2/
@@ -13,13 +13,16 @@ exp2/
  │   ├─ interface.md             CPU↔外设接口冻结契约（汇编侧视图）
  │   ├─ ref_note.md              计组 core 口径 + EES-338 板卡速查
  │   ├─ future_extensions.md     暂缓扩展登记（FIFO/中断/ILA/…）
+ │   ├─ firmware.md              固件软件设计（putc/getc/console）
  │   └─ modules/                 uart_tx / uart_rx / uart_ctrl /
  │                               soc_top(reset_sync) / dbus_decode
- ├─ rtl/        UART IP 与 SoC 装配：uart_tx.v、uart_rx.v、uart_ctrl.v、
- │              reset_sync.v、soc_top.v、dbus_decode.v（CPU core 在计组 `src/rtl/`，按计组布局）
- ├─ tb/         单元与系统 TB：uart_tx_tb、uart_rx_tb、uart_ctrl_tb、tb_soc_top
- ├─ asm/        汇编固件与机器码：console(banner+回显)、*.hex/*.vh（verify_hex.py 校验）
- └─ xdc/        EES-338 约束：T5(clk 100MHz)/T4(uart_tx)/N5(uart_rx)/P15(rst_n)
+ └─ src/        代码统一目录（与计组 src/ 同规范）
+     ├─ rtl/     UART IP 与 SoC：uart_tx.v、uart_rx.v、uart_ctrl.v、
+     │           reset_sync.v、soc_top.v、dbus_decode.v
+     │           （CPU core 引用计组 `src/rtl/`，不复制）
+     ├─ test/    TB（tb_*.v）+ 固件汇编（console.S/.hex/.vh）
+     ├─ xdc/     EES-338 约束：T5(clk)/T4(uart_tx)/N5(uart_rx)/P15(rst_n)
+     └─ scripts/ 工具：run_tb.ps1（仿真运行器，同实验 1 用法）
 ```
 
 ## 设计要点（定稿 v1.1）

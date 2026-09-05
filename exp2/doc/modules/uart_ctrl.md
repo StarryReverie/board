@@ -1,6 +1,6 @@
 # uart_ctrl 模块文档（MMIO 从机：寄存器/位义/收发装配）
 
-- 位置：`rtl/uart_ctrl.v`。UART IP 的**寄存器化从机封装**：接 core 穿出的 mmio 总线（interface.md §1），内部例化 `uart_tx`/`uart_rx` 与寄存器/位义逻辑。访问即普通 `lw`(in/r)/`sw`(out/w)。
+- 位置：`src/rtl/uart_ctrl.v`。UART IP 的**寄存器化从机封装**：接 core 穿出的 mmio 总线（interface.md §1），内部例化 `uart_tx`/`uart_rx` 与寄存器/位义逻辑。访问即普通 `lw`(in/r)/`sw`(out/w)。
 
 ## 端口
 | 方向 | 名称 | 位宽 | 说明 |

@@ -1,6 +1,6 @@
 # uart_tx 模块文档（8N1 发送器）
 
-- 位置：`rtl/uart_tx.v`。UART 发送 FSM，把 1 字节转成 8N1 串行帧逐位移出；波特率由 `clk_en` 分频脉冲节拍（每拍=1 bit 时间）。
+- 位置：`src/rtl/uart_tx.v`。UART 发送 FSM，把 1 字节转成 8N1 串行帧逐位移出；波特率由 `clk_en` 分频脉冲节拍（每拍=1 bit 时间）。
 - 上游：`uart_ctrl`（start/data）；下游：板级引脚（经 soc_top → T4）。
 
 ## 端口
