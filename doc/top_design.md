@@ -1,6 +1,6 @@
 # 计算机系统顶层设计（实验一：流水线 CPU core · 实验二：UART 集成 SoC）
 
-- 版本：v1.4（2026-09-04：实验二模型定稿——统一编址 MMIO（方案 B：不加 in/out，`lw`=外设读 in/r、`sw`=外设写 out/w）、UART 全双工（TX/STAT/RX 槽位义定稿）、程序固化单程序模型（loader 在线重载搁置）；§1–§8=实验一 CPU core，§9=实验二整机 SoC）。
+- 版本：v1.5（2026-09-06：TX_BUSY 位义修正——STAT bit0=1 含挂起待发与移位中，写接受仅限完全空闲；对齐 uart_ctrl/isa v1.4/interface v1.1）。
 - 布局：代码目录统一于 `src/`（RTL `*.v` 于 `src/rtl/`、宏 `src/defines/`、汇编/测试 `src/test/`、工具 `src/scripts/`）；文档 `doc/`；汇编实验独立于 `exp2/`；`ref/CPU/` 不改动。指令集：`doc/isa.md`（26 条 RV32I，统一编址 MMIO 不加指令）；参考：`doc/ref_note.md`。
 
 ---
@@ -183,8 +183,8 @@
 ### 9.4 MMIO 外设：uart_ctrl（全双工 UART 接口控制器）
 
 - 地位：基础任务 UART IP 的寄存器化封装，作 dbus_decode 的 MMIO 从机；**全双工**：`uart_tx` 与 `uart_rx` 两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.06%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
-- 寄存器映射（定稿，见 §9.2 表）：TX 槽（`sw` 写=发送）、STAT 槽（`lw` 读：bit0=TX_BUSY（1=发送中）、bit1=RX_VALID（1=有未读字节））、RX 槽（`lw` 读=字节，读后清 RX_VALID）。
-- 收发语义：写 TX 仅在 TX_BUSY=0 时有效，忙时写入丢弃（软件轮询保证不丢）；收到完整字节置 RX_VALID；**无 FIFO**：RX_VALID 未清期间到达的新字节丢弃；读 RX 在访存段末沿清 RX_VALID。
+- 寄存器映射（定稿，见 §9.2 表）：TX 槽（`sw` 写=发送）、STAT 槽（`lw` 读：bit0=TX_BUSY（1=发送忙：挂起待发或移位中）、bit1=RX_VALID（1=有未读字节））、RX 槽（`lw` 读=字节，读后清 RX_VALID）。
+- 收发语义：写 TX 仅在完全空闲（TX_BUSY=0，无挂起无移位）时有效，挂起/忙时写入丢弃（软件轮询保证不丢）；收到完整字节置 RX_VALID；**无 FIFO**：RX_VALID 未清期间到达的新字节丢弃；读 RX 在访存段末沿清 RX_VALID。
 - 时序：字槽访问在 MEM 段一拍完成（组合读/末沿写），不卡流水、无 wait——**波特率远慢于 CPU**，固件连发多字节须轮询 TX_BUSY，收侧由 RX_VALID 回馈轮询。`uart_rx` 输入打两拍防亚稳态。
 - 实现组成：`uart_tx`（8N1 发送 FSM）、`uart_rx`（起始位检测 + 位中心采样 + 停止位校验的接收 FSM）、寄存器与位义逻辑；收发同频同参，分频参数仿真可覆盖（tasks.md §6 T41）。
 
@@ -230,6 +230,7 @@
 
 ## 10. 变更记录
 
+- v1.5 2026-09-06：TX_BUSY 位义修正——STAT bit0=1 表示发送忙（含挂起待发与移位中）；uart_ctrl 写接受仅限完全空闲（挂起期写丢弃），消除连续 putc 的"挂起窗口"丢字隐患（同步 isa v1.4 / exp2 interface v1.1）。
 - v1.4 2026-09-04：实验二模型定稿——统一编址 MMIO（方案 B：不加 in/out，`lw`=in/r、`sw`=out/w）、UART 全双工与 TX/STAT/RX 槽位义定稿、程序固化单程序模型（loader 在线重载搁置：§9.1/§9.3 改写、§9.5 soc_top 去 loader、§9.6 固件无 reload、§9.7 验收改回显交互；引脚按 EES-338 手册定稿 T5/T4/N5/P15）。
 - v1.3 2026-09-04：文档升级为**两课设一体**顶层设计：新增 §0（两级结构/模块清单，§1–§8=实验一 core，§9=实验二 SoC）；§9 由"集成预留"扩写为实验二整机设计（soc_top/uart_ctrl/loader/reset_sync/固件/验收 §9.2–§9.7）；标题改"计算机系统顶层设计"。
 - v1.2 2026-09-04：新增 §9 集成预留（数据侧 MMIO + 指令在线重载）；指令存储按"带初值 + loader 写口"描述（`imem_rom`→`imem`）。

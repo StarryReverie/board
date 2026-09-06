@@ -13,8 +13,10 @@
 //     - 无 FIFO：RX_VALID=1 期间到达的新字节丢弃；
 //     - 内部：clk_en 分频（每 CLKS_PER_BIT 个 clk 一脉冲，TX 用）+
 //       uart_tx/uart_rx；rx 输入打两拍（在 uart_rx 内）；
-//     - TX 触发：写接受→置 pend，待发送空闲且遇 clk_en 脉冲拍启动
-//       （start 需在脉冲沿保持，CPU 单拍写请求不可直连）。
+//     - TX 触发：写接受（完全空闲：无挂起且非移位忙）→置 pend，待发送
+//       空闲且遇 clk_en 脉冲拍启动（start 需在脉冲沿保持，CPU 单拍写请求
+//       不可直连）；STAT.TX_BUSY（bit0）= 挂起或移位中——写接受沿即置 1，
+//       帧发完清 0（软件据此轮询不会落入"挂起窗口"丢字）。
 //=============================================================================
 
 module uart_ctrl #(
@@ -59,8 +61,11 @@ module uart_ctrl #(
     // ---- TX 挂起/缓冲 ----
     reg        tx_pend;
     reg  [7:0] tx_buf;
-    // 写接受（busy=0 时）→ 挂起；待空闲且遇 bit_tick 启动
-    wire       tx_accept = cs_mmio && we && (reg_off == 2'b00) && !tx_busy;
+    // 写接受：完全空闲（无挂起、非移位忙）→ 挂起；否则丢弃
+    // （挂起期写也丢弃，避免覆盖待发字节——STAT.TX_BUSY 含挂起，软件
+    //   按"busy=0 才写"轮询即可防丢字）
+    wire       tx_accept = cs_mmio && we && (reg_off == 2'b00) &&
+                           !tx_busy && !tx_pend;
     wire       tx_fire   = tx_pend && !tx_busy;     // 组合 start（脉冲沿拍采样）
 
     // ---- RX 寄存器 ----
@@ -68,9 +73,9 @@ module uart_ctrl #(
     reg  [7:0] rx_byte;
     wire       rx_clear = cs_mmio && !we && (reg_off == 2'b10) && rx_valid;
 
-    // ---- 组合读 ----
+    // ---- 组合读（STAT bit0=TX_BUSY：挂起待发或移位中）----
     wire [31:0] rdata_tx   = 32'd0;
-    wire [31:0] rdata_stat = {30'b0, rx_valid, tx_busy};
+    wire [31:0] rdata_stat = {30'b0, rx_valid, tx_busy | tx_pend};
     wire [31:0] rdata_rx   = {24'b0, rx_byte};
     assign rdata = cs_mmio ?
                    (reg_off == 2'b00) ? rdata_tx :
