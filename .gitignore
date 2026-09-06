@@ -38,3 +38,17 @@ vivado/
 
 # ---- perf: ref/CPU 复测副本（只读源不动，副本本地用）----
 build/
+
+# ---- Vivado 工程产物（xpr 入各自代码目录，重建见入口 bat / create_vivado_proj.tcl）----
+/board.xpr
+/board.cache/
+/board.hw/
+/board.ip_user_files/
+/board.runs/
+/board.sim/
+/exp2/exp2.xpr
+/exp2/exp2.cache/
+/exp2/exp2.hw/
+/exp2/exp2.ip_user_files/
+/exp2/exp2.runs/
+/exp2/exp2.sim/

@@ -2,7 +2,7 @@
 # program_devices.tcl — 批处理烧录 .bit 到 EES-338（XC7A35T）
 #   用法：
 #     vivado -mode batch -source program_devices.tcl -tclargs <bit 路径>
-#   无参时自动寻找 vivado/exp2.runs/impl_1/soc_top.bit（仓库内）
+#   无参时自动寻找 exp2/exp2.runs/impl_1/soc_top.bit（仓库内）
 #   成功打印 PROGRAM_DONE；找不到板打印可用目标/设备清单并报错
 #=====================================================================
 
@@ -16,7 +16,7 @@ set bitFile ""
 if {$argc >= 1} {
     set bitFile [lindex $argv 0]
 } else {
-    set cand [file join $board vivado exp2.runs impl_1 soc_top.bit]
+    set cand [file join $board exp2 exp2.runs impl_1 soc_top.bit]
     if {[file exists $cand]} { set bitFile $cand }
 }
 if {$bitFile eq "" || ![file exists $bitFile]} {
