@@ -1,8 +1,8 @@
 #=====================================================================
 # create_vivado_proj.tcl — 生成 Vivado 工程（计组实验一 CPU core）
 #   用法：vivado -mode batch -source src/scripts/create_vivado_proj.tcl
-#   产出：board/vivado/exp1/board.xpr（可双击打开；与 exp2 工程相互独立，
-#         本脚本只清理 vivado/exp1 自身目录，不影响 exp2）
+#   产出：board/vivado/board.xpr（可双击打开；与 exp2 工程相互独立——
+#         本脚本只清理 vivado/ 下 board.* 自身产物，不动 exp2.*）
 #   工程口径：
 #     - part: xc7a35tcsg324-1（EES-338）
 #     - sources_1（设计源）: src/rtl/*.v，top=pipeline_top
@@ -14,17 +14,20 @@
 #=====================================================================
 
 set scr  [file dirname [file normalize [info script]]]
-# 路径推导：scr=src/scripts, src=board/src, root=board, proj=board/vivado/exp1
+# 路径推导：scr=src/scripts, src=board/src, root=board, vdir=board/vivado
 set src  [file dirname $scr]
 set root [file dirname $src]
-set proj [file join $root vivado exp1]
+set vdir [file join $root vivado]
+set proj [file join $root vivado board]
 
-# 清理旧工程（idempotent；只动本工程目录 vivado/exp1）
+# 清理旧工程（idempotent；只清 board.* 自身产物，不影响 exp2.*）
 if {[file exists $proj.xpr]} { close_project -quiet }
-file delete -force $proj
+foreach suf {.xpr .cache .hw .ip_user_files .runs .sim} {
+    file delete -force "$proj$suf"
+}
 
 # 建工程
-create_project board $proj -part xc7a35tcsg324-1 -force
+create_project board $vdir -part xc7a35tcsg324-1 -force
 set_property target_language Verilog [current_project]
 set_property simulator_language Verilog [current_project]
 
