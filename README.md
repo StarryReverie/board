@@ -11,6 +11,7 @@ board/
  │   └─ scripts/         run_tb.ps1（批量仿真）、run_perf.ps1（性能测量）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
  ├─ doc/                 计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis/perf_report）
  ├─ exp2/                汇编与接口课程（UART SoC，独立子工程）
+ ├─ SUBMISSION.md        两门课提交物核对清单（9/18 24:00 截止）
  ├─ ref/CPU/             大三单周期参考工程（只读）
  └─ tools/(仓库外)        RISC-V 工具链（E:\Homework\26-27-1\tools）
 ```
