@@ -36,6 +36,16 @@ vivado -mode batch -source src/scripts/synth_check.tcl
 powershell -File src/scripts/fix_encoding.ps1
 ```
 
+## 下板（exp2 U32，需 Vivado 正常的主机；完整方案见 exp2/doc/board_runbook.md）
+
+```powershell
+git clone https://github.com/StarryReverie/board.git && cd board
+vivado -mode batch -source exp2/src/scripts/create_vivado_proj.tcl   # 生成工程
+vivado -mode batch -source exp2/src/scripts/board_runs.tcl           # 一键出 .bit
+vivado -mode batch -source exp2/src/scripts/program_devices.tcl -tclargs <bit>  # 烧录
+powershell -File exp2/src/scripts/uart_check.ps1 -Port COMx          # 终端自动验收
+```
+
 # Vivado GUI（工程已按工程风格分组，可直接打开）
 ```text
 双击 board/vivado/board.xpr（若不存在，先执行下方重建命令）
