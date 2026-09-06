@@ -27,9 +27,9 @@ exp2/
 
 ## Vivado 工程入口
 
-- 工程位置：本目录 `exp2.xpr`（**与代码同目录**，不入 git；exp1 工程为仓库根 `board/board.xpr`，两者**相互独立**：`exp2/` 内 `exp2.*` 与仓库根 `board.*` 各自清理，互不影响）
+- 工程位置：本目录下 `vivado/exp2.xpr`（工程目录 = `exp2/vivado/`，不入 git；exp1 工程目录 = 仓库根 `vivado/`（`vivado/board.xpr`），两者**相互独立**：各自 vivado 目录内自清产物，互不影响）
 - 双击入口：本目录 `exp2_vivado.bat`（缺失时自动重建并打开 GUI；exp1 入口在仓库根 `exp1_vivado.bat`）
-- 重建/生成：`vivado -mode batch -source src/scripts/create_vivado_proj.tcl`（只清理本目录 `exp2.*` 自身产物）
+- 重建/生成：`vivado -mode batch -source src/scripts/create_vivado_proj.tcl`（只清理 `exp2/vivado/` 下 `exp2.*` 自身产物）
 - 一键出 .bit / 烧录 / 终端取证：`board_runs.tcl` / `program_devices.tcl` / `uart_check.ps1` —— 完整下板方案见 `doc/board_runbook.md`
 
 ## 设计要点（定稿 v1.1）

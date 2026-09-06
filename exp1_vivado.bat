@@ -1,8 +1,8 @@
 @echo off
 rem =====================================================================
 rem  exp1 Vivado 工程入口（计组实验一：流水线 CPU core）
-rem  双击运行：打开仓库根 board.xpr（与 exp1 代码同目录；缺失则先自动重建）
-rem  与 exp2 相互独立：仓库根 board.* 与 exp2/ 内 exp2.* 各自清理，互不影响
+rem  双击运行：打开仓库根 vivado/board.xpr（exp1 工程目录 = exp1(=仓库根)/vivado；
+rem  缺失则先自动重建；与 exp2/vivado 互不影响）
 rem  可用环境变量 XVIVADO_ROOT 覆盖 Vivado 安装目录
 rem =====================================================================
 setlocal
@@ -14,7 +14,7 @@ if not exist "%XV%\bin\vivado.bat" (
     pause
     exit /b 1
 )
-set XPR=%REPO%board.xpr
+set XPR=%REPO%vivado\board.xpr
 if not exist "%XPR%" (
     echo [info] exp1 xpr missing - generating ...
     call "%XV%\bin\vivado.bat" -mode batch -source "%REPO%src\scripts\create_vivado_proj.tcl"

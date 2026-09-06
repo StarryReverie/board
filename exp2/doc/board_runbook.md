@@ -26,7 +26,7 @@ vivado -mode batch -source exp2/src/scripts/create_vivado_proj.tcl
 vivado -mode batch -source exp2/src/scripts/board_runs.tcl
 ```
 
-- 产物：`board/exp2/exp2.runs/impl_1/soc_top.bit`；控制台出现 `BOARD_BUILD_DONE` 即成功。
+- 产物：`board/exp2/vivado/exp2.runs/impl_1/soc_top.bit`；控制台出现 `BOARD_BUILD_DONE` 即成功。
 - 无网络时：把仓库目录整体拷贝到目标机（含 `exp2/src/scripts/` 即可，`vivado/` 可省），同样执行上述两条命令。
 - 说明：仓库已内置 console 固件（`console_init.vh` → 综合期固化 IMEM），XDC 已按手册核定（T5=100MHz / T4=FPGA TX / N5=FPGA RX / P15=复位）。
 

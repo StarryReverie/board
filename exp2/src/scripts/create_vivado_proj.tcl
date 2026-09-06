@@ -1,8 +1,8 @@
 #=====================================================================
 # create_vivado_proj.tcl — 生成 exp2（UART SoC）Vivado 工程
 #   用法：vivado -mode batch -source exp2/src/scripts/create_vivado_proj.tcl
-#   产出：exp2/exp2.xpr（与 exp2 代码同目录；工程产物 exp2.* 就地生成，
-#         与 exp1 相互独立——本脚本只清理 exp2/ 内 exp2.*，不动仓库根文件）
+#   产出：exp2/vivado/exp2.xpr（exp2 工程目录 = exp2/vivado；本脚本只清理
+#         其中 exp2.* 自身产物，与 exp1（仓库根 vivado/）互不影响）
 #   入口：exp2/exp2_vivado.bat（双击打开/自动重建）
 #   工程口径：
 #     - part: xc7a35tcsg324-1（EES-338）
@@ -23,15 +23,15 @@ set src  [file dirname $scr]
 set exp2 [file dirname $src]
 set board [file dirname $exp2]
 set coreSrc [file join $board src]
-set proj [file join $exp2 exp2]
+set proj [file join $exp2 vivado exp2]
 
-# 清理旧工程（idempotent；只清 exp2/ 内 exp2.* 自身产物，不影响仓库根 board.*）
+# 清理旧工程（idempotent；只清 exp2/vivado 下 exp2.*，与 exp1 的 vivado 互不影响）
 foreach suf {.xpr .cache .hw .ip_user_files .runs .sim} {
     file delete -force "$proj$suf"
 }
 
-# 建工程（xpr 与工程产物就地在 exp2/ 内生成）
-create_project exp2 $exp2 -part xc7a35tcsg324-1 -force
+# 建工程（exp2/vivado/ 内生成 exp2.xpr 及产物）
+create_project exp2 [file dirname $proj] -part xc7a35tcsg324-1 -force
 set_property target_language Verilog [current_project]
 set_property simulator_language Verilog [current_project]
 

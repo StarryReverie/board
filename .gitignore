@@ -1,4 +1,4 @@
-# ---- Vivado / xsim äº§ç‰©ï¼ˆæœ¬æœºä¸ä¸‹æ¿ä¾§ï¼‰----
+ï»¿# ---- Vivado / xsim äº§ç‰©ï¼ˆæœ¬æœºä¸ä¸‹æ¿ä¾§ï¼‰----
 .Xil/
 xsim.dir/
 .cache/
@@ -36,19 +36,6 @@ vivado/
 *.zip
 *.tar.gz
 
-# ---- perf: ref/CPU ¸´²â¸±±¾£¨Ö»¶ÁÔ´²»¶¯£¬¸±±¾±¾µØÓÃ£©----
+# ---- perf: ref/CPU ï¿½ï¿½ï¿½â¸±ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½----
 build/
 
-# ---- Vivado ¹¤³Ì²úÎï£¨xpr Èë¸÷×Ô´úÂëÄ¿Â¼£¬ÖØ½¨¼ûÈë¿Ú bat / create_vivado_proj.tcl£©----
-/board.xpr
-/board.cache/
-/board.hw/
-/board.ip_user_files/
-/board.runs/
-/board.sim/
-/exp2/exp2.xpr
-/exp2/exp2.cache/
-/exp2/exp2.hw/
-/exp2/exp2.ip_user_files/
-/exp2/exp2.runs/
-/exp2/exp2.sim/

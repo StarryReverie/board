@@ -2,9 +2,9 @@
 # board_runs.tcl — 一键下板构建（在 Vivado 正常的机器上执行）
 #   用法（GUI 或 batch 均可）：
 #     vivado -mode batch -source exp2/src/scripts/board_runs.tcl
-#   动作：打开 exp2/exp2.xpr（含固件 ROM 固化 define + board.xdc 全约束）
+#   动作：打开 exp2/vivado/exp2.xpr（含固件 ROM 固化 define + board.xdc 全约束）
 #         → launch synth_1 → launch impl_1(-to write_bitstream) → 出 .bit
-#   bit 产物：exp2/exp2.runs/impl_1/soc_top.bit
+#   bit 产物：exp2/vivado/exp2.runs/impl_1/soc_top.bit
 #   编程：Vivado Hardware Manager → open target → Program Device
 #   已知限制（2026-09-06 实测本机）：Vivado 2019.2 在本机(Intel i9-13900HX/
 #       Win)对 soc_top 规模设计在"器件/时序模型加载"阶段 CPU 空转（小设计
@@ -17,7 +17,7 @@ set scr  [file dirname [file normalize [info script]]]
 set src  [file dirname $scr]
 set exp2 [file dirname $src]
 set board [file dirname $exp2]
-set xpr [file join $board exp2 exp2.xpr]
+set xpr [file join $board exp2 vivado exp2.xpr]
 if {![file exists $xpr]} {
     puts "ERROR: 缺少工程 $xpr（先跑 exp2/src/scripts/create_vivado_proj.tcl）"
     exit 1
@@ -50,5 +50,5 @@ if {[get_property PROGRESS [get_runs impl_1]] ne {100%}} {
 }
 
 puts "BOARD_BUILD_DONE"
-puts "BIT: [file join $board exp2 exp2.runs impl_1 soc_top.bit]"
+puts "BIT: [file join $board exp2 vivado exp2.runs impl_1 soc_top.bit]"
 exit
