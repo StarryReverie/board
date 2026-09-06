@@ -1,6 +1,6 @@
 # 汇编固件（软件）设计文档
 
-- 版本：v1.0（2026-09-04）。代码位置：`../asm/`；本文件收编原"汇编实验设计方案"中的软件章节（程序查询模型、子程序、console、字符串方案），与 tasks.md U40/U41 配套。硬件口径见 `interface.md` 与 modules/*.md。
+- 版本：v1.1（2026-09-06：U40 落地——console.S 已按本文做法一实现并通过固件版系统 TB；代码位置更新为 `src/test/`）。代码位置：`src/test/console.S`；本文件收编原"汇编实验设计方案"中的软件章节（程序查询模型、子程序、console、字符串方案），与 tasks.md U40/U41 配套。硬件口径见 `interface.md` 与 modules/*.md。
 - 汇编约束：只使用计组 26 条冻结指令 + 白名单伪指令（isa `../../doc/isa.md` v1.3）；无 auipc/lb——地址常量用 `lui(+进位)+addi` 构造，字符收发只用字槽低 8 位。
 
 ---
@@ -49,7 +49,8 @@ echo_main:
          jal  x0, echo_main
 ```
 
-- 调用约定：caller 负责置 a0；子程序用 ra 返回（示例未用栈；若固件引入嵌套调用/栈，须自行初始化 sp 指向 dmem 安全区且不撞数据区）。
+- 调用约定：caller 负责置 a0；子程序用 ra 返回（示例未用栈；若固件引入嵌套调用/栈，须自行初始化 sp 指向 dmem 安全区且不撞数据区）。**U40 实现注**：`print_banner` 嵌套调用 `uart_putc`，故 console.S 初始化 `sp=0x1000`（dmem 顶）并在进入/退出时保存/恢复 ra（addi/sw/lw，栈向低生长，不撞 BANNER_BUF 数据区）。
+- **TX_BUSY 语义（interface v1.1）**：STAT bit0=1 含挂起待发与移位中——上例"busy=0 才写"轮询**无丢字窗口**（写接受仅限完全空闲，挂起期写亦丢弃）。
 - 无停机指令：console 常驻轮询（非 HALT 自循环）；系统 TB 按"期望字节收齐"判结束（见 tasks.md U31）。
 
 ## 4. console 主程序流程（固定固件）
@@ -71,4 +72,5 @@ echo_main:
 
 ## 7. 变更记录
 
+- v1.1 2026-09-06：U40 落地（console.S 51 条冻结集指令：banner 数据区自初始化做法一 + 嵌套 ra 栈保护；`build_fw.ps1` → console_rom.hex/console_init.vh；固件版系统 TB tb_soc_console 全绿）；补 TX_BUSY 含挂起说明；代码位置改 `src/test/`。
 - v1.0 2026-09-04：初版（收编自原"汇编实验设计方案"v1.1 软件章节，内容未删减）。

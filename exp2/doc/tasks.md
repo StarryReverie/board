@@ -126,6 +126,7 @@
 
 ## 7. 变更记录
 
+- 2026-09-06：U40 落地——`src/test/console.S`（51 条冻结集，banner="EES-338 RV32I UART OK\r\n" 数据区自初始化 + 回显主循环）经 `src/scripts/build_fw.ps1` 构建 → `console_rom.hex`/`console_init.vh`（objdump -M no-aliases 冻结集校验 + 字节数校验）；U31 固件版系统 TB `src/test/tb_soc_console.v` 全绿（banner 23B/回显/长串 8 字符/复位重跑四阶段）；uart_ctrl TX_BUSY 语义修正（STAT bit0 含挂起待发，写接受仅限完全空闲——消除连续 putc 丢字窗口，interface v1.1/isa v1.4/top_design v1.5）。
 - 2026-09-04：收编并删除根目录原"汇编实验设计方案"文件——其全部信息已并入本目录（tasks/top_design/interface/firmware/ref_note/modules/require）：
   - 方案 v1.1（2026-09-04 定稿改版）：UART 改全双工；统一编址方案 B（窗口 0x4000 三槽）；程序固化单程序模型（无 loader）；板卡按 EES-338 定稿；
   - 方案 v1.0（2026-09-02 初版）：UART 单向发送、0x1000_0000 窗口、自拟 mmio_decoder 总线（已被 v1.1 口径取代，仅存档沿革）。
