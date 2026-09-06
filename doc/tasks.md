@@ -79,6 +79,8 @@
 | T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动） | T33 | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
 | T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析 | T34 | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
 
+> 状态（2026-09-06）：**T32（`test/tb_perf.v`）与 T33（`scripts/run_perf.ps1`）已落地**——5 档程序实测全绿（恒等式 5/5 + 正确性断言全绿，随 run_tb 20 项回归）；实测数据与结论见 `doc/perf_report.md`。**T34/T35 待执行**（单周期 Fmax 复测在综合侧，本机时序报告环节已知空转限制）。
+
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
 - `scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
 - `verify_hex.py`（规划）：解码 `.hex` 与 `objdump -d` 对照，防工具链越界指令（当前以 build_asm 的 .lst 反汇编清单核对，见 `scripts/out/asm/`）。
@@ -129,6 +131,7 @@
 
 ## 8. 变更记录
 
+- 2026-09-06：T32/T33 落地——`test/tb_perf.v`（5 档 PERF_* + 恒等式/正确性断言）、`scripts/run_perf.ps1`（汇总 `out/perf_summary.csv`）；5 档实测全绿，报告成稿 `doc/perf_report.md`（T34/T35 待执行，Fmax 复测在综合侧）。
 - 2026-09-06：新增性能分析任务 T32–T35 与 M4（方案 `doc/perf_analysis.md`，追溯表行"量化性能测试"由"后追加"转正）；全仓编码排查结论：文本均纯 UTF-8（乱码为 GBK 环境显示假象，见 ref_note §4）；新增编码校验工具 `src/scripts/fix_encoding.ps1`。
 - 2026-09-04：实验二任务块按定稿改版（§6，T40–T44）：UART 全双工（T41）、固定固件 console（T42）、系统 TB（T43）、下板（T44）；取消 loader 在线重载（原 T42、原 T45 重载演示），imem 写口保留预留。
 - 2026-09-04：新增 `doc/future_extensions.md`（未来可拓展设想登记，§7 开放项挂接）。

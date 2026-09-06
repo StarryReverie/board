@@ -8,8 +8,8 @@ board/
  │   ├─ rtl/             流水线 CPU core RTL（14 模块，含 pipeline_top）
  │   ├─ defines/         指令/常量宏
  │   ├─ test/            TB + 汇编测试程序（.asm/.hex）
- │   └─ scripts/         run_tb.ps1（批量仿真）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
- ├─ doc/                 计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis）
+ │   └─ scripts/         run_tb.ps1（批量仿真）、run_perf.ps1（性能测量）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
+ ├─ doc/                 计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis/perf_report）
  ├─ exp2/                汇编与接口课程（UART SoC，独立子工程）
  ├─ ref/CPU/             大三单周期参考工程（只读）
  └─ tools/(仓库外)        RISC-V 工具链（E:\Homework\26-27-1\tools）
@@ -24,6 +24,9 @@ powershell -File src/scripts/run_tb.ps1 -Case alu # 按名过滤
 
 # 汇编测试程序 → 机器码镜像
 powershell -File src/scripts/build_asm.ps1
+
+# 性能测量（5 档程序：CPI/IPC/停顿分解，汇总 out/perf_summary.csv）
+powershell -File src/scripts/run_perf.ps1
 
 # Vivado 综合自检（include 目录 = src/）
 vivado -mode batch -source src/scripts/synth_check.tcl
