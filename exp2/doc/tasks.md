@@ -126,6 +126,7 @@
 
 ## 7. 变更记录
 
+- 2026-09-06：U32 前置完成——`src/xdc/board.xdc`（T5 clk 100MHz / T4 uart_tx / N5 uart_rx / P15 rst_n 低有效，LVCMOS33+PULLUP；自查清单见文件尾）；综合/工程脚本集成**固件 ROM 固化**（`verilog_define IMEM_INIT_VH` + out/fw_rom/imem_init.vh ← console_init.vh），带固件综合自检 41 s Finished Synthesize 无 ERROR；XDC 已单独 read_xdc 解析验证（本机 Vivado 2019.2 时序引擎空转限制：实现/时序报告在综合侧执行）。U41 成稿 `doc/machine_code.md`（li 展开实例、分支编码示例、10 种指令实测统计）。
 - 2026-09-06：U40 落地——`src/test/console.S`（51 条冻结集，banner="EES-338 RV32I UART OK\r\n" 数据区自初始化 + 回显主循环）经 `src/scripts/build_fw.ps1` 构建 → `console_rom.hex`/`console_init.vh`（objdump -M no-aliases 冻结集校验 + 字节数校验）；U31 固件版系统 TB `src/test/tb_soc_console.v` 全绿（banner 23B/回显/长串 8 字符/复位重跑四阶段）；uart_ctrl TX_BUSY 语义修正（STAT bit0 含挂起待发，写接受仅限完全空闲——消除连续 putc 丢字窗口，interface v1.1/isa v1.4/top_design v1.5）。
 - 2026-09-04：收编并删除根目录原"汇编实验设计方案"文件——其全部信息已并入本目录（tasks/top_design/interface/firmware/ref_note/modules/require）：
   - 方案 v1.1（2026-09-04 定稿改版）：UART 改全双工；统一编址方案 B（窗口 0x4000 三槽）；程序固化单程序模型（无 loader）；板卡按 EES-338 定稿；

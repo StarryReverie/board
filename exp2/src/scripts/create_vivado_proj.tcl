@@ -7,7 +7,10 @@
 #     - sources_1: exp2/src/rtl/*.v + 计组 src/rtl/*.v（soc_top 例化 pipeline_top）
 #       top = soc_top
 #     - sim_1: exp2/src/test/tb_*.v，top = tb_soc_full（默认）
-#     - include 目录：exp2/src 与 计组 src（计组模块 `include "defines/*.v" 解析）
+#     - include 目录：exp2/src、计组 src（计组模块 `include "defines/*.v" 解析）
+#       与 out/fw_rom（固件 ROM imem_init.vh）
+#     - verilog_define: IMEM_INIT_VH（imem.v 启用 initial 固件装载，固化程序模型）
+#     - constrs_1: src/xdc/board.xdc（U32 板级约束，T5/T4/N5/P15）
 #     - 文件均为原位引用（不拷贝）
 #   注：程序级 TB（tb_prog_*）经 $readmemh 读 .hex，GUI 直跑需把 hex 复制到
 #       xsim 工作目录；推荐用 run_tb.ps1 跑仿真。
@@ -55,10 +58,22 @@ if {[llength $tb_files] > 0} {
     }
 }
 
-# ---- include 目录（双根）----
-set incDirs [list [string map {\\ /} $src] [string map {\\ /} $coreSrc]]
+# ---- include 目录（双根 + 固件 ROM 目录）----
+set fwRom [file join $scr out fw_rom]
+file mkdir $fwRom
+if {[file exists [file join $src test console_init.vh]]} {
+    file copy -force [file join $src test console_init.vh] [file join $fwRom imem_init.vh]
+}
+set incDirs [list [string map {\\ /} $src] [string map {\\ /} $coreSrc] [string map {\\ /} $fwRom]]
 set_property include_dirs $incDirs $fs_syn
 set_property include_dirs $incDirs $fs_sim
+set_property verilog_define IMEM_INIT_VH $fs_syn
+
+# ---- 板级约束（U32）：src/xdc/board.xdc ----
+set xdc [file join $src xdc board.xdc]
+if {[file exists $xdc]} {
+    add_files -fileset constrs_1 -norecurse [string map {\\ /} [file normalize $xdc]]
+}
 
 catch { update_compile_order -fileset sources_1 }
 catch { update_compile_order -fileset sim_1 }
