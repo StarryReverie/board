@@ -10,7 +10,7 @@
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
 | 流水线 CPU 仿真实验报告（未下板成功版本） | 素材：`doc/top_design.md`（结构/冲突方案）、`doc/isa.md`、`doc/modules/*.md`（14 模块）、`doc/ref_note.md`、`doc/perf_report.md`（性能实测）；**成稿待写** | 🟡 | 套老师模板后交付；若团队下板成功则改交"仿真与下板实验报告"版本并补板级章节 |
-| 源代码 | `src/rtl/*.v`（pipeline_top 等 14 模块）、`src/defines/*.v`、`src/scripts/`（run_tb/run_perf/build_asm/fix_encoding/synth_check/create_vivado_proj） | ✅ | 综合自检通过；工程 `board/vivado/board.xpr` 本地生成（gitignore，不入库） |
+| 源代码 | `src/rtl/*.v`（pipeline_top 等 14 模块）、`src/defines/*.v`、`src/scripts/`（run_tb/run_perf/build_asm/fix_encoding/synth_check/create_vivado_proj） | ✅ | 综合自检通过；工程 `board/vivado/exp1/board.xpr` 本地生成（gitignore，不入库） |
 | 测试汇编代码和机器码 | `src/test/*.asm`（test0/test1/test_sort/instr_cover/hazard_cover）+ `*_rom.hex`；程序级 TB `tb_prog_*.v`、性能 TB `tb_perf.v` | ✅ | 20/20 回归 PASS；.asm↔.hex 由 build_asm.ps1 维护 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建（素材同上 + perf 表 A–D） | ⬜ | 汇报人/署名待提供 |
 | ≤5min 下板演示视频 | — | — | **仅"下板成功"路径需要**；当前按仿真版报告走，可豁免（若中途下板成功需补拍） |
@@ -22,7 +22,7 @@
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
 | 接口控制器设计实验报告 | 素材：`exp2/doc/top_design.md`、`interface.md`（编址方案 B/位义）、`firmware.md`、`machine_code.md`、`modules/*.md`（6 模块）、本仓 `doc/isa.md`/`top_design.md`（跨课契约）；**成稿待写（下板记录章占位）** | 🟡 | 套老师模板；含编址方式对比、仿真（8/8）与下板记录 |
-| 源代码 | `exp2/src/rtl/*.v`（uart_tx/uart_rx/uart_ctrl/dbus_decode/reset_sync/soc_top）、`exp2/src/xdc/board.xdc`、`exp2/src/test/console.S + console_rom.hex + console_init.vh`、`exp2/src/scripts/`（run_tb/build_fw/synth_check/create_vivado_proj） | ✅ | 8/8 回归 PASS；带固件综合自检通过（41 s）；工程 `board/vivado/exp2.xpr` 本地生成（gitignore） |
+| 源代码 | `exp2/src/rtl/*.v`（uart_tx/uart_rx/uart_ctrl/dbus_decode/reset_sync/soc_top）、`exp2/src/xdc/board.xdc`、`exp2/src/test/console.S + console_rom.hex + console_init.vh`、`exp2/src/scripts/`（run_tb/build_fw/synth_check/create_vivado_proj/board_runs/program_devices/uart_check） | ✅ | 8/8 回归 PASS；带固件综合自检通过（41 s）；工程 `board/vivado/exp2/exp2.xpr` 本地生成（gitignore） |
 | 可复用 IP 核（uart_tx/uart_rx/uart_ctrl 打包 + 集成说明） | 建议 `exp2/ip_pkg/`：三模块源码副本 + 集成说明 + 例化示例 | ⬜ | 报告/PPT 引用项；内容零上板依赖，随时可做 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建 | ⬜ | 汇报人/署名待提供 |
 | ≤5min 接口控制器下板演示视频 | 依赖 U32 下板（终端 banner/回显/复位 + 示波器波形） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；固件与 XDC 均已就绪 |

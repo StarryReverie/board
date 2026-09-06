@@ -17,7 +17,7 @@ set scr  [file dirname [file normalize [info script]]]
 set src  [file dirname $scr]
 set exp2 [file dirname $src]
 set board [file dirname $exp2]
-set xpr [file join $board vivado exp2.xpr]
+set xpr [file join $board vivado exp2 exp2.xpr]
 if {![file exists $xpr]} {
     puts "ERROR: 缺少工程 $xpr（先跑 exp2/src/scripts/create_vivado_proj.tcl）"
     exit 1

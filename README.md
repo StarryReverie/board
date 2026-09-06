@@ -48,7 +48,7 @@ powershell -File exp2/src/scripts/uart_check.ps1 -Port COMx          # 终端自
 
 # Vivado GUI（工程已按工程风格分组，可直接打开）
 ```text
-双击 board/vivado/board.xpr（若不存在，先执行下方重建命令）
+双击 board/vivado/exp1/board.xpr（若不存在，先执行下方重建命令）
   设计源 sources_1 : src/rtl/*.v          top = pipeline_top（综合/实现）
   仿真源 sim_1     : src/test/tb_*.v      top = tb_pipeline_top（默认）
   约束  constrs_1  : （实验一为空；实验二 XDC 放 exp2/xdc）

@@ -23,9 +23,10 @@ set board [file dirname $exp2]
 set coreSrc [file join $board src]
 set proj [file join $board vivado exp2]
 
-file delete -force [file dirname $proj]
+# 清理旧工程（idempotent；只动本工程目录 vivado/exp2，不影响 exp1）
+file delete -force $proj
 
-create_project exp2 [file dirname $proj] -part xc7a35tcsg324-1 -force
+create_project exp2 $proj -part xc7a35tcsg324-1 -force
 set_property target_language Verilog [current_project]
 set_property simulator_language Verilog [current_project]
 

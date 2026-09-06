@@ -25,6 +25,13 @@ exp2/
      └─ scripts/ 工具：run_tb.ps1（仿真运行器，同实验 1 用法）
 ```
 
+## Vivado 工程入口
+
+- 工程位置：`../vivado/exp2/exp2.xpr`（**不入 git**，本机生成；与 exp1 工程 `../vivado/exp1/board.xpr` **相互独立**，互不清理）
+- 双击入口：仓库根 `exp2_vivado.bat`（缺失时自动重建并打开 GUI）
+- 重建/生成：`vivado -mode batch -source src/scripts/create_vivado_proj.tcl`（只清理 `vivado/exp2/` 自身）
+- 一键出 .bit / 烧录 / 终端取证：`board_runs.tcl` / `program_devices.tcl` / `uart_check.ps1` —— 完整下板方案见 `doc/board_runbook.md`
+
 ## 设计要点（定稿 v1.1）
 
 - UART **全双工** 8N1@115200（100 MHz 分频 868）；MMIO 窗口 `0x0000_4000`：TX/STAT/RX 字槽；
