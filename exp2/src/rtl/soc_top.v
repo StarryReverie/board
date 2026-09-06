@@ -7,27 +7,34 @@
 //         + uart_ctrl（全双工 MMIO 从机，MMIO 总线互联）
 //   程序固化模型：imem 写口恒 0（.vh 上电自跑；换程序=重综合重烧）
 //   引脚：clk(T5)/rst_n(P15)/uart_tx_pin(T4)/uart_rx_pin(N5) —— XDC 见 src/xdc
+//   复位极性（RST_ACTIVE_LOW=1 默认低有效，手册未明示 P15 电平）：
+//     上板首测若发现极性相反（按键按下=高有效），下板构建把参数置 0 即可
+//     （仅顶层反相，reset_sync 与 core 语义不变；仿真默认路径不受影响）
 //=============================================================================
 
 module soc_top #(
-    parameter [15:0] CLKS_PER_BIT = 16'd868   // 115200 @ 100MHz
+    parameter [15:0] CLKS_PER_BIT = 16'd868,  // 115200 @ 100MHz
+    parameter        RST_ACTIVE_LOW = 1       // 1=rst_n 低有效（默认）
 ) (
     input  wire clk,
-    input  wire rst_n,           // 板上复位键（低有效）
+    input  wire rst_n,           // 板上复位键（极性见 RST_ACTIVE_LOW）
     output wire uart_tx_pin,
     input  wire uart_rx_pin
 );
 
     wire        rst;
+    wire        rst_pin;
     wire        cs_mmio;
     wire [1:0]  reg_off;
     wire        mmio_we;
     wire [31:0] mmio_wdata;
     wire [31:0] mmio_rdata;
 
+    assign rst_pin = RST_ACTIVE_LOW ? rst_n : ~rst_n;
+
     reset_sync u_reset (
         .clk   (clk),
-        .rst_n (rst_n),
+        .rst_n (rst_pin),
         .rst   (rst)
     );
 
