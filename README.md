@@ -8,8 +8,8 @@ board/
  │   ├─ rtl/             流水线 CPU core RTL（14 模块，含 pipeline_top）
  │   ├─ defines/         指令/常量宏
  │   ├─ test/            TB + 汇编测试程序（.asm/.hex）
- │   └─ scripts/         run_tb.ps1（批量仿真）、build_asm.ps1（汇编→hex）、synth_check.tcl（综合自检）
- ├─ doc/                 计组设计文档（isa/top_design/tasks/modules/future_extensions）
+ │   └─ scripts/         run_tb.ps1（批量仿真）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
+ ├─ doc/                 计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis）
  ├─ exp2/                汇编与接口课程（UART SoC，独立子工程）
  ├─ ref/CPU/             大三单周期参考工程（只读）
  └─ tools/(仓库外)        RISC-V 工具链（E:\Homework\26-27-1\tools）
@@ -27,6 +27,9 @@ powershell -File src/scripts/build_asm.ps1
 
 # Vivado 综合自检（include 目录 = src/）
 vivado -mode batch -source src/scripts/synth_check.tcl
+
+# 文本编码健康校验（全仓 UTF-8；默认仅报告，-Apply 写回）
+powershell -File src/scripts/fix_encoding.ps1
 ```
 
 # Vivado GUI（工程已按工程风格分组，可直接打开）

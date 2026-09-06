@@ -30,7 +30,7 @@
 | 指令条数 ≥16 | `doc/isa.md`（T1），26 条 |
 | 控制器结构三选一 | 硬布线（见 top_design.md） |
 | 附加功能 ≥1 | 溢出判断 `flags[OF]`（T14，可观测出口） |
-| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | **后追加**（引用 `ref/CPU/` 数据） |
+| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `doc/perf_analysis.md`；`ref/CPU/` 基线见 T34） |
 | 汇编与接口/外设控制器/集成 | **后追加**（实验二 §6：T40–T44） |
 | 提交物：源码/测试汇编+机器码/报告/PPT/视频/日志 | **后追加** |
 
@@ -74,6 +74,10 @@
 |---|---|---|---|
 | T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
 | T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
+| T32 | 性能 TB：`test/tb_perf.v`（5 档 `PERF_*` 编译开关；WB 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用） | T31 全绿 | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` 5 档全 PASS；正确性断言与 tb_prog_* 一致（方案 §5） |
+| T33 | `scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `out/perf_summary.csv` | T32 | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
+| T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动） | T33 | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
+| T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析 | T34 | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
 - `scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
@@ -88,6 +92,7 @@
 | M1 | 文档定稿(T0–T4) | isa.md 与 top_design.md 评审通过；模块文档齐全 |
 | M2 | 模块编码(T10–T20) | 每模块代码通过静态核对；pipeline_top 无悬空/无多重驱动 |
 | M3 | 测试(T30–T31) | 整机回归程序全部 PASS（下板侧跑） |
+| M4 | 性能测量(T32–T35) | 恒等式 5/5 PASS；回归全绿；perf_summary.csv 齐；对比数据注明来源 |
 
 > M2/M3 的实际 PASS 依赖 Vivado 侧运行；本机完成源码、TB、期望值与镜像后，交付下板侧验证。
 
@@ -124,6 +129,7 @@
 
 ## 8. 变更记录
 
+- 2026-09-06：新增性能分析任务 T32–T35 与 M4（方案 `doc/perf_analysis.md`，追溯表行"量化性能测试"由"后追加"转正）；全仓编码排查结论：文本均纯 UTF-8（乱码为 GBK 环境显示假象，见 ref_note §4）；新增编码校验工具 `src/scripts/fix_encoding.ps1`。
 - 2026-09-04：实验二任务块按定稿改版（§6，T40–T44）：UART 全双工（T41）、固定固件 console（T42）、系统 TB（T43）、下板（T44）；取消 loader 在线重载（原 T42、原 T45 重载演示），imem 写口保留预留。
 - 2026-09-04：新增 `doc/future_extensions.md`（未来可拓展设想登记，§7 开放项挂接）。
 - 2026-09-04：登记实验二任务块（§6，T40–T45；架构 top_design §9）；指令存储命名 `imem_rom`→`imem`。
