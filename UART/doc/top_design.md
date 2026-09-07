@@ -1,27 +1,21 @@
 # UART 控制器 IP 顶层设计（汇编实验二 · 交付物）
 
-- 版本：v1.2（2026-09-07：**结构合并**——原 `uart_ctrl` 寄存器层并入 IP 顶层 `uart_ip_top`（单模块 UART IP，功能/契约零改动）；SoC 上移为整个项目的顶层 `../soc/`；构建脚本删至 build_fw/create_vivado_proj/synth_check（上游修复版））。
+- 版本：v1.2（2026-09-07：**结构合并**——原 `uart_ctrl` 寄存器层并入 IP 顶层 `uart_ip_top`（单模块 UART IP，功能/契约零改动）；SoC 上移为整个项目的顶层 `../soc/`；构建脚本删除）。
 - 本文件是实验二**交付物 IP 的设计文档**：`uart_ip_top`（IP 顶层，寄存器层已并入）＋ `uart_tx`/`uart_rx`（收发基础模块）。跨课程接口契约（从机总线、槽位义、时序硬约束）见 `interface.md`；模块细节见 `modules/*.md`。
 
 ---
 
-## 1. 系统结构（soc_top 装配总图）
+## 1. IP 结构与封装层次
 
 ```
- EES-338 板（xc7a100tcsg324-1，100 MHz @ T5）
- ┌──────────────────────────────────────────────────────────────┐
- │ soc_top                                                       │
- │  ├─ reset_sync：rst_n(P15) ─(异步置位/同步释放)─► rst(异步高有效) │
- │  ├─ pipeline_top（计组 core，§2；dbus_decode 内置于 MEM 段）    │
- │  │    IF : pc_reg ─► imem（.vh 固化程序，上电自跑 0x0）          │
- │  │    MEM: ex_mem ─► dbus_decode ─┬─► dmem（0x0–0xFFF）        │
- │  │                                └─► MMIO 窗口 0x4000          │
- │  │       mmio 总线穿出：cs_mmio/reg_off/mmio_we/mmio_wdata ──►  │
- │  └─ uart_ip_top（MMIO 从机，全双工）◄───────────────────────────┘│
- │        mmio_rdata ──►（core 内 rdata mux）                       │
- │        uart_tx ──► T4 ──► CP2102 ──► PC COM                     │
- │        uart_rx ◄── N5 ◄── CP2102 ◄── PC 键盘                     │
- └──────────────────────────────────────────────────────────────┘
+ uart_ip_top（IP 顶层，对外唯一接口 = 通用从机总线 + 串行引脚）
+ │
+ ├─ 译码：addr[3:2] → 槽（00=TX 01=STAT 10=RX 11=保留）     ← IP 自含
+ │
+ ├─ 寄存器层（clk_en 分频 + TX 挂起/缓冲 + RX 字节/有效 + 槽位义，原 uart_ctrl 并入）
+ │
+ ├─ uart_tx（8N1 发送 FSM）
+ └─ uart_rx（位中心采样接收 FSM，输入打两拍）
 ```
 
 - 职责：`uart_tx`/`uart_rx`=位级收发；寄存器层=分频/寄存器/位义/丢弃策略；`uart_ip_top`=寄存器映射译码 + 对外接口收敛（一体例化，单模块交付）；
@@ -66,5 +60,5 @@
 ## 6. 变更记录
 
 - v1.2 2026-09-07：结构合并——原 uart_ctrl 寄存器层并入 IP 顶层 uart_ip_top（单模块 UART IP：分频/TX 挂起/RX 寄存器/组合读一体例化，删 `src/rtl/uart_ctrl.v` 与 modules/uart_ctrl.md；端口/时序/位义零改动）；tb_uart_ctrl.v 改经 IP 顶层例化，tb_uart_ip_top.v 层次路径调整。
-- v1.1 2026-09-07：实验二交付物收敛为独立 UART IP——新增 IP 顶层（uart_ip_top）与 IP 级独立测试（tb_uart_ip_top）；SoC 装配内容随迁 `../soc/doc/top_design.md`；构建脚本删至 build_fw/create_vivado_proj/synth_check 修复版（无脚本建工程见 `../soc/doc/board_runbook.md`）。
+- v1.1 2026-09-07：实验二交付物收敛为独立 UART IP——新增 IP 顶层（uart_ip_top）与 IP 级独立测试（tb_uart_ip_top）；SoC 装配内容随迁 `../soc/doc/top_design.md`；构建脚本删除（重建见 `../soc/doc/board_runbook.md`）。
 - v1.0 2026-09-04：初版（UART 集成整机口径，已随迁 soc/）。
