@@ -2,10 +2,11 @@
 # demo.asm — 简易演示样例（由 src/scripts/simple_asm.py 自产 .hex）
 # 指令集口径：doc/isa.md（26 条冻结 + isa §3 伪指令白名单）
 # 功能：把 5,4,3,2,1 递减写入 dmem[0x40..0x50]，每写一个就地 lw 读回并累加，
-#       结果存 dmem[0]，最后 beq 自循环 HALT。
+#       结果存 dmem[0]，再用移位指令做 slli/srli/srai 演示，最后 beq 自循环 HALT。
 # 演示点：add/sub（RAW 前递）、sw→lw 同址往返、lw 后紧邻 add（load-use 恰 1 气泡）、
-#         bne 循环 taken×4 + 末次 not-taken 出口、beq 自环（HALT）。
+#         bne 循环 taken×4 + 末次 not-taken 出口、slli/srli/srai 移位、beq 自环（HALT）。
 # 期望终值：x10(a0)=15  x5(t0)=0  x8(s0)=0x54  x6(t1)=4  x7(t2)=1  x28(t3)=1
+#           x29(t4)=60  x30(t5)=30  x31(t6)=15
 #           mem[0]=15、mem[0x40..0x50]={5,4,3,2,1}（字，小端）
 # ==================================================================
     addi s0, x0, 0x40        # s0 = 数据区基址 0x40
@@ -21,5 +22,8 @@ loop:
     sub  t0, t0, t2          # 计数 -= 1
     bne  t0, x0, loop        # t0≠0 → 循环
     sw   a0, 0(x0)           # mem[0] = 15
+    slli t4, a0, 2           # t4 = 15<<2 = 60
+    srli t5, t4, 1           # t5 = 60>>1 = 30（逻辑右移）
+    srai t6, t4, 2           # t6 = 60>>2 = 15（算术右移）
 halt:
     beq  x0, x0, halt        # HALT 自循环（isa §4 停机约定）

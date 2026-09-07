@@ -1,7 +1,8 @@
 //=============================================================================
 // tb_prog_demo.v — 样例程序回归：demo_rom.hex（addi/sw/lw/add/sub/bne/beq）
 //   期望（见 demo.asm）：x10(a0)=15  x5(t0)=0  x8(s0)=0x54  x6(t1)=4
-//     x7(t2)=1  x28(t3)=1；mem[0]=15、mem[0x40..0x50]={5,4,3,2,1}（字，小端）
+//     x7(t2)=1  x28(t3)=1  x29(t4)=60  x30(t5)=30  x31(t6)=15
+//     mem[0]=15、mem[0x40..0x50]={5,4,3,2,1}（字，小端）
 //   运行 400 拍后采样（HALT 自循环内）。
 //=============================================================================
 `timescale 1ns/1ps
@@ -45,8 +46,8 @@ module tb_prog_demo;
         input [31:0] expect;
         input [255:0] name;
         begin
-            c(name, {u_cpu.u_dmem.mem[addr+3], u_cpu.u_dmem.mem[addr+2],
-                     u_cpu.u_dmem.mem[addr+1], u_cpu.u_dmem.mem[addr]} === expect);
+            c(name, {u_cpu.u_dmem.mem[addr[11:0]+3], u_cpu.u_dmem.mem[addr[11:0]+2],
+                     u_cpu.u_dmem.mem[addr[11:0]+1], u_cpu.u_dmem.mem[addr[11:0]]} === expect);
         end
     endtask
 
@@ -66,6 +67,9 @@ module tb_prog_demo;
         c("x6(t1)=4",    u_cpu.u_regfile.x[6]  === 32'd4);
         c("x7(t2)=1",    u_cpu.u_regfile.x[7]  === 32'd1);
         c("x28(t3)=1",   u_cpu.u_regfile.x[28] === 32'd1);
+        c("x29(t4)=60",  u_cpu.u_regfile.x[29] === 32'd60);
+        c("x30(t5)=30",  u_cpu.u_regfile.x[30] === 32'd30);
+        c("x31(t6)=15",  u_cpu.u_regfile.x[31] === 32'd15);
 
         chk_word(32'h00, 32'd15,  "mem[0]=15");
         chk_word(32'h40, 32'd5,   "mem[0x40]=5");

@@ -11,10 +11,10 @@
      the runner continues with the next TB (no infinite block). Wall time of
      every case is printed live so progress is visible.
    * usage:
-       .\scripts\run_tb.ps1 -List
-       .\scripts\run_tb.ps1
-       .\scripts\run_tb.ps1 -Case alu
-       .\scripts\run_tb.ps1 -TimeoutSec 60
+       powershell -File src/scripts/run_tb.ps1 -List
+       powershell -File src/scripts/run_tb.ps1
+       powershell -File src/scripts/run_tb.ps1 -Case alu
+       powershell -File src/scripts/run_tb.ps1 -TimeoutSec 60
    * env: default C:\Xilinx\Vivado\2019.2 ; override with $env:XVIVADO_ROOT
 =============================================================================
 #>
@@ -97,8 +97,8 @@ function Run-CmdBat {
         $code = -1
         try { & taskkill.exe /PID $proc.Id /T /F 2>&1 | Out-Null } catch {}
     }
-    try { Unregister-Event -SourceIdentifier $outEvent.Id -ErrorAction SilentlyContinue } catch {}
-    try { Unregister-Event -SourceIdentifier $errEvent.Id -ErrorAction SilentlyContinue } catch {}
+    try { Unregister-Event -SubscriptionId $outEvent.Id -ErrorAction SilentlyContinue } catch {}
+    try { Unregister-Event -SubscriptionId $errEvent.Id -ErrorAction SilentlyContinue } catch {}
     $proc.Dispose()
     [System.IO.File]::WriteAllText($StdOut, $outSb.ToString() + $errSb.ToString(), [System.Text.Encoding]::UTF8)
     return @{ code = $code; timedOut = -not $done }

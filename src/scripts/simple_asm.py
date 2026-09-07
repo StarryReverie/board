@@ -99,8 +99,8 @@ def enc_I(f3, rd, rs1, imm, op=0x13):
     return ((imm & 0xFFF) << 20) | (rs1 << 15) | (f3 << 12) | (rd << 7) | op
 
 
-def enc_shift(f7, rd, rs1, shamt):
-    return (f7 << 25) | (shamt << 20) | (rs1 << 15) | (0b001 << 12) | (rd << 7) | 0x13
+def enc_shift(f3, f7, rd, rs1, shamt):
+    return (f7 << 25) | (shamt << 20) | (rs1 << 15) | (f3 << 12) | (rd << 7) | 0x13
 
 
 def enc_S(f3, rs2, rs1, imm, op=0x23):
@@ -142,13 +142,13 @@ def build(mnem, o, ln, resolve):
         imm = parse_int(o[2], ln); chk_s12(imm, ln, name)
         return enc_I(f3, rd, rs1, imm)
 
-    def SH(f7, name):
+    def SH(f3, f7, name):
         need(o, 3, ln, name)
         rd, rs1 = parse_reg(o[0], ln), parse_reg(o[1], ln)
         sh = parse_int(o[2], ln)
         if not (0 <= sh <= 31):
             raise AsmError(f"L{ln}: {name} 移位量应 0..31，得 {sh}")
-        return enc_shift(f7, rd, rs1, sh)
+        return enc_shift(f3, f7, rd, rs1, sh)
 
     if m == "add":   return [(R(0x00, 0, o, "add"), "add")]
     if m == "sub":   return [(R(0x20, 0, o, "sub"), "sub")]
@@ -167,9 +167,9 @@ def build(mnem, o, ln, resolve):
     if m == "xori":  return [(I(4, o, "xori"), "xori")]
     if m == "ori":   return [(I(6, o, "ori"), "ori")]
     if m == "andi":  return [(I(7, o, "andi"), "andi")]
-    if m == "slli":  return [(SH(0x00, "slli"), "slli")]
-    if m == "srli":  return [(SH(0x00, "srli"), "srli")]
-    if m == "srai":  return [(SH(0x20, "srai"), "srai")]
+    if m == "slli":  return [(SH(0b001, 0x00, "slli"), "slli")]
+    if m == "srli":  return [(SH(0b101, 0x00, "srli"), "srli")]
+    if m == "srai":  return [(SH(0b101, 0x20, "srai"), "srai")]
 
     if m == "lui":
         need(o, 2, ln, "lui")
