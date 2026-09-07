@@ -1,10 +1,10 @@
 ﻿<#
 =============================================================================
  build_fw.ps1 — UART 固件构建（U40）：console.S → console_rom.hex + console_init.vh
-   * 输入: UART/src/test/<Name>.S
+   * 输入: soc/test/<Name>.S（SoC 上移后活动源）
    * 输出:
-       UART/src/test/<Name>_rom.hex    objcopy -O verilog 字节式（$readmemh 直读）
-       UART/src/test/<Name>_init.vh    imem 综合固化镜像（默认按 -PadBytes 补零到 512 字节=下板 IMEM_BYTES；4KB 口径传 -PadBytes 4096；
+       soc/test/<Name>_rom.hex    objcopy -O verilog 字节式（$readmemh 直读）
+       soc/test/<Name>_init.vh    imem 综合固化镜像（默认按 -PadBytes 补零到 512 字节=下板 IMEM_BYTES；4KB 口径传 -PadBytes 4096；
                                        供 imem.v 的 `ifdef IMEM_INIT_VH 装载）
        pipeline/src/scripts/out/asm/            .o/.lst（objdump 反汇编清单）
    * 校验（U40 验收）:
@@ -22,7 +22,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root    = Split-Path -Parent $PSScriptRoot          # UART/src
 $exp2    = Split-Path -Parent $root                  # UART
-$testDir = Join-Path $root 'test'
+$testDir = Join-Path (Split-Path -Parent $exp2) 'soc\test'   # SoC 上移后固件源在 soc/test/
 $outDir  = Join-Path $PSScriptRoot 'out\asm'
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 

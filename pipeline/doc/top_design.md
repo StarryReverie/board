@@ -47,9 +47,9 @@
 | 实验一 | `ex_mem` / `dmem` / `mem_wb` / `wb` | MEM/WB | modules/{ex_mem,dmem,mem_wb,wb}.md |
 | 实验一 | `hazard_unit` / `pipeline_top` | 冒险 / 装配 | modules/{hazard_unit,pipeline_top}.md |
 | 实验二 | `dbus_decode` | core 数据侧译码（统一编址，入 pipeline_top MEM 段） | modules/dbus_decode.md |
-| 实验二 | `uart_ip_top` | UART 控制器 **IP 顶层**（实验二交付物；寄存器层已并入，内部例化 `uart_tx`/`uart_rx`） | 实验二登记（基础任务 IP） |
+| 实验二 | `uart_ip_top` | UART 控制器 **IP 顶层**（实验二交付物；寄存器层已并入，内部例化 `uart_tx`/`uart_rx`） | [uart_ip_top.md](../../UART/doc/modules/uart_ip_top.md) |
 | 实验二 | `loader`（**搁置**） | imem 引导装载（固化单程序模型下不做；恢复条件见 future_extensions §1/§2） | 实验二登记（取消） |
-| 项目顶层（soc/） | `soc_top`（含 `reset_sync`） | 整机例化 / 复位同步 | soc/doc/modules/soc_top.md |
+| 项目顶层（soc/） | `soc_top`（含 `reset_sync`） | 整机例化 / 复位同步 | [soc_top.md](../../soc/doc/modules/soc_top.md) |
 
 ---
 

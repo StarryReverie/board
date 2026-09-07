@@ -5,9 +5,9 @@
 #         其中 exp2.* 自身产物，与 exp1（pipeline/vivado/）互不影响）
 #   工程口径：
 #     - part: xc7a100tcsg324-1（EES-338 **实物实测为 XC7A100T**，用户手册误标 35T）
-#     - sources_1: UART/src/rtl/*.v + 计组 pipeline/src/rtl/*.v（soc_top 例化 pipeline_top）
+#     - sources_1: UART/src/rtl/*.v + 计组 pipeline/src/rtl/*.v + soc 集成 soc/rtl/*.v（soc_top 例化 pipeline_top）
 #       top = soc_top
-#     - sim_1: UART/src/test/tb_*.v，top = tb_soc_full（默认）
+#     - sim_1: UART/src/test/tb_*.v + soc/test/tb_*.v，top = tb_soc_full（默认）
 #     - include 目录：UART/src、计组 pipeline/src（计组模块 `include "defines/*.v" 解析）
 #       与 out/fw_rom（固件 ROM imem_init.vh）
 #     - verilog_define: IMEM_INIT_VH + 存储缩容（IMEM_WORDS=128=512B、
@@ -47,6 +47,9 @@ foreach f [glob -nocomplain -directory [file join $src rtl] *.v] {
 foreach f [glob -nocomplain -directory [file join $coreSrc rtl] *.v] {
     lappend rtl_files [string map {\\ /} [file normalize $f]]
 }
+foreach f [glob -nocomplain -directory [file join $board soc rtl] *.v] {
+    lappend rtl_files [string map {\\ /} [file normalize $f]]
+}
 if {[llength $rtl_files] > 0} {
     add_files -norecurse $rtl_files
     set_property top soc_top $fs_syn
@@ -55,6 +58,9 @@ if {[llength $rtl_files] > 0} {
 # ---- 仿真源：UART TB ----
 set tb_files {}
 foreach f [glob -nocomplain -directory [file join $src test] tb_*.v] {
+    lappend tb_files [string map {\\ /} [file normalize $f]]
+}
+foreach f [glob -nocomplain -directory [file join $board soc test] tb_*.v] {
     lappend tb_files [string map {\\ /} [file normalize $f]]
 }
 if {[llength $tb_files] > 0} {
@@ -68,8 +74,8 @@ if {[llength $tb_files] > 0} {
 # ---- include 目录（双根 + 固件 ROM 目录）----
 set fwRom [file join $scr out fw_rom]
 file mkdir $fwRom
-if {[file exists [file join $src test console_init.vh]]} {
-    file copy -force [file join $src test console_init.vh] [file join $fwRom imem_init.vh]
+if {[file exists [file join $board soc test console_init.vh]]} {
+    file copy -force [file join $board soc test console_init.vh] [file join $fwRom imem_init.vh]
 }
 set incDirs [list [string map {\\ /} $src] [string map {\\ /} $coreSrc] [string map {\\ /} $fwRom]]
 set_property include_dirs $incDirs $fs_syn
@@ -77,7 +83,7 @@ set_property include_dirs $incDirs $fs_sim
 set_property verilog_define {IMEM_INIT_VH IMEM_WORDS=128 DMEM_WORDS=64 IMEM_BYTES=512 DMEM_BYTES=256} $fs_syn
 
 # ---- 板级约束（U32）：soc/xdc/board.xdc ----
-set xdc [file join $src xdc board.xdc]
+set xdc [file join $board soc xdc board.xdc]
 if {[file exists $xdc]} {
     add_files -fileset constrs_1 -norecurse [string map {\\ /} [file normalize $xdc]]
 }

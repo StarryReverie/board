@@ -23,7 +23,7 @@
 - **RISC-V 工具链**：本机**无** `riscv-none-elf-as`。汇编改用自研
   `pipeline/src/scripts/simple_asm.py`（零依赖；26 条冻结集 + isa §3 伪指令；`jal label` 单操作数按 GNU 惯例写 `ra`；`li` 超 12 位展开 lui+addi）。Python 由 **uv** 提供（离线已装 3.13.13）：
   ```powershell
-  uv run --no-project --python 3.13.13 pipeline/pipeline/src/scripts/simple_asm.py pipeline/src/test/demo.asm   # 产出 demo_rom.hex + 打印清单
+  uv run --no-project --python 3.13.13 pipeline/src/scripts/simple_asm.py pipeline/src/test/demo.asm   # 产出 demo_rom.hex + 打印清单
   ```
 - **Vivado 2019.2**：`C:\Xilinx\Vivado\2019.2`，xsim 本机可用。板卡实测 **XC7A100T**（非手册误标 35T）；综合实现亦可（存储缩容口径见 `pipeline/src/defines/const_define.v` 头注）。
 - 搜索**优先 `rg`/`fd`**，不要用 `Get-ChildItem`/`Select-String` 全盘遍历。

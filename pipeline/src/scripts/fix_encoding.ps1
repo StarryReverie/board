@@ -26,7 +26,7 @@ $utf8  = New-Object System.Text.UTF8Encoding($false)
 $utf8S = New-Object System.Text.UTF8Encoding($false, $true)   # 严格解码用
 
 $allowExt = '.v','.vh','.asm','.txt','.md','.tcl','.ps1','.py','.csv','.bat','.f','.s','.S'
-$excludeDir = '\\.git$|\\out$|\\vivado$|\\.Xil$|\\xsim.dir$'
+$excludeDir = '(^|[\\/])(\.git|out|vivado|\.Xil|xsim\.dir)([\\/]|$)'
 
 # ---- 收集文本文件 ----------------------------------------------------------
 $files = @(Get-ChildItem -Path $Root -Recurse -File -ErrorAction SilentlyContinue |

@@ -74,10 +74,10 @@
 |---|---|---|---|
 | T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `pipeline/src/test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
 | T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `pipeline/src/test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
-| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（5 档 `PERF_*` 编译开关；WB 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用） | T31 全绿 | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` 5 档全 PASS；正确性断言与 tb_prog_* 一致（方案 §5） |
-| T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv` | T32 | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
-| T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动） | T33 | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
-| T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析 | T34 | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
+| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（5 档 `PERF_*` 编译开关；WB 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用；依赖 T31 全绿） | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` 5 档全 PASS；正确性断言与 tb_prog_* 一致（方案 §5） |
+| T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（依赖 T32） | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
+| T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动；依赖 T33） | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
+| T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析（依赖 T34） | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
 
 > 状态（2026-09-06）：**T32（`pipeline/src/test/tb_perf.v`）与 T33（`pipeline/src/scripts/run_perf.ps1`）已落地**——5 档程序实测全绿（恒等式 5/5 + 正确性断言全绿，随 run_tb 20 项回归）；实测数据与结论见 `pipeline/doc/perf_report.md`。**T34/T35 待执行**（单周期 Fmax 复测在综合侧，本机时序报告环节已知空转限制）。
 

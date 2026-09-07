@@ -6,8 +6,8 @@
 #   数据区：dmem 复位不清 → 启动时把 banner 字常量 sw 自初始化进 BANNER_BUF
 #           （复位重跑幂等），再逐字 lw 拆分发送——演示 dmem 读写（做法一）
 #   栈：sp=STACK_TOP，print_banner 嵌套调用（→uart_putc）需保存/恢复 ra
-#   构建：riscv-none-elf-as/objcopy 手动流程见 soc/doc/firmware.md §6
-#         （原 build_fw.ps1 已随 2026-09-07 结构调整删除）→ console_rom.hex + console_init.vh
+#   构建：UART/src/scripts/build_fw.ps1（保留，-PadBytes 512）
+#         → console_rom.hex + console_init.vh（用法与手动等价见 soc/doc/firmware.md §6）
 #=============================================================================
 
     # ---- 内存映射（interface.md §3，与计组 isa.md §4 单源一致）----

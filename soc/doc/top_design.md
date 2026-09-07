@@ -1,8 +1,8 @@
 # SoC 顶层设计（整个项目的顶层：UART 集成整机，两课共建）
 
-- 版本：v1.1（2026-09-07：SoC 上移为项目顶层 `soc/`——实验二交付物收敛为 UART IP（`../UART/`），本目录=SoC 集成层（rtl/xdc/test/doc）；从机改经 `uart_ip_top`（IP 顶层，自含槽译码）接入，soc_top 内把 core 穿出的 `reg_off[1:0]` 适配为 `addr[3:0]={reg_off,2'b00}`；UART 侧构建脚本随结构调整删除）。
-- 总体入口：本目录文档体系（top_design/board_runbook/firmware/machine_code/modules）；课程任务清单在 `../UART/doc/tasks.md`（SoC 集成区 U13/U14/U31–U41）；跨课程接口契约见 `../UART/doc/interface.md`，其单源为计组 `../../pipeline/doc/isa.md` / `../../pipeline/doc/top_design.md` / `../../pipeline/doc/modules/dbus_decode.md`。本设计建立于计组交付的 CPU core（`../../pipeline/doc/top_design.md` §1–§8）与实验二交付的 UART IP（`../UART/doc/top_design.md`）之上。
-- 布局：SoC 集成代码在本目录（RTL `rtl/`、TB/固件 `test/`、约束 `xdc/`）；UART IP 在 `../UART/src/rtl/`；CPU core 在 `../../pipeline/src/rtl/`；构建脚本已删（重建见 board_runbook.md §1）。
+- 版本：v1.1（2026-09-07：SoC 上移为项目顶层 `soc/`——实验二交付物收敛为 UART IP（`../../UART/`），本目录=SoC 集成层（rtl/xdc/test/doc）；从机改经 `uart_ip_top`（IP 顶层，自含槽译码）接入，soc_top 内把 core 穿出的 `reg_off[1:0]` 适配为 `addr[3:0]={reg_off,2'b00}`；UART 侧构建脚本随结构调整删除）。
+- 总体入口：本目录文档体系（top_design/board_runbook/firmware/machine_code/modules）；课程任务清单在 `../../UART/doc/tasks.md`（SoC 集成区 U13/U14/U31–U41）；跨课程接口契约见 `../../UART/doc/interface.md`，其单源为计组 `../../pipeline/doc/isa.md` / `../../pipeline/doc/top_design.md` / `../../pipeline/doc/modules/dbus_decode.md`。本设计建立于计组交付的 CPU core（`../../pipeline/doc/top_design.md` §1–§8）与实验二交付的 UART IP（`../../UART/doc/top_design.md`）之上。
+- 布局：SoC 集成代码在本目录（RTL `rtl/`、TB/固件 `test/`、约束 `xdc/`）；UART IP 在 `../../UART/src/rtl/`；CPU core 在 `../../pipeline/src/rtl/`；工程构建脚本已删（重建见 board_runbook.md §1；固件构建脚本保留 `UART/src/scripts/build_fw.ps1`，见 firmware.md §6）。
 
 ---
 
@@ -34,11 +34,11 @@
 | 归属 | 模块 | 角色 | 模块文档 |
 |---|---|---|---|
 | 计组交付 | `pipeline_top`（含 `imem/dmem/dbus_decode` 装配） | CPU core（§1–§8 口径）+ 数据侧译码（实验二 build） | `../../pipeline/doc/modules/pipeline_top.md`、`../../pipeline/doc/modules/dbus_decode.md` |
-| 实验二交付 | `uart_ip_top`（寄存器层已并入，内例化 `uart_tx`/`uart_rx`） | UART 控制器 IP 顶层（从机总线+串行） | `../UART/doc/modules/uart_ip_top.md`（+ uart_tx/uart_rx 各模块文档） |
+| 实验二交付 | `uart_ip_top`（寄存器层已并入，内例化 `uart_tx`/`uart_rx`） | UART 控制器 IP 顶层（从机总线+串行） | `../../UART/doc/modules/uart_ip_top.md`（+ uart_tx/uart_rx 各模块文档） |
 | 本目录（SoC 集成） | `dbus_decode` | 数据侧译码（例化于 core MEM 段） | modules/dbus_decode.md |
 | 本目录（SoC 集成） | `reset_sync` / `soc_top` | 复位同步 / 整机装配 | modules/soc_top.md |
 
-> `dbus_decode` 代码在本目录 `rtl/dbus_decode.v`，例化位置在 core 的 MEM 段（实验二 build）；契约单源=计组文档，见 `../UART/doc/interface.md`。
+> `dbus_decode` 代码在本目录 `rtl/dbus_decode.v`，例化位置在 core 的 MEM 段（实验二 build）；契约单源=计组文档，见 `../../UART/doc/interface.md`。
 
 ## 3. 时钟与复位
 
@@ -61,7 +61,7 @@
 
 ## 5. 访存总线与 MMIO 契约（摘要）
 
-- 详细冻结契约见 `../UART/doc/interface.md`（与计组 isa.md v1.3 / dbus_decode.md 一致），摘要：
+- 详细冻结契约见 `../../UART/doc/interface.md`（与计组 isa.md v1.3 / dbus_decode.md 一致），摘要：
   - core 穿出：`cs_mmio/reg_off[1:0]/mmio_we/mmio_wdata[31:0]`（→ uart_ip_top，soc_top 内适配 `addr={reg_off,2'b00}`），读回 `mmio_rdata[31:0]`（→ rdata mux）；
   - 读=组合（MEM 拍内稳定，mem_wb 末沿捕获）；写=访存段末沿（与 dmem 同步写同沿）；单周期、**无 wait**；未命中读 0/写丢弃；
   - 槽：`0x4000` TX（sw 写=发送，忙丢弃；读=0）、`0x4004` STAT（读 bit0=TX_BUSY、bit1=RX_VALID）、`0x4008` RX（读=字节并清 RX_VALID）；

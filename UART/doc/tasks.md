@@ -128,7 +128,7 @@
 
 ## 7. 变更记录
 
-- 2026-09-07：**U32 上板实测打通（里程碑）**——实测板卡器件为 **XC7A100T**（手册误标 35T，idcode 实测）；存储缩容参数化（下板 build：IMEM 512B/DMEM 256B，组合读寄存器阵列容量约束见 `../../src/defines/const_define.v` 头注；仿真/契约仍 4KB）；本机 Vivado 2019.2 全流程（synth→place→route→bitgen）跑通并烧录成功；COM8 终端验收 **banner 23B 逐字节精确匹配 + AB 回显往返 ALL PASS**（bit=`board_small_100t.bit`，证据 uart_check_20260907_092503.log）。余：P15 按键复位人测、示波器波形、≤5min 视频取证。
+- 2026-09-07：**U32 上板实测打通（里程碑）**——实测板卡器件为 **XC7A100T**（手册误标 35T，idcode 实测）；存储缩容参数化（下板 build：IMEM 512B/DMEM 256B，组合读寄存器阵列容量约束见 `../../pipeline/src/defines/const_define.v` 头注；仿真/契约仍 4KB）；本机 Vivado 2019.2 全流程（synth→place→route→bitgen）跑通并烧录成功；COM8 终端验收 **banner 23B 逐字节精确匹配 + AB 回显往返 ALL PASS**（bit=`board_small_100t.bit`，证据 uart_check_20260907_092503.log）。余：P15 按键复位人测、示波器波形、≤5min 视频取证。
 - 2026-09-07：**结构合并——uart_ctrl 寄存器层并入 uart_ip_top**：删 `src/rtl/uart_ctrl.v` 与 `doc/modules/uart_ctrl.md`（功能/契约零改动）；tb_uart_ctrl.v 改经 IP 顶层例化（U12 检查点不变），tb_uart_ip_top.v 层次路径随深度调整（dut.u_ctrl.*→dut.*）并改 V2001 线程构造（join_none→事件线程）。
 - 2026-09-07：**结构调整——实验二交付物收敛为独立 UART IP**：新增 U15（`uart_ip_top` IP 顶层 + IP 级独立测试 `tb_uart_ip_top`）；SoC 上移为整个项目的顶层 `../soc/`（soc_top/reset_sync/dbus_decode/XDC/固件/SoC TB 随迁，U13/U14/U31–U41 路径同步）；exp2 侧构建脚本删至 build_fw/synth_check/create_vivado_proj（上游修复版保留），run_tb/board_runs/program_devices/uart_check 与 exp2_vivado.bat 删除（重建/恢复见 ../soc/doc/board_runbook.md）。
 - 2026-09-06：异地下板方案成稿 `doc/board_runbook.md`（健康主机出 bit → 烧录 → 终端验收 → 证据），配套脚本 `src/scripts/program_devices.tcl`（批处理烧录）、`src/scripts/uart_check.ps1`（自动化 banner/回显取证）。
