@@ -109,7 +109,7 @@
 技术章节各成员撰写，成员 4 只统一格式，不代写全部内容。
 
 提交物对照（成绩组成：团队提交 20/答辩 40/测试 20/日志 10/报告 10）：
-接口控制器设计实验报告（含编址方式对比、仿真与下板记录）、源码（**exp2/src=UART IP**：rtl+test；**soc/=SoC 集成**：rtl+xdc+test 固件）、可复用 IP 核（uart_ip_top/uart_tx/uart_rx 打包 + 集成说明）、中期/验收 PPT、≤5min 下板演示视频、日志（每日）。
+接口控制器设计实验报告（含编址方式对比、仿真与下板记录）、源码（**UART/src=UART IP**：rtl+test；**soc/=SoC 集成**：rtl+xdc+test 固件）、可复用 IP 核（uart_ip_top/uart_tx/uart_rx 打包 + 集成说明）、中期/验收 PPT、≤5min 下板演示视频、日志（每日）。
 
 ---
 
