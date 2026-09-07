@@ -202,7 +202,7 @@ def build(mnem, o, ln, resolve):
 
     if m == "jal":
         if len(o) == 1:
-            rd, tgt = 0, o[0]
+            rd, tgt = 1, o[0]   # GNU/RV32I 惯例: 单操作数 jal label == jal ra,label
         else:
             need(o, 2, ln, "jal")
             rd, tgt = parse_reg(o[0], ln), o[1]
@@ -257,6 +257,8 @@ def build(mnem, o, ln, resolve):
 
 def wordsize(mnem, o, ln):
     if mnem == "li":
+        if len(o) != 2:
+            raise AsmError(f"L{ln}: li 操作数个数应为 2")
         imm = parse_int(o[1], ln)
         return 2 if not (-2048 <= imm <= 2047) else 1
     return 1
