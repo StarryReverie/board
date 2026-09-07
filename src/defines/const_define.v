@@ -43,8 +43,8 @@
 //   XC7A100T（63.4k LUT/126.8k FF）容量更大；本工程上板取 512B/256B，
 //   在两器件下资源与实现开销均收敛（详见 exp2/doc/tasks.md）。
 // **地址索引固定 addr[11:0]**：本参数化只支持 ≤4KB 缩容场景，不可扩容。
-// 覆盖方式：综合时 verilog_define 须**成对**提供 IMEM_WORDS/DMEM_WORDS/
-// IMEM_BYTES/DMEM_BYTES（xvlog 宏体内不递归展开，BYTES 无法由 WORDS 派生）。
+// 覆盖方式：综合缩容**至少**覆盖 IMEM_BYTES/DMEM_BYTES；IMEM_WORDS/DMEM_WORDS
+// 当前仅用于口径/文档说明（xvlog 宏体内不递归展开，BYTES 无法由 WORDS 派生）。
 `ifndef IMEM_WORDS
 `define IMEM_WORDS 1024   // 指令存储字数（×32bit，默认 4KB）
 `endif
@@ -52,10 +52,10 @@
 `define DMEM_WORDS 1024   // 数据存储字数（×32bit，默认 4KB）
 `endif
 `ifndef IMEM_BYTES
-`define IMEM_BYTES (1024*4)   // 须与 IMEM_WORDS 成对覆盖（xvlog 宏体内不递归展开，无法由 WORDS 派生）
+`define IMEM_BYTES (1024*4)   // 综合缩容必配；WORDS 当前仅作口径说明
 `endif
 `ifndef DMEM_BYTES
-`define DMEM_BYTES (1024*4)   // 须与 DMEM_WORDS 成对覆盖
+`define DMEM_BYTES (1024*4)   // 综合缩容必配；WORDS 当前仅作口径说明
 `endif
 
 //------------------------------- 杂项 ----------------------------------------
