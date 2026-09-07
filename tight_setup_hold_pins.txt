@@ -1,0 +1,14 @@
++--------------------------+--------------------------+----------------------------------------------------------------------------------------------------------+
+|       Launch Clock       |      Capture Clock       |                                                 Pin                                                      |
++--------------------------+--------------------------+----------------------------------------------------------------------------------------------------------+
+|                  sys_clk |                  sys_clk |                                                                         u_cpu/u_id_ex/idex_src_a_reg[1]/D|
+|                  sys_clk |                  sys_clk |                                                                         u_cpu/u_id_ex/idex_src_b_reg[0]/D|
+|                  sys_clk |                  sys_clk |                                                                         u_cpu/u_id_ex/idex_mem_read_reg/D|
+|                  sys_clk |                  sys_clk |                                                                          u_cpu/u_id_ex/idex_jump_reg[0]/D|
+|                  sys_clk |                  sys_clk |                                                                           u_cpu/u_id_ex/idex_imm_reg[4]/D|
+|                  sys_clk |                  sys_clk |                                                                               u_cpu/u_if_id/inst_reg[6]/D|
+|                  sys_clk |                  sys_clk |                                                                           u_cpu/u_id_ex/idex_pc_reg[20]/D|
+|                  sys_clk |                  sys_clk |                                                                              u_cpu/u_if_id/inst_reg[21]/D|
+|                  sys_clk |                  sys_clk |                                                                           u_cpu/u_id_ex/idex_pc_reg[17]/D|
+|                  sys_clk |                  sys_clk |                                                                           u_cpu/u_id_ex/idex_pc_reg[30]/D|
++--------------------------+--------------------------+----------------------------------------------------------------------------------------------------------+

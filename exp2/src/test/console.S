@@ -17,7 +17,7 @@
     .equ STAT_TX_BUSY,  1
     .equ STAT_RX_VALID, 2
     .equ BANNER_BUF,    0x00000040   # dmem 数据区（banner 字串，4 字符/字）
-    .equ STACK_TOP,     0x00001000   # dmem 顶（4KB），栈向下生长
+    .equ STACK_TOP,     0x00000100   # dmem 顶（下板 256B 容量=0x100；仿真 4KB 亦兼容），栈向下生长
 
     .text
     .globl _start

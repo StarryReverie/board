@@ -35,10 +35,24 @@
 `define IMM_J  3'b101    // J 型
 
 //------------------------------- 存储规模（top_design §6） --------------------
-`define IMEM_WORDS 1024   // 指令存储字数（×32bit = 4KB，字节地址 0x0 起）
-`define DMEM_WORDS 1024   // 数据存储字数（×32bit = 4KB，字节地址 0x0 起）
+// 容量可参数化：仿真/契约默认 1024 字=4KB×2；**下板 build 缩容为
+// IMEM 128 字=512B、DMEM 64 字=256B**（组合读寄存器阵列：4KB×2=65k FF
+// > XC7A35T/100T 容量且时序引擎卡死；1KB×2 需 35.5k LUT > 20.8k 超限；
+// 512B/256B 实测 LUT/FF 均收敛，2026-09-07 上板通过，见 exp2/doc/tasks.md）。
+// 覆盖方式：综合时 verilog_define 提供 IMEM_WORDS/DMEM_WORDS/IMEM_BYTES/
+// DMEM_BYTES（须成对给全；默认 1024 字 4KB 不变）。
+`ifndef IMEM_WORDS
+`define IMEM_WORDS 1024   // 指令存储字数（×32bit，默认 4KB）
+`endif
+`ifndef DMEM_WORDS
+`define DMEM_WORDS 1024   // 数据存储字数（×32bit，默认 4KB）
+`endif
+`ifndef IMEM_BYTES
 `define IMEM_BYTES (1024*4)
+`endif
+`ifndef DMEM_BYTES
 `define DMEM_BYTES (1024*4)
+`endif
 
 //------------------------------- 杂项 ----------------------------------------
 `define INST_NOP 32'h00000013  // nop = addi x0,x0,0（if_id 冲刷 / 气泡填充值）

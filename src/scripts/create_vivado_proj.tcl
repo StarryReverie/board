@@ -5,7 +5,7 @@
 #         本脚本只清理其中 board.* 自身产物，与 exp2/vivado 互不影响）
 #   入口：仓库根 exp1_vivado.bat（双击打开/自动重建）
 #   工程口径：
-#     - part: xc7a35tcsg324-1（EES-338）
+#     - part: xc7a100tcsg324-1（EES-338）
 #     - sources_1（设计源）: src/rtl/*.v，top=pipeline_top
 #     - sim_1（仿真源）    : src/test/tb_*.v，top=tb_pipeline_top（默认）
 #     - include_dirs = src/（模块内 `include "defines/*.v" 由此解析）
@@ -28,7 +28,7 @@ foreach suf {.xpr .cache .hw .ip_user_files .runs .sim} {
 }
 
 # 建工程（仓库根 vivado/ 内生成 board.xpr 及产物）
-create_project board [file dirname $proj] -part xc7a35tcsg324-1 -force
+create_project board [file dirname $proj] -part xc7a100tcsg324-1 -force
 set_property target_language Verilog [current_project]
 set_property simulator_language Verilog [current_project]
 
