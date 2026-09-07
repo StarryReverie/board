@@ -50,7 +50,7 @@
 
 ## 3. 模块编码任务（每模块：先文档→再编码→再单测 TB）
 
-> 仓库布局：代码统一于 `src/`（RTL `*.v` 于 `src/rtl/`；宏 `src/defines/`；汇编/TB `src/test/`；工具 `src/scripts/`）；文档 `doc/`；汇编实验 `exp2/` 独立；参考工程 `ref/CPU/` 不动。`[组合]`=纯组合；`[寄存器]`=时序段间寄存器。
+> 仓库布局：代码统一于 `src/`（RTL `*.v` 于 `src/rtl/`；宏 `src/defines/`；汇编/TB `src/test/`；工具 `src/scripts/`）；文档 `doc/`；汇编实验 `exp2/`（UART IP 交付）独立；SoC 集成顶层 `soc/`（两课共建）；参考工程 `ref/CPU/` 不动。`[组合]`=纯组合；`[寄存器]`=时序段间寄存器。
 
 | 任务 | 模块/文件 | 依赖 | 产出 | 验收标准（可测） |
 |---|---|---|---|---|
@@ -102,14 +102,14 @@
 
 ## 6. 实验二任务（UART 集成：全双工从机 + 程序固化 console）
 
-> 架构口径见 top_design §9（数据侧统一编址 MMIO 译码 + 全双工 uart_ctrl + **程序固化单程序模型**：程序 .vh 固化、上电自跑；loader 在线重载已搁置）。启动门禁：**M1–M3（实验一）全绿后**。验收路径：EES-338 板下板（Vivado 侧综合/上板）。编号 T40 起。
+> 架构口径见 top_design §9（数据侧统一编址 MMIO 译码 + 全双工 uart_ip_top（UART IP 顶层，实验二交付）+ **程序固化单程序模型**：程序 .vh 固化、上电自跑；loader 在线重载已搁置）。SoC 集成代码与系统 TB 在 `soc/`（项目顶层）。启动门禁：**M1–M3（实验一）全绿后**。验收路径：EES-338 板下板（Vivado 侧综合/上板）。编号 T40 起。
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|
 | T40 | 数据侧总线译码：`dbus_decode.v`（MEM 段按地址选 {数据 RAM, MMIO 窗口}；映射定稿见 top_design §9.2 / isa.md §4：TX/STAT/RX 槽） | `dbus_decode.v` + `doc/modules/dbus_decode.md` | 低区命中 dmem、窗口命中 uart 槽（TX 写触发/STAT 位义/RX 读清位）；字访问正确；不新增气泡，回归 H1–H5 不变 |
-| T41 | UART 全双工从机封装（复用基础任务 IP）：`uart_tx` + `uart_rx`（位中心采样） + TX/STAT/RX 字槽 + 忙写丢弃 / RX 读清位 | `uart_ctrl.v` + 单测 TB | 收发逐位与字读回正确；TX_BUSY/RX_VALID 位义符合 top_design §9.4；波特率可配（分频参数仿真可覆盖） |
+| T41 | UART 全双工从机封装（复用基础任务 IP）：`uart_tx` + `uart_rx`（位中心采样） + TX/STAT/RX 字槽 + 忙写丢弃 / RX 读清位 | `uart_ip_top.v`（IP 顶层，寄存器层已并入）+ 单测 TB（含 IP 级独立测试） | 收发逐位与字读回正确；TX_BUSY/RX_VALID 位义符合 top_design §9.4；波特率可配（分频参数仿真可覆盖） |
 | T42 | 固件/驱动（**固定程序**，.vh 固化）：`.equ` 内存映射头、putc/getc、console 主循环（banner + 回显） | `test/*.asm → *.hex/.vh` + verify | 上电自运行打印 banner；键盘回显往返正确（无 reload 命令） |
-| T43 | 系统级 TB：行为级 UART 模型（双向收发）+ 整机跑固定固件 | `tb_soc_top.v` | banner 字节与注释期望相等；回显往返断言 PASS；复位重跑一致 |
+| T43 | 系统级 TB：行为级 UART 模型（双向收发）+ 整机跑固定固件 | `soc/test/tb_soc_*.v` | banner 字节与注释期望相等；回显往返断言 PASS；复位重跑一致 |
 | T44 | 下板：soc_top 例化 + 复位同步 + XDC（T5 晶振 / P15 复位键 / T4 uart_tx / N5 uart_rx）+ 综合/时序 | 约束 + 工程 | 终端 115200-8-N-1 见 banner、键盘回显正常；≤5 min 演示视频 |
 
 > ~~原 T42（loader 在线重载）~~：固化单程序模型下取消；imem 写口保留预留（恒 0）。若未来恢复，先回写 top_design §9 与 tasks.md（触发条件见 `doc/future_extensions.md` §1/§2）。
@@ -131,6 +131,7 @@
 
 ## 8. 变更记录
 
+- 2026-09-07：实验二交付物收敛为独立 UART IP（uart_ip_top，exp2/）——SoC 上移为项目顶层 `soc/`（soc_top/reset_sync/dbus_decode 随迁）；§3 布局说明、§6 T41/T43 行同步（core 侧 RTL 零改动）。
 - 2026-09-06：T32/T33 落地——`test/tb_perf.v`（5 档 PERF_* + 恒等式/正确性断言）、`scripts/run_perf.ps1`（汇总 `out/perf_summary.csv`）；5 档实测全绿，报告成稿 `doc/perf_report.md`（T34/T35 待执行，Fmax 复测在综合侧）。
 - 2026-09-06：新增性能分析任务 T32–T35 与 M4（方案 `doc/perf_analysis.md`，追溯表行"量化性能测试"由"后追加"转正）；全仓编码排查结论：文本均纯 UTF-8（乱码为 GBK 环境显示假象，见 ref_note §4）；新增编码校验工具 `src/scripts/fix_encoding.ps1`。
 - 2026-09-04：实验二任务块按定稿改版（§6，T40–T44）：UART 全双工（T41）、固定固件 console（T42）、系统 TB（T43）、下板（T44）；取消 loader 在线重载（原 T42、原 T45 重载演示），imem 写口保留预留。

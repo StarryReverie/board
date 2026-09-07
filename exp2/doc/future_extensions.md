@@ -6,8 +6,8 @@
 
 ## 1. 收发 FIFO / 中断（性能与体验增强）
 
-- **设想**：uart_ctrl 内加 RX FIFO（如 16 深）消除轮询丢字节窗口；TX 侧 FIFO 支持整串写入；可选"RX 非空中断"（需计组侧加中断机制，成本高）。
-- **改动/成本**：中/高——RX FIFO 仅动 uart_ctrl（小）；中断涉及 CPU 架构（计组 future_extensions §6 已否决本轮）。
+- **设想**：uart_ip_top 寄存器层内加 RX FIFO（如 16 深）消除轮询丢字节窗口；TX 侧 FIFO 支持整串写入；可选"RX 非空中断"（需计组侧加中断机制，成本高）。
+- **改动/成本**：中/高——RX FIFO 仅动 uart_ip_top 寄存器层（小）；中断涉及 CPU 架构（计组 future_extensions §6 已否决本轮）。
 - **触发条件**：吞吐成为瓶颈、演示需大数据量接收；9/18 前不建议。
 
 ## 2. ILA 应用（任务书可选加分项）
@@ -30,7 +30,7 @@
 
 ## 5. 恢复"运行期换程序"（与计组 loader 的关系）
 
-- 计组侧 loader/在线重载已搁置（程序固化模型）；本实验固件固定。若未来恢复：loader 需经 UART RX 收字节流，uart_rx 的归属（uart_ctrl vs loader）与装载窗口需重新协商——见计组 `future_extensions.md` §1/§2 与 tasks §6 说明。
+- 计组侧 loader/在线重载已搁置（程序固化模型）；本实验固件固定。若未来恢复：loader 需经 UART RX 收字节流，uart_rx 的归属（uart_ip_top 寄存器层 vs loader）与装载窗口需重新协商——见计组 `future_extensions.md` §1/§2 与 tasks §6 说明。
 - **触发条件**：换程序不重烧成为硬需求（本期否）。
 
 ## 6. 变更记录

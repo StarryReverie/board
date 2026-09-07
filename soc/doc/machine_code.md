@@ -1,6 +1,6 @@
 # console 固件机器码与内存映射说明（U41）
 
-- 版本：v1.0（2026-09-06）。固件：`../src/test/console.S`（U40）；反汇编完整清单：`../src/scripts/out/asm/console.lst`（objdump `-M no-aliases`，51 条逐条可复核）；镜像：`console_rom.hex`（204 B）+ `console_init.vh`（综合固化）。构建/双校验：`build_fw.ps1`。
+- 版本：v1.1（2026-09-07：随 SoC 上移 `soc/`——固件 `../test/console.S`；构建脚本已删，镜像可经 firmware.md §6 手动流程再生成）。固件：`../test/console.S`（U40）；镜像：`../test/console_rom.hex`（204 B）+ `../test/console_init.vh`（综合固化）。反汇编核对：`riscv-none-elf-objdump -d -M no-aliases`（原 build_fw.ps1 清单流程，脚本已删）。
 
 ## 1. 内存映射（程序可见）
 
@@ -52,14 +52,14 @@
 ## 5. 上电路径（固化单程序模型）
 
 ```
-console.S --build_fw.ps1--> console_rom.hex（仿真 $readmemh）
-                         \-> console_init.vh --synth_check/create_proj tcl
-                             复制为 out/fw_rom/imem_init.vh（imem.v 硬编码 include 名）
-                             + verilog_define IMEM_INIT_VH
+console.S --(as/objcopy，见 firmware.md §6)--> console_rom.hex（仿真 $readmemh）
+                         \-> console_init.vh --复制为 imem_init.vh（imem.v 硬编码
+                             include 名）+ verilog_define IMEM_INIT_VH
                              --> 综合 .bit（IMEM initial 固化，上电 PC=0 自跑）
 换程序 = 重生成 .vh → 重综合 → 重烧（无 loader/在线重载）
 ```
 
 ## 6. 变更记录
 
+- v1.1 2026-09-07：随 SoC 上移 `soc/`：固件/镜像路径改 `../test/`；构建脚本删除注记（改 firmware.md §6 手动流程）。
 - v1.0 2026-09-06：初版（配合 U40 console.S / build_fw.ps1 / tb_soc_console 全绿）。

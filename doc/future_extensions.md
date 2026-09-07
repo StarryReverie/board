@@ -2,7 +2,7 @@
 
 > 定位：记录设计/讨论中出现的**暂不实现**的扩展设想，避免遗忘与重复讨论。凡决定实现，必须先回写 `doc/top_design.md` 与 `doc/tasks.md` 正文，本文档不冻结任何契约。
 >
-> 现状基线（讨论立足点）：`top_design §9`（v1.4）实验二模型 = core + `dbus_decode`（**统一编址 MMIO**，lw=in/r、sw=out/w）+ `uart_ctrl`（**全双工** TX/STAT/RX 槽）+ `reset_sync`；**程序固化单程序模型**（`.vh` 固化、上电自跑；**loader 在线重载已搁置**，imem 写口预留恒 0）；哈佛（IMEM/DMEM 物理分离）；imem/dmem 默认各 1024 字 = 4KB。
+> 现状基线（讨论立足点）：`top_design §9`（v1.4）实验二模型 = core + `dbus_decode`（**统一编址 MMIO**，lw=in/r、sw=out/w）+ `uart_ip_top`（实验二 UART IP 顶层，寄存器层已并入；**全双工** TX/STAT/RX 槽）+ `reset_sync`；SoC 集成代码在 `soc/`（2026-09-07 上移为项目顶层）；**程序固化单程序模型**（`.vh` 固化、上电自跑；**loader 在线重载已搁置**，imem 写口预留恒 0）；哈佛（IMEM/DMEM 物理分离）；imem/dmem 默认各 1024 字 = 4KB。
 
 每条设想统一给出：动机 / 对当前结构改动 / 成本 / 触发条件。实现前按 tasks.md §7 流程评估。
 
@@ -43,9 +43,9 @@
 - `dbus_decode` 已具备 `cs_mmio/reg_off` 骨架与 rdata mux；加从机只需扩 reg_off/窗口位宽并接入 mux。作为实验二之后的接口外设练习或加分项。
 - **触发条件**：实验要求扩展外设，或演示需要输入/灯/显示。
 
-## 5. uart_ctrl 增强：波特率可配 / 收发 FIFO / 中断
+## 5. UART 控制器增强（寄存器层，现并入 uart_ip_top）：波特率可配 / 收发 FIFO / 中断
 
-- 现状：`uart_ctrl` 单 clk_en 分频、固件轮询 STAT（`top_design §9.4`）。若 console/monitor 要承载大量收发或演示效率，可加 FIFO（消抖轮询）或可配波特率。
+- 现状：`uart_ip_top` 寄存器层单 clk_en 分频、固件轮询 STAT（`top_design §9.4`）。若 console/monitor 要承载大量收发或演示效率，可加 FIFO（消抖轮询）或可配波特率。
 - **触发条件**：串口吞吐成为瓶颈或演示需双向大数据量。
 
 ## 6. 中断/异常 + CSR（把"尾跳返回固件"升级为"被中断驱回固件"）

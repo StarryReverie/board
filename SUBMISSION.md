@@ -21,20 +21,21 @@
 
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
-| 接口控制器设计实验报告 | 素材：`exp2/doc/top_design.md`、`interface.md`（编址方案 B/位义）、`firmware.md`、`machine_code.md`、`modules/*.md`（6 模块）、本仓 `doc/isa.md`/`top_design.md`（跨课契约）；**成稿待写（下板记录章占位）** | 🟡 | 套老师模板；含编址方式对比、仿真（8/8）与下板记录 |
-| 源代码 | `exp2/src/rtl/*.v`（uart_tx/uart_rx/uart_ctrl/dbus_decode/reset_sync/soc_top）、`exp2/src/xdc/board.xdc`、`exp2/src/test/console.S + console_rom.hex + console_init.vh`、`exp2/src/scripts/`（run_tb/build_fw/synth_check/create_vivado_proj/board_runs/program_devices/uart_check） | ✅ | 8/8 回归 PASS；带固件综合自检通过（41 s）；工程 `board/exp2/vivado/exp2.xpr`（exp2 工程目录=exp2/vivado）本地生成（gitignore；入口 `exp2/exp2_vivado.bat`） |
-| 可复用 IP 核（uart_tx/uart_rx/uart_ctrl 打包 + 集成说明） | 建议 `exp2/ip_pkg/`：三模块源码副本 + 集成说明 + 例化示例 | ⬜ | 报告/PPT 引用项；内容零上板依赖，随时可做 |
+| 接口控制器设计实验报告 | 素材：`exp2/doc/top_design.md`（IP 顶层设计）、`exp2/doc/interface.md`（编址方案 B/位义）、`soc/doc/firmware.md`、`soc/doc/machine_code.md`、`modules/*.md`（IP 4 模块 + soc 2 模块）、本仓 `doc/isa.md`/`top_design.md`（跨课契约）；**成稿待写（下板记录章占位）** | 🟡 | 套老师模板；含编址方式对比、仿真（IP 4/4 + SoC 5/5）与下板记录 |
+| 源代码 | `exp2/src/`（**UART IP 交付物**：rtl=uart_ip_top（寄存器层已并入）/uart_tx/uart_rx + test=4 项 TB）+ `soc/`（**SoC 集成**：rtl=soc_top/reset_sync/dbus_decode + xdc/board.xdc + test=固件 console.*/系统 TB×5） | ✅ | 回归 TB 齐备（构建脚本已删，2026-09-07 结构调整；仿真在 Vivado GUI/xsim 直跑，下板重建步骤见 `soc/doc/board_runbook.md`） |
+| 可复用 IP 核（uart_ip_top/uart_tx/uart_rx 打包 + 集成说明） | 建议 `exp2/ip_pkg/`：三模块源码副本 + 集成说明 + 例化示例（soc_top 即现成例化） | ⬜ | 报告/PPT 引用项；内容零上板依赖，随时可做 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建 | ⬜ | 汇报人/署名待提供 |
-| ≤5min 接口控制器下板演示视频 | 依赖 U32 下板（终端 banner/回显/复位 + 示波器波形） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；固件与 XDC 均已就绪 |
+| ≤5min 接口控制器下板演示视频 | 依赖 U32 下板（终端 banner/回显/复位 + 示波器波形） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；固件与 XDC 均已就绪（soc/） |
 | 汇编实验测试（20 分，现场） | 依课程安排 | 🚫 | 现场测试，需板 |
 | 个人日志（10 分/人） | 待建 | ⬜ | 同计组：课程群模板 |
 
-## 仓库总态（2026-09-06 晚）
+## 仓库总态（2026-09-07）
 
 - 计组：T0–T33 完成（回归 20/20、性能实测 5/5 恒等式）；T34（Fmax 复测，综合侧）、T35（报告素材）待执行。
-- 汇编：U10–U31 完成（回归 8/8）；U32 板级（XDC/固件就绪）、U33 可选 ILA、U41 机器码说明（已随 doc/machine_code.md 完成）——见 exp2/doc/tasks.md。
+- 汇编：U10–U15、U30、U31、U40、U41 完成——**实验二交付物收敛为独立 UART IP**（uart_ip_top + IP 级独立测试）；SoC 上移为整个项目的顶层 `soc/`（集成代码/固件/XDC/系统 TB/下板方案随迁）；U32 板级（XDC/固件就绪）、U33 可选 ILA——见 exp2/doc/tasks.md。
 - 与 origin/dev 同步 ✅。
 
 ## 变更记录
 
+- 2026-09-07：结构调整——实验二交付=UART IP（exp2/），SoC=项目顶层（soc/）；exp2 侧构建脚本删除（重建见 soc/doc/board_runbook.md）；汇编源代码行与 IP 打包行同步。
 - 2026-09-06：初版核对清单。

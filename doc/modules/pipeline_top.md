@@ -14,7 +14,7 @@
 | out | reg_off | 2 | MMIO 槽偏移（dbus_decode 拆 TX/STAT/RX；实验一悬空） |
 | out | mmio_we | 1 | MMIO 写使能（=`we & cs_mmio`；实验一悬空） |
 | out | mmio_wdata | 32 | MMIO 写数据（=exmem_wdata；实验一悬空） |
-| in | mmio_rdata | 32 | MMIO 读回（← uart_ctrl；实验一接 0） |
+| in | mmio_rdata | 32 | MMIO 读回（← uart_ip_top，实验二 UART IP 顶层；实验一接 0） |
 
 ## 内部例化与互联（信号名=各模块端口）
 ```

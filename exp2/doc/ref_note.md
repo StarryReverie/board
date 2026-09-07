@@ -1,6 +1,6 @@
 # 参考梳理（计组 core 口径 + EES-338 板卡要点）
 
-- 版本：v1.0（2026-09-04）。用途：本实验设计/编码/下板时引用的外部口径速查，避免每次回翻长文档；不改动任何参考工程。
+- 版本：v1.1（2026-09-07：SoC 上移 `../soc/`，本实验交付=UART IP；引用口径不变）。用途：本实验设计/编码/下板时引用的外部口径速查，避免每次回翻长文档；不改动任何参考工程。
 
 ---
 
@@ -9,14 +9,14 @@
 | 主题 | 口径 | 对本实验的意义 |
 |---|---|---|
 | 流水线 | 5 级 IF→ID→EX→MEM→WB，哈佛 IMEM/DMEM 分离 | 集成不改流水级数；dbus_decode 插 MEM 段不引入新冒险 |
-| 访存时序 | dmem 同步写（末沿）+ 组合读；lw/sw 一拍完成 | uart_ctrl 写采样沿=MEM 末沿；读须组合且在拍内稳定 |
+| 访存时序 | dmem 同步写（末沿）+ 组合读；lw/sw 一拍完成 | uart_ip_top 寄存器层写采样沿=MEM 末沿；读须组合且在拍内稳定 |
 | 控制/冒险 | 前递 EX/MEM·MEM/WB→EX；load-use 冻结 1 拍；分支 taken 冲刷 2 条 | 与 hazard 无关：外设访问按 rd 判定，前递/冻结机制对 MMIO lw 同样生效（lw 读外设=load，紧接使用会停 1 拍） |
 | 复位 | `rst` **异步高有效**；复位 PC=0、流水与 regfile 清零 | reset_sync 输出必须满足该语义；**dmem 不清**→固件自初始化数据区 |
 | imem | `.vh` 初值固化（综合装载），$readmemh 仅供仿真；运行期只读（写口预留恒 0） | 固件=固定程序；换程序=重生成 .vh 重综合 |
 | MMIO | 统一编址（方案 B），窗口 0x4000；`lw`=in/r、`sw`=out/w；rdata 无命中=0 | 汇编程序直接 lw/sw 访问外设，无自定义指令 |
-| 端口 | 实验二 build 穿出 cs_mmio/reg_off/mmio_we/mmio_wdata/mmio_rdata | uart_ctrl 只接这组信号，不依赖 core 内部信号 |
+| 端口 | 实验二 build 穿出 cs_mmio/reg_off/mmio_we/mmio_wdata/mmio_rdata | uart_ip_top 只接这组信号（soc_top 内适配 addr={reg_off,2'b00}），不依赖 core 内部信号 |
 
-> 计组 core 的 RTL 属于计组交付物（`src/rtl/`）；本实验**引用不复制**，soc_top 例化 pipeline_top。
+> 计组 core 的 RTL 属于计组交付物（`src/rtl/`）；本实验**引用不复制**，`../soc/rtl/soc_top.v` 例化 pipeline_top 与本 IP。
 
 ## 2. EES-338 板卡要点（依元素口袋计算机用户手册 v1.0）
 
@@ -40,4 +40,5 @@
 
 ## 4. 变更记录
 
+- v1.1 2026-09-07：SoC 上移 `../soc/`（本实验交付=UART IP）：§1 端口行从机改 uart_ip_top（addr 适配说明）、soc_top 位置注明。
 - v1.0 2026-09-04：初版。

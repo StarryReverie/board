@@ -1,6 +1,6 @@
 //=============================================================================
 // tb_soc_console.v — U31 固件版系统级 TB（console_rom.hex：banner+回显）
-//   CLKS_PER_BIT=4（bit=40ns）；固件 = exp2/src/test/console.S（U40）
+//   CLKS_PER_BIT=4（bit=40ns）；固件 = soc/test/console.S（U40）
 //   验收（tasks.md U31）：
 //     P1 banner 23 字节 = "EES-338 RV32I UART OK\r\n"（cap[0..22]）
 //     P2 回显往返：注入 0x55 → CPU 回发（cap[23]）

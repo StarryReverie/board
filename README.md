@@ -10,7 +10,8 @@ board/
  │   ├─ test/            TB + 汇编测试程序（.asm/.hex）
  │   └─ scripts/         run_tb.ps1（批量仿真）、run_perf.ps1（性能测量）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
  ├─ doc/                 计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis/perf_report）
- ├─ exp2/                汇编与接口课程（UART SoC，独立子工程）
+ ├─ exp2/                汇编与接口课程（交付物：UART 控制器 IP——uart_ip_top + 内部层 + IP 级独立测试）
+ ├─ soc/                 整个项目的顶层（SoC 集成，两课共建：soc_top/reset_sync/dbus_decode + 固件/XDC/系统 TB）
  ├─ SUBMISSION.md        两门课提交物核对清单（9/18 24:00 截止）
  ├─ ref/CPU/             大三单周期参考工程（只读）
  └─ tools/(仓库外)        RISC-V 工具链（E:\Homework\26-27-1\tools）
@@ -36,23 +37,18 @@ vivado -mode batch -source src/scripts/synth_check.tcl
 powershell -File src/scripts/fix_encoding.ps1
 ```
 
-## 下板（exp2 U32：本机已可全流程出 bit+烧录；完整方案见 exp2/doc/board_runbook.md）
+## 下板（SoC U32：本机已可全流程出 bit+烧录；完整方案见 soc/doc/board_runbook.md）
 
-```powershell
-git clone https://github.com/StarryReverie/board.git && cd board
-vivado -mode batch -source exp2/src/scripts/create_vivado_proj.tcl   # 生成工程
-vivado -mode batch -source exp2/src/scripts/board_runs.tcl           # 一键出 .bit
-vivado -mode batch -source exp2/src/scripts/program_devices.tcl -tclargs <bit>  # 烧录
-powershell -File exp2/src/scripts/uart_check.ps1 -Port COMx          # 终端自动验收
-```
+> 2026-09-07：SoC 上移为项目顶层 `soc/`；exp2 侧构建/烧录/取证脚本已随结构调整删减（仅保留 build_fw.ps1/create_vivado_proj.tcl/synth_check.tcl 上游修复版）——无脚本建工程步骤见 `soc/doc/board_runbook.md` §1（工程目录 `soc/vivado/`，bit 产物 `soc/vivado/soc.runs/impl_1/soc_top.bit`），其余脚本可从 git 历史恢复。
 
 # Vivado GUI（工程已按工程风格分组，可直接打开）
 ```text
-双击仓库根 vivado/board.xpr（exp1 工程，目录=仓库根 vivado/，即 exp1/vivado；若不存在，先执行下方重建命令）；实验二工程：双击 exp2/exp2_vivado.bat（工程 exp2/vivado/exp2.xpr）
+双击仓库根 vivado/board.xpr（exp1 工程，目录=仓库根 vivado/，即 exp1/vivado；若不存在，先执行下方重建命令）
   设计源 sources_1 : src/rtl/*.v          top = pipeline_top（综合/实现）
   仿真源 sim_1     : src/test/tb_*.v      top = tb_pipeline_top（默认）
-  约束  constrs_1  : （实验一为空；实验二 XDC 放 exp2/xdc）
+  约束  constrs_1  : （实验一为空；SoC XDC 在 soc/xdc/board.xdc）
   include 目录     : src/（VerilogDir=$PPRDIR/../src，`include "defines/…" 由此解析）
+exp2（UART IP）与 soc（SoC 集成）工程无脚本生成——按 soc/doc/board_runbook.md §1 手动建工程（IP 工程只需读入 exp2/src/rtl/*.v，top=uart_ip_top）。
 ```
 重建工程（工程不入 git，本机生成即可）：
 ```powershell

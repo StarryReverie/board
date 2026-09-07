@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_dbus_decode.v — dbus_decode 单测（exp2 U13；计组 dbus_decode.md 验收）
+// tb_dbus_decode.v — dbus_decode 单测（soc 集成；计组 dbus_decode.md 验收）
 //   低区命中 dmem；窗口 TX/STAT/RX 槽 reg_off 正确；其余读 0；
 //   rdata mux（dmem/mmio/0）选通正确；写使能不参与译码。
 //=============================================================================

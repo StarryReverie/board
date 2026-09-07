@@ -7,7 +7,7 @@
 //       mem_wb.rdata；mmio 总线恒 0（H1–H5 口径不变）；
 //     SOC_BUILD=1（实验二 build，T40）：MEM 段例化 dbus_decode（代码在
 //       exp2/src/rtl/），rdata 经其 mux、dmem 写门控 we&cs_dmem、mmio 总线
-//       穿出（cs_mmio/reg_off/mmio_we/mmio_wdata → uart_ctrl 等从机）。
+//       穿出（cs_mmio/reg_off/mmio_we/mmio_wdata → uart_ip_top 等从机）。
 //   冲突策略：前递(EX/MEM、MEM/WB→EX) + load-use 冻结(1 气泡) +
 //              分支 EX taken 冲刷 2 条（IF/ID 置 NOP、ID/EX 气泡）。
 //=============================================================================

@@ -1,6 +1,6 @@
 # 计算机系统顶层设计（实验一：流水线 CPU core · 实验二：UART 集成 SoC）
 
-- 版本：v1.5（2026-09-06：TX_BUSY 位义修正——STAT bit0=1 含挂起待发与移位中，写接受仅限完全空闲；对齐 uart_ctrl/isa v1.4/interface v1.1）。
+- 版本：v1.7（2026-09-07：uart_ctrl 寄存器层并入 uart_ip_top——单模块 UART IP，功能/契约零改动；对齐 exp2 interface v1.3）。
 - 布局：代码目录统一于 `src/`（RTL `*.v` 于 `src/rtl/`、宏 `src/defines/`、汇编/测试 `src/test/`、工具 `src/scripts/`）；文档 `doc/`；汇编实验独立于 `exp2/`；`ref/CPU/` 不改动。指令集：`doc/isa.md`（26 条 RV32I，统一编址 MMIO 不加指令）；参考：`doc/ref_note.md`。
 
 ---
@@ -27,15 +27,15 @@
 
    ② 访存侧：MEM 段插 dbus_decode 选路 —— CPU 不再直连 dmem/uart（统一编址 MMIO，方案 B：lw=读 in/r、sw=写 out/w）
      ex_mem(addr/wdata/we) ──► dbus_decode ──┬─ 低区 cs_dmem ──► dmem 数据 RAM
-                                              └─ MMIO cs_mmio ──► uart_ctrl（TX/STAT/RX 字槽）
+                                              └─ MMIO cs_mmio ──► uart_ip_top（TX/STAT/RX 字槽）
      读回：  mem_wb ◄── rdata ◄── dbus_decode（dmem/uart 二选一 mux）
-     外发：  uart_ctrl ── uart_tx/uart_rx（全双工）──► USB-UART ──► PC
+     外发：  uart_ip_top（寄存器层 + uart_tx/uart_rx，全双工）──► USB-UART ──► PC
 
    复位（§9.5）：板载复位键 ──► reset_sync ──► rst(异步高有效) ──► core（单时钟域 clk）
 ```
 
 - **实验一（core）**：上图的"CPU core"即 `pipeline_top`＝5 段哈佛流水，交付可综合 CPU core，H1–H5 全绿（门禁 M1–M3，tasks.md §2–§5）。
-- **实验二（SoC）**：`soc_top`＝`pipeline_top`（数据侧含 `dbus_decode` 统一编址译码）＋ `uart_ctrl`（全双工 MMIO 从机）＋ `reset_sync`（上板复位）。程序经 `.vh` 固化于 imem：上电自跑固定固件 console（§9.6，banner+回显）；换程序＝重新生成 `.vh` → 重新综合 → 重烧（§9.3）。
+- **实验二（SoC）**：`soc_top`＝`pipeline_top`（数据侧含 `dbus_decode` 统一编址译码）＋ `uart_ip_top`（实验二 UART 控制器 **IP 顶层**，寄存器层已并入，单模块交付）＋ `reset_sync`（上板复位）。程序经 `.vh` 固化于 imem：上电自跑固定固件 console（§9.6，banner+回显）；换程序＝重新生成 `.vh` → 重新综合 → 重烧（§9.3）。
 
 ### 0.2 模块清单（RTL 归属 ↔ 文档）
 
@@ -47,9 +47,9 @@
 | 实验一 | `ex_mem` / `dmem` / `mem_wb` / `wb` | MEM/WB | modules/{ex_mem,dmem,mem_wb,wb}.md |
 | 实验一 | `hazard_unit` / `pipeline_top` | 冒险 / 装配 | modules/{hazard_unit,pipeline_top}.md |
 | 实验二 | `dbus_decode` | core 数据侧译码（统一编址，入 pipeline_top MEM 段） | modules/dbus_decode.md |
-| 实验二 | `uart_ctrl` | MMIO 从机（UART，**全双工** TX/RX） | 实验二登记（基础任务 IP） |
+| 实验二 | `uart_ip_top` | UART 控制器 **IP 顶层**（实验二交付物；寄存器层已并入，内部例化 `uart_tx`/`uart_rx`） | 实验二登记（基础任务 IP） |
 | 实验二 | `loader`（**搁置**） | imem 引导装载（固化单程序模型下不做；恢复条件见 future_extensions §1/§2） | 实验二登记（取消） |
-| 实验二 | `soc_top`（含 `reset_sync`） | 整机例化 / 复位同步 | 实验二登记 |
+| 项目顶层（soc/） | `soc_top`（含 `reset_sync`） | 整机例化 / 复位同步 | soc/doc/modules/soc_top.md |
 
 ---
 
@@ -150,7 +150,7 @@
 - H4 分支：taken 刷 2 条 / not-taken 无气泡，cycle 与手算一致。
 - H5 整程序（test0/test1/sort + 新增）与注释预期一致。
 
-## 9. 实验二：SoC 集成设计（整机 = core + dbus_decode + uart_ctrl，程序固化）
+## 9. 实验二：SoC 集成设计（整机 = core + dbus_decode + uart_ip_top，程序固化）
 
 > 本节把实验一交付的 CPU core（§1–§8，门禁 M1–M3 全绿后启动）构造成**能与 PC 通信的整机**：数据侧插入 `dbus_decode`（统一编址 MMIO，§9.2）、程序经 `.vh` 固化于 imem 自启动（固化单程序模型，§9.3）、全双工 UART 外设与整机装配（§9.4/§9.5）、固定固件 console（§9.6）、验收（§9.7）。任务见 tasks.md §6（T40–T44）。core 本身不因实验二改动：imem 写口/MMIO 译码实验一恒 0/不例化，H1–H5 口径不变。
 
@@ -160,7 +160,7 @@
 
 ### 9.2 数据侧译码（dbus_decode：DMEM/MMIO 选路）
 
-- 独立组合模块 **`dbus_decode`**（数据总线译码，模块文档 `doc/modules/dbus_decode.md`）。插入位置：`ex_mem` 与 `mem_wb` 之间（实验一 dmem 直连处）。按 `addr=exmem_alu_result` 选从设备并出 `cs_dmem/cs_mmio/reg_off`，回写数据 `rdata` mux。实验一不例化；T40 启用并接 dmem/uart_ctrl。
+- 独立组合模块 **`dbus_decode`**（数据总线译码，模块文档 `doc/modules/dbus_decode.md`）。插入位置：`ex_mem` 与 `mem_wb` 之间（实验一 dmem 直连处）。按 `addr=exmem_alu_result` 选从设备并出 `cs_dmem/cs_mmio/reg_off`，回写数据 `rdata` mux。实验一不例化；T40 启用并接 dmem/uart_ip_top。
 - 时序对齐：外设读与 dmem 同为周期内组合（沿前稳定）、写与 dmem 同步写同一沿 → 插入译码**不引入新冒险、不改流水级数**。与 hazard 无关（load-use/前递按 rd 判定，不关心命中 RAM 还是外设）。
 - 地址映射（**定稿 v1.4；同步冻结于 `isa.md` §4**）：
 
@@ -180,9 +180,9 @@
 - **换程序**：改 `test/*.asm` → `make` 出 `.hex/.vh` → 重新综合 → 重烧 `.bit`（JTAG 下载（易失）或 SPI-Flash（上电自启））；演示"换程序"即重烧流程（可选，§9.7）。**不做运行期在线重载**。
 - imem loader 写口（`imem_wen/imem_waddr/imem_wdata`）保留为**预留**（恒 0，无附加逻辑）；若未来恢复在线重载，须先回写本文件与 tasks.md，并遵守"写窗口=CPU 复位期、不得边取指边写"（loader=独立硬件 FSM，不执行指令，见 future_extensions §1/§2）。
 
-### 9.4 MMIO 外设：uart_ctrl（全双工 UART 接口控制器）
+### 9.4 MMIO 外设：uart_ip_top（全双工 UART 接口控制器 IP）
 
-- 地位：基础任务 UART IP 的寄存器化封装，作 dbus_decode 的 MMIO 从机；**全双工**：`uart_tx` 与 `uart_rx` 两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.06%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
+- 地位：**实验二交付物——基础任务 UART 控制器 IP 的顶层**（`exp2/src/rtl/uart_ip_top.v`），作 dbus_decode 的 MMIO 从机；IP 自含槽译码（addr[3:2]→TX/STAT/RX），soc_top 内以 `addr={reg_off,2'b00}` 接入；寄存器层（原 `uart_ctrl`：分频/TX 挂起/RX 寄存器/位义）已并入本模块，与例化的 `uart_tx`/`uart_rx` 一体交付。**全双工**：两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.06%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
 - 寄存器映射（定稿，见 §9.2 表）：TX 槽（`sw` 写=发送）、STAT 槽（`lw` 读：bit0=TX_BUSY（1=发送忙：挂起待发或移位中）、bit1=RX_VALID（1=有未读字节））、RX 槽（`lw` 读=字节，读后清 RX_VALID）。
 - 收发语义：写 TX 仅在完全空闲（TX_BUSY=0，无挂起无移位）时有效，挂起/忙时写入丢弃（软件轮询保证不丢）；收到完整字节置 RX_VALID；**无 FIFO**：RX_VALID 未清期间到达的新字节丢弃；读 RX 在访存段末沿清 RX_VALID。
 - 时序：字槽访问在 MEM 段一拍完成（组合读/末沿写），不卡流水、无 wait——**波特率远慢于 CPU**，固件连发多字节须轮询 TX_BUSY，收侧由 RX_VALID 回馈轮询。`uart_rx` 输入打两拍防亚稳态。
@@ -190,14 +190,14 @@
 
 ### 9.5 整机装配：soc_top（顶层 + 复位 + 引脚）
 
-- `soc_top`（实验二最顶层）例化三个平级实例 + 复位同步：
+- `soc_top`（整个项目的顶层，代码在 `soc/`）例化三个平级实例 + 复位同步：
   - `pipeline_top`（core）：内部含 `dbus_decode`（§9.2，MEM 段）；
-  - `uart_ctrl`：全双工 MMIO 从机（§9.4），由 dbus_decode 的 mmio 总线驱动；
+  - `uart_ip_top`：全双工 UART IP 顶层（§9.4），由 dbus_decode 的 mmio 总线驱动；
   - `reset_sync`：复位同步（见下）。
-- mmio 总线穿出 core：`cs_mmio/reg_off/mmio_we/mmio_wdata`（pipeline_top → uart_ctrl）、`mmio_rdata`（uart_ctrl → pipeline_top → dbus_decode 的 rdata mux）——core 增加一组**外设总线端口**（实验一未用即悬空/接 0，H1–H5 不受影响）。示意：
+- mmio 总线穿出 core：`cs_mmio/reg_off/mmio_we/mmio_wdata`（pipeline_top → uart_ip_top，soc_top 内适配 `addr={reg_off,2'b00}`）、`mmio_rdata`（uart_ip_top → pipeline_top → dbus_decode 的 rdata mux）——core 增加一组**外设总线端口**（实验一未用即悬空/接 0，H1–H5 不受影响）。示意：
 
 ```
- soc_top（最顶层，实验二装配）
+ soc_top（整个项目的顶层，soc/ 装配）
  │
  ├─ reset_sync ：rst_n(键) ──(异步置位/同步释放)──► rst(异步高有效) ──► core
  │
@@ -205,9 +205,9 @@
  │     IF : pc_reg ─► imem（.vh 固化程序；loader 写口预留恒 0，§9.3）
  │     MEM: ex_mem ─► dbus_decode ─┬─► dmem（低区）
  │                                └─► MMIO 总线(cs_mmio/reg_off/mmio_we/mmio_wdata，穿出 core)
- │                                     ──► uart_ctrl，读回 mmio_rdata ──► rdata mux
+ │                                     ──► uart_ip_top（addr={reg_off,2'b00}），读回 mmio_rdata ──► rdata mux
  │
- └─ uart_ctrl（全双工 MMIO 从机，§9.4）
+ └─ uart_ip_top（UART 控制器 IP 顶层，§9.4）
        ── uart_tx / uart_rx（打拍）──► 板载 USB-UART 引脚（T4 / N5）
 ```
 
@@ -230,6 +230,8 @@
 
 ## 10. 变更记录
 
+- v1.7 2026-09-07：uart_ctrl 寄存器层并入 uart_ip_top（单模块 UART IP：删 exp2/src/rtl/uart_ctrl.v；§0.2/§9.4 称谓同步，功能/契约零改动）。
+- v1.6 2026-09-07：实验二交付物收敛为独立 UART IP（`uart_ip_top`，exp2/）——SoC 上移为整个项目的顶层 `soc/`（soc_top/reset_sync/dbus_decode 代码随迁）；§0.2/§9.2/§9.4/§9.5 从机称谓与装配图同步（契约信号不变，soc_top 内适配 `addr={reg_off,2'b00}`）。
 - v1.5 2026-09-06：TX_BUSY 位义修正——STAT bit0=1 表示发送忙（含挂起待发与移位中）；uart_ctrl 写接受仅限完全空闲（挂起期写丢弃），消除连续 putc 的"挂起窗口"丢字隐患（同步 isa v1.4 / exp2 interface v1.1）。
 - v1.4 2026-09-04：实验二模型定稿——统一编址 MMIO（方案 B：不加 in/out，`lw`=in/r、`sw`=out/w）、UART 全双工与 TX/STAT/RX 槽位义定稿、程序固化单程序模型（loader 在线重载搁置：§9.1/§9.3 改写、§9.5 soc_top 去 loader、§9.6 固件无 reload、§9.7 验收改回显交互；引脚按 EES-338 手册定稿 T5/T4/N5/P15）。
 - v1.3 2026-09-04：文档升级为**两课设一体**顶层设计：新增 §0（两级结构/模块清单，§1–§8=实验一 core，§9=实验二 SoC）；§9 由"集成预留"扩写为实验二整机设计（soc_top/uart_ctrl/loader/reset_sync/固件/验收 §9.2–§9.7）；标题改"计算机系统顶层设计"。
