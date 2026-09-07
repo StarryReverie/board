@@ -14,7 +14,7 @@
 | CPU | 计组实验一交付的 RV32I 5 级流水线 core（pipeline_top），程序 **.vh 固化单程序模型**（上电自跑 0x0；换程序=重新综合重烧；无 loader/在线重载） |
 | 软件 | 程序查询（轮询 TX_BUSY/RX_VALID）；固定固件 console：banner + 键盘回显；全部指令限 26 条冻结集 |
 | 范围裁剪 | 无收发 FIFO、无中断、无 DMA、无硬件流控、无可配波特率寄存器（参数/分频综合前确定）；无 ILA（可选加分，U33）；无 loader/在线重载（换程序=重新生成 .vh→综合→重烧）；忙/溢出=软件轮询+丢弃 |
-| 板卡 | 依元素 EES-338（XC7A35T-1CSG324C）：clk=T5(100MHz)、uart_tx=T4、uart_rx=N5、rst_n=P15（极性以 demo XDC 为准） |
+| 板卡 | 依元素 EES-338（**实物 XC7A100T**-CSG324，手册误标 35T，2026-09-07 idcode 实测）：clk=T5(100MHz)、uart_tx=T4、uart_rx=N5、rst_n=P15（极性实测低有效，soc_top `RST_ACTIVE_LOW` 参数兜底） |
 | 语言/工具 | RTL=Verilog/SystemVerilog（Vivado 可混用）；汇编=`riscv-none-elf-as` `-march=rv32i`（计组侧已本地化）+ objcopy；镜像校验=verify_hex.py/反汇编清单（与计组共用） |
 | 本机职责 | 写 源码+文档+TB+固件镜像+XDC 草稿；综合/仿真/下板在装有 Vivado 的机器执行 |
 
@@ -116,7 +116,7 @@
 
 | 开放项 | 默认假设/缓解 |
 |---|---|
-| 本机 Vivado 2019.2 对大设计器件模型加载空转 | 2026-09-06 实测：soc_top 规模设计在综合后"器件/时序模型加载"阶段 CPU 空转（小设计正常；in-memory/project/OOC/单线程/P 核亲和均复现无效）→ **.bit 需在健康的 Vivado 主机执行**；工程与一键脚本已备（`src/scripts/board_runs.tcl`），换机后无额外准备 |
+| 本机 Vivado 2019.2 对大设计器件模型加载空转 | **已解除（2026-09-07）**：病根=4KB×2 组合读寄存器阵列（器件加载阶段 CPU 空转、1KB×2 时 LUT 35.5k>20.8k 超限）；下板 build 缩容 **IMEM 512B/DMEM 256B** 后本机 synth→place→route→bitgen 全流程通过并烧录验收 PASS（仿真/契约仍 4KB，见 const_define.v 头注） |
 | EES-338 复位键极性（P15） | 以厂家 demo XDC/实测为准；soc_top `RST_ACTIVE_LOW` 参数隔离极性（默认低有效，实测相反置 0） |
 | RX 采样可靠性 | 位中心采样 + 停止位校验；TB 覆盖位边界 ±误差；实测分频误差 0.06% 余量充足 |
 | 仿真速度 | CLKS_PER_BIT 参数覆盖（系统 TB 用 8–100） |
