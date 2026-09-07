@@ -25,6 +25,7 @@
 param(
     [string]$Case = '',          # filter keyword (substring of tb name, comma separated)
     [switch]$List,               # only list test benches
+    [ValidateRange(1, [int]::MaxValue)]
     [int]$TimeoutSec = 30,       # per-case budget used for the worker watchdog
     [int]$Jobs = 0               # parallel workers; 0 = auto (min(#tb, logical processors))
 )
