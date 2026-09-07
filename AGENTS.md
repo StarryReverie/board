@@ -1,7 +1,6 @@
 # board — 仓库智能体指南（opencode / Claude Code 通用）
 
-> **本文件与 `CLAUDE.md` 内容一致**（本机以 NTFS **硬链接**关联，无需管理员，避免 Windows 文件软链需 Developer Mode/管理员的限制）。
-> 若两者不同步：**以本文件（AGENTS.md）为准**，重跑 §6 的修复命令。跨工具建议：各自助手优先读本文件；改动同步问题见 §6。
+> **`AGENTS.md` 是唯一权威正文**（opencode 直接读取）。**`CLAUDE.md` 仅为入口指引**：它强制 Claude Code 先完整读取本文件，不复制正文（避免双源失同步）。改动口径一律维护在本文件；入口指向维护见 §6。
 
 ---
 
@@ -88,13 +87,8 @@
 | CodeRabbit 结论 | `gh api repos/StarryReverie/board/pulls/<n>/reviews --jq '.[-1].body'` |
 | 合并 PR | `gh pr merge <n> --merge --delete-branch` |
 
-## 6. 修复 AGENTS.md / CLAUDE.md 同步（Windows）
+## 6. AGENTS.md ↔ CLAUDE.md 约定
 
-两文件本机为**硬链接**（同一内容，不重复维护）。硬链接无需管理员；真文件软链（`mklink`）才需 Developer Mode/管理员。若被某工具以“删除重建”方式改写导致脱链：
-
-```powershell
-# 以 AGENTS.md 为单源，重建硬链接（同卷即可，无需管理员）
-New-Item -ItemType HardLink -Path .\CLAUDE.md -Target .\AGENTS.md -Force
-```
-
-> 编辑建议：优先编辑 AGENTS.md；若两文件内容出现分歧，先 `git diff AGENTS.md CLAUDE.md` 判定，再按上面重建。
+- `AGENTS.md` 为**唯一权威正文**，所有仓库指南内容只维护在这里；不把正文复制进 `CLAUDE.md`（避免双源失同步）。
+- `CLAUDE.md` 是面向 Claude Code 的**入口文件**：它强制要求先完整读取本文件，并只摘几条硬约束速览。
+- 若重命名/移动 `AGENTS.md`，需同步更新 `CLAUDE.md` 中的指向路径；内容有分歧时以 `AGENTS.md` 为准。
