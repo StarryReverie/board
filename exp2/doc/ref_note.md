@@ -22,7 +22,7 @@
 
 | 项 | 值 | 备注 |
 |---|---|---|
-| FPGA | XC7A100T-1CSG324（Artix-7；手册误标 35T，idcode 实测） | — |
+| FPGA | xc7a100tcsg324-1（Artix-7；手册误标 35T，idcode 实测） | — |
 | 系统时钟 | 100 MHz，SYS_CLK → **T5** | 全局时钟；波特率分频=868@115200 |
 | UART 桥 | CP2102（USB-UART，Type-C/板上丝印 USB-UART） | 插 PC 枚举为 "Silicon Labs CP210x USB to UART Bridge"+COMx |
 | FPGA 发送 | 网络名 `UART_RX`（CP2102 25 脚）→ **T4** | 命名以 CP2102 视角，方向以 FPGA 为准（输出） |
