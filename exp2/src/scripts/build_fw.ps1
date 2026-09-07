@@ -70,6 +70,14 @@ if ($bytes -ne $instrCnt * 4) {
     Write-Host "[FAIL] hex 字节数 $bytes != 指令数×4（$instrCnt×4）"; exit 1
 }
 
+
+# ---- 校验 3：-PadBytes 合法性（4 字节对齐且不小于固件长度，防越界/截断 .vh）----
+if (($PadBytes % 4) -ne 0) {
+    Write-Host ("[FAIL] -PadBytes 必须 4 字节对齐（当前 {0}）" -f $PadBytes); exit 1
+}
+if ($bytes -gt $PadBytes) {
+    Write-Host ("[FAIL] 固件 {0} B 超过 -PadBytes={1}，请增大 PadBytes" -f $bytes, $PadBytes); exit 1
+}
 # ---- 生成综合固化 .vh（补零到 -PadBytes，默认 512=下板 IMEM_BYTES）----
 $sb = New-Object System.Text.StringBuilder
 $idx = 0
