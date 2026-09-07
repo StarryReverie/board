@@ -1,0 +1,26 @@
+# CodeRabbit 自动 review 配置（仓库根）
+# 文档: https://docs.coderabbit.ai/configuration/auto-review
+# 本仓库协作：PR 一律指向 dev（默认分支），固件/镜像/文档与代码同仓，
+# 提交物口径以 doc/ 与 SUBMISSION.md 为准，review 请关注文档与镜像一致性。
+reviews:
+  auto_review:
+    enabled: true            # 打开即自动审
+    base_branches:
+      - "dev"                # 显式声明目标分支（默认分支亦默认覆盖）
+    drafts: true             # draft PR 也审（课程协作常先开 draft）
+    auto_incremental_review: true       # 每次 push 增量复查
+    auto_pause_after_reviewed_commits: 0 # 不自动暂停，活跃推送也持续审
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "[skip review]"
+    labels:
+      - "!do-not-review"
+  path_filters:
+    # 生成/中间产物类路径：大 diff 噪音，跳过（防误标）
+    - "!**/vivado/**"
+    - "!**/*.jou"
+    - "!**/*.log"
+    - "!**/usage_statistics_webtalk.*"
+    - "!**/tight_setup_hold_pins.txt"
+    - "!**/out/**"
