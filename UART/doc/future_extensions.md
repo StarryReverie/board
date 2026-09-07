@@ -18,7 +18,7 @@
 
 ## 3. MMIO 窗口扩展更多从机（LED/按键/数码管/蓝牙/以太网）
 
-- **设想**：dbus_decode 窗口按 `reg_off` 或扩窗口宽度接第二从机；板上已有蓝牙（BLE-CC41-A，9600 默认）、以太网 CH395Q、LED/按键等资源（见 `../../doc/future_extensions.md` §4）。
+- **设想**：dbus_decode 窗口按 `reg_off` 或扩窗口宽度接第二从机；板上已有蓝牙（BLE-CC41-A，9600 默认）、以太网 CH395Q、LED/按键等资源（见 `../../pipeline/doc/future_extensions.md` §4）。
 - **改动/成本**：小/中——dbus_decode 从机选择与 rdata mux 扩展、新从机 IP。
 - **触发条件**：接口课后续练习或答辩需要多外设演示。
 

@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_uart_tx.v — uart_tx 单测（exp2 U10，doc/modules/uart_tx.md 验收）
+// tb_uart_tx.v — uart_tx 单测（UART U10，UART/doc/modules/uart_tx.md 验收）
 //   CPB=8：clk_en 每 8 clk 一个脉冲（1 bit 时间=80ns）
 //   帧期望（0x53=0101_0011，LSB 先）：start=0, d0..d7=1,1,0,0,1,0,1,0, stop=1
 //   采样方式：clk_en 脉冲沿后 2ns 采样（取新区间稳态值）

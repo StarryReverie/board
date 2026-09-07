@@ -1,7 +1,7 @@
 # CPU ↔ 外设接口冻结契约（汇编实验视角）
 
 - 版本：v1.3（2026-09-07：原 uart_ctrl 寄存器层并入 `uart_ip_top`（单模块 UART IP，功能/信号/时序零改动）；dbus_decode 代码随迁 soc 集成层）。
-- 单源声明：本文件是汇编实验一侧的**阅读视图**；跨课程权威文本为计组 `../../doc/isa.md`（MMIO 映射）、`../../doc/top_design.md`（§9.2/§9.4/§9.5）、`../../doc/modules/dbus_decode.md` 与 `../../doc/modules/pipeline_top.md`。两侧不一致时以计组单源为准并先改契约，禁止单侧改接口。
+- 单源声明：本文件是汇编实验一侧的**阅读视图**；跨课程权威文本为计组 `../../pipeline/doc/isa.md`（MMIO 映射）、`../../pipeline/doc/top_design.md`（§9.2/§9.4/§9.5）、`../../pipeline/doc/modules/dbus_decode.md` 与 `../../pipeline/doc/modules/pipeline_top.md`。两侧不一致时以计组单源为准并先改契约，禁止单侧改接口。
 - 职责归属：core 主端口/时序=计组；`dbus_decode` 代码=soc 集成层交付（例化于 core MEM 段）；`uart_ip_top` 及其后（uart_tx/uart_rx）=本实验 IP 交付；地址分配表=双方共管。
 
 ---
@@ -30,7 +30,7 @@
 
 | 地址 | 方向语义 | 寄存器 | 位义 |
 |---|---|---|---|
-| `0x0000_0000`–`0x0000_0FFF` | lw/sw | dmem | 数据 RAM 4KB（仿真/契约默认；**下板 build 缩容 256B**，见 `../../src/defines/const_define.v` 头注） |
+| `0x0000_0000`–`0x0000_0FFF` | lw/sw | dmem | 数据 RAM 4KB（仿真/契约默认；**下板 build 缩容 256B**，见 `../../pipeline/src/defines/const_define.v` 头注） |
 | `0x0000_4000` | **sw = out/w** | TX | 写低 8 位=待发字节；TX_BUSY=0（完全空闲）时接受并触发发送，接受后 TX_BUSY 即置 1（含挂起）直至帧完；期间写丢弃；`lw` 读=0 |
 | `0x0000_4004` | **lw = in/r** | STAT | bit0=TX_BUSY（1=发送忙：挂起待发或移位中）、bit1=RX_VALID（1=有未读字节）；写无操作 |
 | `0x0000_4008` | **lw = in/r** | RX | 读低 8 位=收到字节；读后清 RX_VALID（访存段末沿）；写无操作 |

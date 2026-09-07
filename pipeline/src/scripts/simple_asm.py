@@ -2,10 +2,10 @@
 # requires-python = ">=3.9"
 # ///
 # =============================================================================
-#  simple_asm.py — 简易 RV32I 汇编器（doc/isa.md 26 条冻结集 + isa §3 伪指令）
+#  simple_asm.py — 简易 RV32I 汇编器（pipeline/doc/isa.md 26 条冻结集 + isa §3 伪指令）
 #   本机无 riscv-none-elf-as；用 uv 提供的 Python 跑本文件，直接产出
 #   objcopy -O verilog 兼容字节式 .hex（首行 @00000000 + 空格分隔小端字节），
-#   供 src/test/*.v 程序级 TB 的 $readmemh 装载，与现网 *_rom.hex 格式一致。
+#   供 pipeline/src/test/*.v 程序级 TB 的 $readmemh 装载，与现网 *_rom.hex 格式一致。
 #
 #   支持的语法（刻意兼容 GNU as 的 RV32I 子集）：
 #     [label:] [opcode operand[, operand ...]] [# 注释]
@@ -17,9 +17,9 @@
 #     - 访存/jalr 寻址：offset(reg)，reg 亦可裸写（=0(reg)）
 #
 #   用法（uv 自动解析已装 Python，离线可用）：
-#     uv run --no-project --python 3.13.13 src/scripts/simple_asm.py src/test/demo.asm
+#     uv run --no-project --python 3.13.13 pipeline/src/scripts/simple_asm.py pipeline/src/test/demo.asm
 #   输出：
-#     src/test/demo_rom.hex   （objcopy -O verilog 兼容字节镜像）
+#     pipeline/src/test/demo_rom.hex   （objcopy -O verilog 兼容字节镜像）
 #     stdout 反汇编清单（地址: 机器码 助记符），供人工核对编码
 # =============================================================================
 import re
@@ -90,7 +90,7 @@ def need(o, i, ln, name):
     return o
 
 
-# ---- 编码函数（RISC-V RV32I，doc/isa.md §2 位序） ------------------------
+# ---- 编码函数（RISC-V RV32I，pipeline/doc/isa.md §2 位序） ------------------------
 def enc_R(f7, f3, rd, rs1, rs2):
     return (f7 << 25) | (rs2 << 20) | (rs1 << 15) | (f3 << 12) | (rd << 7) | 0x33
 

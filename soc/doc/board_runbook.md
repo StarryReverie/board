@@ -2,7 +2,7 @@
 
 - 版本：v1.1（2026-09-07：SoC 上移为项目顶层 `soc/`——路径同步；**构建/烧录/取证脚本已随结构调整删除**，§1 给出无脚本手动工程步骤，需要时可从 git 历史恢复原脚本（exp2/src/scripts/ 曾含 create_vivado_proj/board_runs/program_devices/uart_check））。
 - 目标：在**任意一台装好 Vivado 的机器**上独立完成 U32 下板：出 bit → 烧录 → 终端验收（banner/回显/复位重跑）→ 证据采集。
-- 验收判据与分层流程以 `../exp2/doc/tasks.md` §3（U32/U30）为准；本文只讲"怎么在别的设备跑通"，假设仓库完整（固件 .vh 已生成，无需 RISC-V 工具链）。
+- 验收判据与分层流程以 `../UART/doc/tasks.md` §3（U32/U30）为准；本文只讲"怎么在别的设备跑通"，假设仓库完整（固件 .vh 已生成，无需 RISC-V 工具链）。
 
 ---
 
@@ -25,14 +25,14 @@ cd board
 无脚本步骤（原 create_vivado_proj.tcl/board_runs.tcl 的等效操作；也可从 git 历史恢复原脚本）：
 
 1. 新建工程：`create_project soc soc/vivado -part xc7a35tcsg324-1`（或 GUI 建工程，目录 `soc/vivado/`）；
-2. 读入 RTL（原位引用）：`soc/rtl/*.v` + `exp2/src/rtl/*.v`（UART IP）+ `src/rtl/*.v`（计组 core）；top = `soc_top`；
-3. include 目录设 `soc/`、`exp2/src/`、`src/`（计组 `` `include "defines/*.v"`` 解析）+ 固件 ROM 目录；
+2. 读入 RTL（原位引用）：`soc/rtl/*.v` + `UART/src/rtl/*.v`（UART IP）+ `pipeline/src/rtl/*.v`（计组 core）；top = `soc_top`；
+3. include 目录设 `soc/`、`UART/src/`、`pipeline/src/`（计组 `` `include "defines/*.v"`` 解析）+ 固件 ROM 目录；
 4. 固件固化：把 `soc/test/console_init.vh` 复制为固件目录下 `imem_init.vh`（imem.v 硬编码 include 名），并设 `verilog_define IMEM_INIT_VH`；
 5. 加约束 `soc/xdc/board.xdc`（T5 clk 100MHz / T4 uart_tx / N5 uart_rx / P15 rst_n）；
 6. synth → impl → write_bitstream（约 5–15 分钟）。
 
 - 产物：`board/soc/vivado/soc.runs/impl_1/soc_top.bit`。
-- 无网络时：把仓库目录整体拷贝到目标机（`soc/`、`exp2/src/rtl/`、`src/rtl/` 即可，`vivado/` 可省）。
+- 无网络时：把仓库目录整体拷贝到目标机（`soc/`、`UART/src/rtl/`、`pipeline/src/rtl/` 即可，`vivado/` 可省）。
 - 说明：仓库已内置 console 固件（`console_init.vh` → 综合期固化 IMEM），XDC 已按手册核定（T5=100MHz / T4=FPGA TX / N5=FPGA RX / P15=复位）。
 
 ## 2. 烧录（~1 分钟）
@@ -66,11 +66,11 @@ P15 极性手册未明示，设计默认"**低有效：松键=运行，按下=�
 | 证据 | 要求 | 备注 |
 |---|---|---|
 | 终端日志 | Tera Term/SSCOM 存档：banner + 回显 + 复位重跑全过程 | 存 `soc/doc/board_evidence/` 建议 |
-| 下板记录 | 按 `../exp2/doc/tasks.md` §3.1 分层记录（裸 UART 先行→SoC 整机） | 模板字段：日期/机器/COM/现象/结论 |
+| 下板记录 | 按 `../UART/doc/tasks.md` §3.1 分层记录（裸 UART 先行→SoC 整机） | 模板字段：日期/机器/COM/现象/结论 |
 | 示波器波形（可选但加分） | TX 帧：空闲高、起始低、位宽 ≈8.68 µs、10 位帧 ≈86.8 µs | 测 T4 或 CP2102 侧 |
 | ≤5 min 演示视频 | 全程：上电 banner→键盘回显→复位重跑 | 需真实板卡画面 |
 
-## 6. 常见问题速查（新增异地项，其余见 ../exp2/doc/tasks.md §3.1）
+## 6. 常见问题速查（新增异地项，其余见 ../UART/doc/tasks.md §3.1）
 
 | 现象 | 处理 |
 |---|---|
@@ -85,8 +85,8 @@ P15 极性手册未明示，设计默认"**低有效：松键=运行，按下=�
 
 1. `soc_top.bit` 拷回开发机（本机 JTAG 与 COM8 可用时也可继续编程/验收）；
 2. 证据文件（终端日志/记录/波形/视频）归入仓库外存档或 `soc/doc/board_evidence/`；
-3. 在 `../exp2/doc/tasks.md` U32 状态栏更新：bit 产出（机器/日期）、终端验收三项、视频链接；
-4. 若极性或引脚实测与约定不符 → 先改契约文档（`soc/xdc/board.xdc` 头注 / `../exp2/doc/interface.md`）再改实现，禁止单侧改。
+3. 在 `../UART/doc/tasks.md` U32 状态栏更新：bit 产出（机器/日期）、终端验收三项、视频链接；
+4. 若极性或引脚实测与约定不符 → 先改契约文档（`soc/xdc/board.xdc` 头注 / `../UART/doc/interface.md`）再改实现，禁止单侧改。
 
 ## 8. 变更记录
 

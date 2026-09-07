@@ -1,7 +1,7 @@
 # 计算机系统顶层设计（实验一：流水线 CPU core · 实验二：UART 集成 SoC）
 
-- 版本：v1.7（2026-09-07：uart_ctrl 寄存器层并入 uart_ip_top——单模块 UART IP，功能/契约零改动；对齐 exp2 interface v1.3）。
-- 布局：代码目录统一于 `src/`（RTL `*.v` 于 `src/rtl/`、宏 `src/defines/`、汇编/测试 `src/test/`、工具 `src/scripts/`）；文档 `doc/`；汇编实验独立于 `exp2/`；`ref/CPU/` 不改动。指令集：`doc/isa.md`（26 条 RV32I，统一编址 MMIO 不加指令）；参考：`doc/ref_note.md`。
+- 版本：v1.7（2026-09-07：uart_ctrl 寄存器层并入 uart_ip_top——单模块 UART IP，功能/契约零改动；对齐 UART interface v1.3）。
+- 布局：代码目录统一于 `pipeline/src/`（RTL `*.v` 于 `pipeline/src/rtl/`、宏 `pipeline/src/defines/`、汇编/测试 `pipeline/src/test/`、工具 `pipeline/src/scripts/`）；文档 `pipeline/doc/`；汇编实验独立于 `UART/`；`ref/CPU/` 不改动。指令集：`pipeline/doc/isa.md`（26 条 RV32I，统一编址 MMIO 不加指令）；参考：`pipeline/doc/ref_note.md`。
 
 ---
 
@@ -133,7 +133,7 @@
 
 ## 6. 存储（Verilog 口径，面向下板）
 
-- `imem`（指令存储）：读口=取指**组合读**；内容在综合期由 `.vh`（`initial` 字面量 `for` 循环）**固化**——上电不接任何装载动作即可直接运行（`test/*.hex` 仅供 TB `$readmemh`，两路一致性由校验脚本保证）；**loader 写口为预留**（`imem_wen/imem_waddr/imem_wdata`，字 4 对齐同步写，实验一/实验二均恒 0；若未来恢复"运行期换程序"须先回写本文件与 tasks.md，见 future_extensions §1/§2）。字节数组小端 `{mem[a+3],…,mem[a]}`，字地址 4 对齐。
+- `imem`（指令存储）：读口=取指**组合读**；内容在综合期由 `.vh`（`initial` 字面量 `for` 循环）**固化**——上电不接任何装载动作即可直接运行（`pipeline/src/test/*.hex` 仅供 TB `$readmemh`，两路一致性由校验脚本保证）；**loader 写口为预留**（`imem_wen/imem_waddr/imem_wdata`，字 4 对齐同步写，实验一/实验二均恒 0；若未来恢复"运行期换程序"须先回写本文件与 tasks.md，见 future_extensions §1/§2）。字节数组小端 `{mem[a+3],…,mem[a]}`，字地址 4 对齐。
 - `dmem`：同步写（wmask 字节使能，默认全字）、组合读（周期内稳定）；字节数组小端。
 - 规模：`IMEM_WORDS/DMEM_WORDS`（默认各 1024 字=4KB，测试集 <1KB），综合为分布式 ROM/RAM；块 BRAM 为可选优化（读出寄存器另计一拍）。
 - `.vh`/`.hex` 一致且仅含指令清单内指令，由 `verify_hex.py` 校验（tasks.md T31）。
@@ -160,7 +160,7 @@
 
 ### 9.2 数据侧译码（dbus_decode：DMEM/MMIO 选路）
 
-- 独立组合模块 **`dbus_decode`**（数据总线译码，模块文档 `doc/modules/dbus_decode.md`）。插入位置：`ex_mem` 与 `mem_wb` 之间（实验一 dmem 直连处）。按 `addr=exmem_alu_result` 选从设备并出 `cs_dmem/cs_mmio/reg_off`，回写数据 `rdata` mux。实验一不例化；T40 启用并接 dmem/uart_ip_top。
+- 独立组合模块 **`dbus_decode`**（数据总线译码，模块文档 `pipeline/doc/modules/dbus_decode.md`）。插入位置：`ex_mem` 与 `mem_wb` 之间（实验一 dmem 直连处）。按 `addr=exmem_alu_result` 选从设备并出 `cs_dmem/cs_mmio/reg_off`，回写数据 `rdata` mux。实验一不例化；T40 启用并接 dmem/uart_ip_top。
 - 时序对齐：外设读与 dmem 同为周期内组合（沿前稳定）、写与 dmem 同步写同一沿 → 插入译码**不引入新冒险、不改流水级数**。与 hazard 无关（load-use/前递按 rd 判定，不关心命中 RAM 还是外设）。
 - 地址映射（**定稿 v1.4；同步冻结于 `isa.md` §4**）：
 
@@ -177,12 +177,12 @@
 ### 9.3 程序固化与换程序流程（固化单程序模型）
 
 - **固化**：imem 内容 = `verify_hex.py` 生成的 `.vh`（`initial` 字面量，综合装载）；上电复位 PC=0 直接运行固化程序，无需任何装载动作；仿真侧由 TB `$readmemh` 装载同内容 `.hex`（两路一致性由校验脚本保证）。
-- **换程序**：改 `test/*.asm` → `make` 出 `.hex/.vh` → 重新综合 → 重烧 `.bit`（JTAG 下载（易失）或 SPI-Flash（上电自启））；演示"换程序"即重烧流程（可选，§9.7）。**不做运行期在线重载**。
+- **换程序**：改 `pipeline/src/test/*.asm` → `make` 出 `.hex/.vh` → 重新综合 → 重烧 `.bit`（JTAG 下载（易失）或 SPI-Flash（上电自启））；演示"换程序"即重烧流程（可选，§9.7）。**不做运行期在线重载**。
 - imem loader 写口（`imem_wen/imem_waddr/imem_wdata`）保留为**预留**（恒 0，无附加逻辑）；若未来恢复在线重载，须先回写本文件与 tasks.md，并遵守"写窗口=CPU 复位期、不得边取指边写"（loader=独立硬件 FSM，不执行指令，见 future_extensions §1/§2）。
 
 ### 9.4 MMIO 外设：uart_ip_top（全双工 UART 接口控制器 IP）
 
-- 地位：**实验二交付物——基础任务 UART 控制器 IP 的顶层**（`exp2/src/rtl/uart_ip_top.v`），作 dbus_decode 的 MMIO 从机；IP 自含槽译码（addr[3:2]→TX/STAT/RX），soc_top 内以 `addr={reg_off,2'b00}` 接入；寄存器层（原 `uart_ctrl`：分频/TX 挂起/RX 寄存器/位义）已并入本模块，与例化的 `uart_tx`/`uart_rx` 一体交付。**全双工**：两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.06%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
+- 地位：**实验二交付物——基础任务 UART 控制器 IP 的顶层**（`UART/src/rtl/uart_ip_top.v`），作 dbus_decode 的 MMIO 从机；IP 自含槽译码（addr[3:2]→TX/STAT/RX），soc_top 内以 `addr={reg_off,2'b00}` 接入；寄存器层（原 `uart_ctrl`：分频/TX 挂起/RX 寄存器/位义）已并入本模块，与例化的 `uart_tx`/`uart_rx` 一体交付。**全双工**：两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.06%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
 - 寄存器映射（定稿，见 §9.2 表）：TX 槽（`sw` 写=发送）、STAT 槽（`lw` 读：bit0=TX_BUSY（1=发送忙：挂起待发或移位中）、bit1=RX_VALID（1=有未读字节））、RX 槽（`lw` 读=字节，读后清 RX_VALID）。
 - 收发语义：写 TX 仅在完全空闲（TX_BUSY=0，无挂起无移位）时有效，挂起/忙时写入丢弃（软件轮询保证不丢）；收到完整字节置 RX_VALID；**无 FIFO**：RX_VALID 未清期间到达的新字节丢弃；读 RX 在访存段末沿清 RX_VALID。
 - 时序：字槽访问在 MEM 段一拍完成（组合读/末沿写），不卡流水、无 wait——**波特率远慢于 CPU**，固件连发多字节须轮询 TX_BUSY，收侧由 RX_VALID 回馈轮询。`uart_rx` 输入打两拍防亚稳态。

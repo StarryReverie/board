@@ -1,7 +1,7 @@
 ﻿<#
 =============================================================================
  run_tb.ps1 - experiment-1 module test parallel runner (Vivado 2019.2 xsim)
-   * auto-discover: RTL in src/rtl/*.v and TB in src/test/tb_*.v
+   * auto-discover: RTL in pipeline/src/rtl/*.v and TB in pipeline/src/test/tb_*.v
    * why parallel: each TB needs a cold xelab+xsim process launch (~5-7 s) but
      the simulation content itself is microseconds (IDE feels fast only because
      its simulator engine is resident). Running 21 TBs serially = ~2-4 min.
@@ -13,11 +13,11 @@
    * TB output contract: per assertion $display("PASS: ...") / ("FAIL: ..."),
      ending with $display("=== ALL PASS ===") or $display("=== FAIL ===")
    * usage:
-       powershell -File src/scripts/run_tb.ps1 -List
-       powershell -File src/scripts/run_tb.ps1
-       powershell -File src/scripts/run_tb.ps1 -Case alu
-       powershell -File src/scripts/run_tb.ps1 -Jobs 8     # cap to 8 workers
-       powershell -File src/scripts/run_tb.ps1 -Jobs 1     # serial (old behavior)
+       powershell -File pipeline/src/scripts/run_tb.ps1 -List
+       powershell -File pipeline/src/scripts/run_tb.ps1
+       powershell -File pipeline/src/scripts/run_tb.ps1 -Case alu
+       powershell -File pipeline/src/scripts/run_tb.ps1 -Jobs 8     # cap to 8 workers
+       powershell -File pipeline/src/scripts/run_tb.ps1 -Jobs 1     # serial (old behavior)
    * default -Jobs 0 = auto: min(#TB, logical processors) -> full-machine parallelism
    * env: default C:\Xilinx\Vivado\2019.2 ; override with $env:XVIVADO_ROOT
 =============================================================================

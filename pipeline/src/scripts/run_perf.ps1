@@ -1,12 +1,12 @@
 ﻿<#
 =============================================================================
- run_perf.ps1 — T33 性能批量测量运行器（doc/perf_analysis.md §5.3）
+ run_perf.ps1 — T33 性能批量测量运行器（pipeline/doc/perf_analysis.md §5.3）
    五档程序逐档编译运行 tb_perf.v（xvlog -d PERF_*），解析
-   PERF_SUMMARY 行 → 汇总 src/scripts/out/perf_summary.csv
-   指标口径见 doc/perf_analysis.md §3（C==IC+(F-1)+L+2T 恒等式由 TB 断言）
+   PERF_SUMMARY 行 → 汇总 pipeline/src/scripts/out/perf_summary.csv
+   指标口径见 pipeline/doc/perf_analysis.md §3（C==IC+(F-1)+L+2T 恒等式由 TB 断言）
    用法：
-     powershell -File src/scripts/run_perf.ps1       # 跑全部 5 档
-     powershell -File src/scripts/run_perf.ps1 -Case sort,hazard
+     powershell -File pipeline/src/scripts/run_perf.ps1       # 跑全部 5 档
+     powershell -File pipeline/src/scripts/run_perf.ps1 -Case sort,hazard
    环境：默认 C:\Xilinx\Vivado\2019.2；可用 $env:XVIVADO_ROOT 覆盖
 =============================================================================
 #>

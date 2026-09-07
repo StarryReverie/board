@@ -1,6 +1,6 @@
 # 未来可拓展功能设想
 
-> 定位：记录设计/讨论中出现的**暂不实现**的扩展设想，避免遗忘与重复讨论。凡决定实现，必须先回写 `doc/top_design.md` 与 `doc/tasks.md` 正文，本文档不冻结任何契约。
+> 定位：记录设计/讨论中出现的**暂不实现**的扩展设想，避免遗忘与重复讨论。凡决定实现，必须先回写 `pipeline/doc/top_design.md` 与 `pipeline/doc/tasks.md` 正文，本文档不冻结任何契约。
 >
 > 现状基线（讨论立足点）：`top_design §9`（v1.4）实验二模型 = core + `dbus_decode`（**统一编址 MMIO**，lw=in/r、sw=out/w）+ `uart_ip_top`（实验二 UART IP 顶层，寄存器层已并入；**全双工** TX/STAT/RX 槽）+ `reset_sync`；SoC 集成代码在 `soc/`（2026-09-07 上移为项目顶层）；**程序固化单程序模型**（`.vh` 固化、上电自跑；**loader 在线重载已搁置**，imem 写口预留恒 0）；哈佛（IMEM/DMEM 物理分离）；imem/dmem 默认各 1024 字 = 4KB。
 

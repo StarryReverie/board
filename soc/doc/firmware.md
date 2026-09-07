@@ -1,7 +1,7 @@
 # 汇编固件（软件）设计文档
 
-- 版本：v1.2（2026-09-07：随 SoC 上移 `soc/`——代码位置 `../test/console.S`；构建脚本已删，§6 按手动命令重建）。代码位置：`../test/console.S`；本文件收编原"汇编实验设计方案"中的软件章节（程序查询模型、子程序、console、字符串方案），与 `../exp2/doc/tasks.md` U40/U41 配套。硬件口径见 `../exp2/doc/interface.md` 与 modules/*.md。
-- 汇编约束：只使用计组 26 条冻结指令 + 白名单伪指令（isa `../../doc/isa.md` v1.3）；无 auipc/lb——地址常量用 `lui(+进位)+addi` 构造，字符收发只用字槽低 8 位。
+- 版本：v1.2（2026-09-07：随 SoC 上移 `soc/`——代码位置 `../test/console.S`；构建脚本已删，§6 按手动命令重建）。代码位置：`../test/console.S`；本文件收编原"汇编实验设计方案"中的软件章节（程序查询模型、子程序、console、字符串方案），与 `../UART/doc/tasks.md` U40/U41 配套。硬件口径见 `../UART/doc/interface.md` 与 modules/*.md。
+- 汇编约束：只使用计组 26 条冻结指令 + 白名单伪指令（isa `../../pipeline/doc/isa.md` v1.3）；无 auipc/lb——地址常量用 `lui(+进位)+addi` 构造，字符收发只用字槽低 8 位。
 
 ---
 
@@ -68,7 +68,7 @@ echo_main:
 ## 6. 镜像与机器码流程
 
 - `../test/*.S → (riscv-none-elf-as -march=rv32i -mabi=ilp32) → objcopy -O verilog → *.hex`；镜像校验=反汇编清单/verify_hex.py，全部指令在 26 条冻结集内（方案 B 无自定义指令，objdump 反查照常）；
-- **构建脚本已删（2026-09-07 结构调整）**：原 `build_fw.ps1` 流程照此手动执行——`riscv-none-elf-as` → `objcopy -O verilog` → 反汇编核对（计组 `../../src/scripts/build_asm.ps1` 可参考；需要时从 git 历史恢复 build_fw.ps1）；
+- **构建脚本已删（2026-09-07 结构调整）**：原 `build_fw.ps1` 流程照此手动执行——`riscv-none-elf-as` → `objcopy -O verilog` → 反汇编核对（计组 `../../pipeline/src/scripts/build_asm.ps1` 可参考；需要时从 git 历史恢复 build_fw.ps1）；
 - 上电路径：综合期 .vh 固化 → PC=0 自跑；换程序=重烧（见 top_design.md §6）。
 
 ## 7. 变更记录

@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // alu.v — 算术逻辑单元（执行段组合）
-//   文档：doc/modules/alu.md（v1.0）；op 宏：defines/const_define.v
+//   文档：pipeline/doc/modules/alu.md（v1.0）；op 宏：pipeline/src/defines/const_define.v
 //   参考：ref/CPU/alu.v —— 33 位进位结果/flags 判定近乎原样复用，
 //         新增 zero 输出（分支比较用，本模块无 timescale/TB 属可综合）。
 //   验收口径：逐 op 真值表（含边界）；add 正+正溢出 OF=1；

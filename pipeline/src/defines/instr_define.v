@@ -1,9 +1,9 @@
 //=============================================================================
 // instr_define.v — 计组实验一指令集宏（RV32I 子集，26 条冻结）
-//   - 行为语义权威：doc/isa.md（v1.3）；实现口径：doc/top_design.md、doc/modules/decode.md
+//   - 行为语义权威：pipeline/doc/isa.md（v1.3）；实现口径：pipeline/doc/top_design.md、pipeline/doc/modules/decode.md
 //   - 命名与取值沿用 ref/CPU/defines/instr_define.v（宏名对齐），本文件为
 //     流水线工程的权威宏源；参考工程 ref/CPU/ 保持原样、不 include 本文件。
-//   - 修改宏须先改 doc/isa.md 并登记变更记录。
+//   - 修改宏须先改 pipeline/doc/isa.md 并登记变更记录。
 //=============================================================================
 `ifndef INSTR_DEFINE_V
 `define INSTR_DEFINE_V

@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_hazard_unit.v — hazard_unit 单测（doc/modules/hazard_unit.md 验收，T30）
+// tb_hazard_unit.v — hazard_unit 单测（pipeline/doc/modules/hazard_unit.md 验收，T30）
 //   前递：EX/MEM 命中 sel=1、MEM/WB 命中 sel=2、双命中 EX/MEM 优先、
 //   EX/MEM 为 load 不前递、reg_write=0 不前递、rd=0 不前递；
 //   load-use：idex load 命中 ID rs1/rs2 → stall，rd=0 不 stall。

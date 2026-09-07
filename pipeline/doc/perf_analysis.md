@@ -1,8 +1,8 @@
 # 性能分析方案 — RV32I 5 级流水线 vs 大三单周期（实验一定稿，T32–T35）
 
 > 版本：v1.0（日期见变更记录）
-> 状态：**方案定稿；T32/T33 已落地（2026-09-06），实测结果见 `doc/perf_report.md`；T34/T35 待执行**
-> 关联：`doc/top_design.md`（结构/冲突策略口径）、`doc/isa.md`（指令清单与 HALT 约定）、`doc/ref_note.md`（单周期对比基线 = `ref/CPU/`）、`doc/tasks.md` §1 行"量化性能测试"。
+> 状态：**方案定稿；T32/T33 已落地（2026-09-06），实测结果见 `pipeline/doc/perf_report.md`；T34/T35 待执行**
+> 关联：`pipeline/doc/top_design.md`（结构/冲突策略口径）、`pipeline/doc/isa.md`（指令清单与 HALT 约定）、`pipeline/doc/ref_note.md`（单周期对比基线 = `ref/CPU/`）、`pipeline/doc/tasks.md` §1 行"量化性能测试"。
 > 原则：**测量不改 RTL**；一切观测经 TB 层次引用；正确性回归绿是性能数据有效的前置门禁。
 
 ---
@@ -18,10 +18,10 @@
 
 | 维度 | 口径 |
 |---|---|
-| 指令集/二进制 | 同一 RV32I 子集；**同一 .asm → 同一字节镜像**（`src/test/*_rom.hex`；与 ref 工程产物逐字节一致，见 tasks.md §4） |
+| 指令集/二进制 | 同一 RV32I 子集；**同一 .asm → 同一字节镜像**（`pipeline/src/test/*_rom.hex`；与 ref 工程产物逐字节一致，见 tasks.md §4） |
 | 时钟 | 名义 100 MHz（EES-338 板载晶振 100 MHz）；Fmax 对比见 §7（各自 Fmax 下另报一行） |
 | 器件/工具 | xc7a100tcsg324-1、Vivado 2019.2、speed grade −1（与上板一致） |
-| 基线数据 | ① 优先 **同器件同条件复测** `ref/CPU`（只读源**副本**综合，见 §6）；② 引用大三历史数据时必须注明出处与条件（`doc/ref_note.md` §4"不越界"原则） |
+| 基线数据 | ① 优先 **同器件同条件复测** `ref/CPU`（只读源**副本**综合，见 §6）；② 引用大三历史数据时必须注明出处与条件（`pipeline/doc/ref_note.md` §4"不越界"原则） |
 | 运行语义 | 程序末尾自循环 HALT（`beq x0,x0,0`，编码 `0x00000063`），无停机指令（isa.md HALT 口径）；**停机时刻 = 该指令首次在 WB 退休** |
 
 ## 3. 指标定义（全以仿真实测为准）
@@ -51,7 +51,7 @@
 
 ## 4. 工作负载矩阵
 
-现有 5 个程序（`src/test/*.asm → *_rom.hex`，均带注释期望 + HALT 自循环收尾）：
+现有 5 个程序（`pipeline/src/test/*.asm → *_rom.hex`，均带注释期望 + HALT 自循环收尾）：
 
 | 程序 | 来源/特征 | 预期停顿主源 | 用途 |
 |---|---|---|---|
@@ -61,14 +61,14 @@
 | instr_cover | 自研：指令清单 26 条全覆盖 | 各类混合 | 覆盖正确性；性能参考 |
 | hazard_cover | 自研：人造依赖链/load-use×N/连续分支 | load-use 与冲刷占绝对主导 | 停顿"放大镜"，验证 L/T 计数 |
 
-静态长度、循环深度、动态 IC 实测后在 `src/test/` 各 asm 头部注释登记（防数据漂移）。如需规模敏感度（如 sort 数据规模 N=8/16/32 档），另行生成独立 `.asm/.hex`，**不改本表既有程序**。
+静态长度、循环深度、动态 IC 实测后在 `pipeline/src/test/` 各 asm 头部注释登记（防数据漂移）。如需规模敏感度（如 sort 数据规模 N=8/16/32 档），另行生成独立 `.asm/.hex`，**不改本表既有程序**。
 
 ## 5. 测量实现（全部在仿真侧，不改 RTL）
 
 ### 5.1 正确性前置
 先跑整机回归（run_tb.ps1 全绿、tb_prog_* 逐项 PASS）→ 同一镜像/同一构建再跑性能 TB。**性能数据与正确性同源同镜像**。
 
-### 5.2 性能 TB（`src/test/tb_perf.v`，新任务 T32）
+### 5.2 性能 TB（`pipeline/src/test/tb_perf.v`，新任务 T32）
 - 例化 `pipeline_top u_cpu(...)`（SOC_BUILD=0）；`$readmemh("<prog>_rom.hex")` 灌 `u_cpu.u_imem.mem`（沿用 tb_prog_* 既有灌法与清零惯例）。
 - 拍计数：`rst` 释放后每个 `posedge clk` 计数 `cyc`。
 - 退休观测（层次引用，实例名以 pipeline_top 例化名为准，编码前先核对）：
@@ -81,7 +81,7 @@
 - 回归复用：同一 TB 同时把 regfile/dmem 终值与各程序注释期望比对（照抄 tb_prog_* 断言段），**防止"为快而错"**。
 
 ### 5.3 运行脚本（T33）
-`src/scripts/run_perf.ps1`（仿 run_tb.ps1 框架）：逐档 xvlog+xelab+xsim → 解析各 log 的 CSV 行 → 汇总 `src/scripts/out/perf_summary.csv`（含恒等式结果列），打印 `== PERF ALL PASS ==`（要求：5 档恒等式全过且正确性断言全绿）。
+`pipeline/src/scripts/run_perf.ps1`（仿 run_tb.ps1 框架）：逐档 xvlog+xelab+xsim → 解析各 log 的 CSV 行 → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（含恒等式结果列），打印 `== PERF ALL PASS ==`（要求：5 档恒等式全过且正确性断言全绿）。
 
 ### 5.4 停顿分解（分析用）
 按程序输出表：`C = 理想拍(IC) + 填充(F−1) + load-use(L) + 冲刷(2T)`。报告据此画堆叠图与"CPI 超 1 的来源"表。
@@ -123,12 +123,12 @@
 **表 D：面积/时序**（§7 两行 × 两设计）。
 **结论要点**（写报告时展开）：实测加速比 < 理论 5 的成因（load-use/分支密度）；稳态 CPI 与停顿占比的对应；单周期无停顿故 CPI=1 的基线意义。
 
-## 9. 任务分解与门禁（挂接 doc/tasks.md）
+## 9. 任务分解与门禁（挂接 pipeline/doc/tasks.md）
 
 | 任务 | 内容 | 依赖 | 产出 | 验收标准 |
 |---|---|---|---|---|
-| T32 | `src/test/tb_perf.v`（5 档 `PERF_*` 编译开关 + 恒等式断言 + 正确性断言复用） | T31 全绿 | tb_perf.v | 5 档恒等式 `C==IC+(F−1)+L+2T` 断言全 PASS；正确性断言与 tb_prog_* 一致全 PASS |
-| T33 | `src/scripts/run_perf.ps1` + 汇总 CSV | T32 | run_perf.ps1、`out/perf_summary.csv` | 一键 5 档；CSV 列齐全含恒等式结果；== PERF ALL PASS == |
+| T32 | `pipeline/src/test/tb_perf.v`（5 档 `PERF_*` 编译开关 + 恒等式断言 + 正确性断言复用） | T31 全绿 | tb_perf.v | 5 档恒等式 `C==IC+(F−1)+L+2T` 断言全 PASS；正确性断言与 tb_prog_* 一致全 PASS |
+| T33 | `pipeline/src/scripts/run_perf.ps1` + 汇总 CSV | T32 | run_perf.ps1、`pipeline/src/scripts/out/perf_summary.csv` | 一键 5 档；CSV 列齐全含恒等式结果；== PERF ALL PASS == |
 | T34 | 单周期基线：IC→理论基线表 +（可选）ref 副本综合复测 Fmax/资源 | T33 | 基线表、复测数据（注明来源） | §8 表 B/D 数据齐；数据来源逐项注明 |
 | T35 | 报告性能章节素材：表 A–D、图、结论分析 | T34 | 报告/PPT 素材 | 覆盖 require"量化性能对比"验收点；恒等式与停顿分析自洽 |
 

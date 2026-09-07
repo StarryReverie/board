@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // decode.v — 主译码 + 立即数扩展（ID 段纯组合）
-//   文档：doc/modules/decode.md（26 行真值表为权威）；宏：defines/*.v
+//   文档：pipeline/doc/modules/decode.md（26 行真值表为权威）；宏：pipeline/src/defines/*.v
 //   口径：
 //     - 未知/非法编码控制全 0（reg_write=0 ⇒ 等效 NOP，无副作用）；
 //     - rd/rs1/rs2 恒为字段拆解值（reg_write=0 时无写/无冒险影响）；

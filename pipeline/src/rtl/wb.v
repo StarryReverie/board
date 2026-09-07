@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // wb.v — 回写选路（WB 段纯组合）
-//   文档：doc/modules/wb.md
+//   文档：pipeline/doc/modules/wb.md
 //   口径：wb_data = memwb_mem_to_reg ? memwb_rdata : memwb_alu_result；
 //         同一 wb_data 同时供 regfile 写口与 MEM/WB 前递源（wb_fwd_val）。
 //=============================================================================

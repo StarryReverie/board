@@ -1,8 +1,8 @@
 @echo off
 rem =====================================================================
 rem  exp1 Vivado 工程入口（计组实验一：流水线 CPU core）
-rem  双击运行：打开仓库根 vivado/board.xpr（exp1 工程目录 = exp1(=仓库根)/vivado；
-rem  缺失则先自动重建；与 exp2/vivado 互不影响）
+rem  双击运行：打开 pipeline/vivado/board.xpr（exp1 工程目录 = pipeline/vivado；
+rem  缺失则先自动重建；与 UART/vivado 互不影响）
 rem  可用环境变量 XVIVADO_ROOT 覆盖 Vivado 安装目录
 rem =====================================================================
 setlocal

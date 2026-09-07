@@ -1,8 +1,8 @@
 #=============================================================================
 # console.S — U40 固定固件：console（banner + 键盘回显）
-#   文档：soc/doc/firmware.md（子程序口径/字符串方案）；exp2/doc/interface.md §3
+#   文档：soc/doc/firmware.md（子程序口径/字符串方案）；UART/doc/interface.md §3
 #   I/O 模型：程序查询（轮询 STAT.TX_BUSY/RX_VALID，lw=in/r、sw=out/w）
-#   指令约束：仅 26 条冻结集 + 白名单伪指令 li/j/ret/mv/nop（doc/isa.md §3）
+#   指令约束：仅 26 条冻结集 + 白名单伪指令 li/j/ret/mv/nop（pipeline/doc/isa.md §3）
 #   数据区：dmem 复位不清 → 启动时把 banner 字常量 sw 自初始化进 BANNER_BUF
 #           （复位重跑幂等），再逐字 lw 拆分发送——演示 dmem 读写（做法一）
 #   栈：sp=STACK_TOP，print_banner 嵌套调用（→uart_putc）需保存/恢复 ra

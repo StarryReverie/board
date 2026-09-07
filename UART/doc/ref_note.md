@@ -4,7 +4,7 @@
 
 ---
 
-## 1. 计组 CPU core 关键口径（引用 `../../doc/top_design.md` v1.4）
+## 1. 计组 CPU core 关键口径（引用 `../../pipeline/doc/top_design.md` v1.4）
 
 | 主题 | 口径 | 对本实验的意义 |
 |---|---|---|

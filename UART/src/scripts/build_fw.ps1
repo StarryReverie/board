@@ -1,14 +1,14 @@
 ﻿<#
 =============================================================================
- build_fw.ps1 — exp2 固件构建（U40）：console.S → console_rom.hex + console_init.vh
-   * 输入: exp2/src/test/<Name>.S
+ build_fw.ps1 — UART 固件构建（U40）：console.S → console_rom.hex + console_init.vh
+   * 输入: UART/src/test/<Name>.S
    * 输出:
-       exp2/src/test/<Name>_rom.hex    objcopy -O verilog 字节式（$readmemh 直读）
-       exp2/src/test/<Name>_init.vh    imem 综合固化镜像（默认按 -PadBytes 补零到 512 字节=下板 IMEM_BYTES；4KB 口径传 -PadBytes 4096；
+       UART/src/test/<Name>_rom.hex    objcopy -O verilog 字节式（$readmemh 直读）
+       UART/src/test/<Name>_init.vh    imem 综合固化镜像（默认按 -PadBytes 补零到 512 字节=下板 IMEM_BYTES；4KB 口径传 -PadBytes 4096；
                                        供 imem.v 的 `ifdef IMEM_INIT_VH 装载）
-       src/scripts/out/asm/            .o/.lst（objdump 反汇编清单）
+       pipeline/src/scripts/out/asm/            .o/.lst（objdump 反汇编清单）
    * 校验（U40 验收）:
-       1) 反汇编指令助记符 ⊆ 26 条冻结集（doc/isa.md §1）
+       1) 反汇编指令助记符 ⊆ 26 条冻结集（pipeline/doc/isa.md §1）
        2) .hex 字节数 = 指令数×4
    * 工具: riscv-none-elf-as/objcopy/objdump（xPack，PATH 或默认目录）
    * 用法: .\build_fw.ps1 [-Name console] [-PadBytes 512]
@@ -20,8 +20,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$root    = Split-Path -Parent $PSScriptRoot          # exp2/src
-$exp2    = Split-Path -Parent $root                  # exp2
+$root    = Split-Path -Parent $PSScriptRoot          # UART/src
+$exp2    = Split-Path -Parent $root                  # UART
 $testDir = Join-Path $root 'test'
 $outDir  = Join-Path $PSScriptRoot 'out\asm'
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
@@ -48,7 +48,7 @@ if ($LASTEXITCODE -ne 0) { Write-Host "[FAIL] as $Name"; exit 1 }
 if ($LASTEXITCODE -ne 0) { Write-Host "[FAIL] objcopy $Name"; exit 1 }
 & riscv-none-elf-objdump -d -M no-aliases $o > $lst
 
-# ---- 校验 1：指令子集（26 条冻结集，doc/isa.md §1）----
+# ---- 校验 1：指令子集（26 条冻结集，pipeline/doc/isa.md §1）----
 $allowed = @('add','sub','sll','slt','sltu','xor','srl','sra','or','and',
              'addi','slli','slti','sltiu','xori','srli','srai','ori','andi',
              'lui','lw','sw','beq','bne','jal','jalr')

@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // reset_sync.v — 复位同步器（板上按键 → core 语义 rst）
-//   文档：exp2/doc/modules/soc_top.md（reset_sync 小节）
+//   文档：soc/doc/modules/soc_top.md（reset_sync 小节）
 //   口径：rst_n（低有效按键）→ **异步置位、同步释放**（2 级同步）→
 //         rst 异步高有效（对齐计组 core：posedge clk or posedge rst 用法）
 //=============================================================================

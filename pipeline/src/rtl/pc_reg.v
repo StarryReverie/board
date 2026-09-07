@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // pc_reg.v — 程序计数器（IF 段）
-//   文档：doc/modules/pc_reg.md；参考：ref/CPU/pc_reg.v
+//   文档：pipeline/doc/modules/pc_reg.md；参考：ref/CPU/pc_reg.v
 //   口径：pc_next = pc_src ? pc_branch : pc+4；
 //         posedge clk：rst→pc<=0；else if(en) pc<=pc_next（en=0 暂停保持）。
 //   复位：异步高有效（posedge rst 写法，对齐参考工程）。

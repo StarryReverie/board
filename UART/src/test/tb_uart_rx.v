@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_uart_rx.v — uart_rx 单测（exp2 U11，doc/modules/uart_rx.md 验收）
+// tb_uart_rx.v — uart_rx 单测（UART U11，UART/doc/modules/uart_rx.md 验收）
 //   CPB=8（1 bit=80ns；clk 周期 10ns）
 //   检查：复位空闲；正常帧逐位还原；背靠背两字节；停止位=0 帧错误丢弃；
 //         短毛刺不误启动；恢复后继续收。

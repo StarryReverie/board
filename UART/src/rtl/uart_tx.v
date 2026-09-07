@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
-// uart_tx.v — 8N1 发送器（UART IP，exp2）
-//   文档：exp2/doc/modules/uart_tx.md
+// uart_tx.v — 8N1 发送器（UART IP）
+//   文档：UART/doc/modules/uart_tx.md
 //   口径：
 //     - 帧：1 起始 + 8 数据(LSB 先) + 1 停止，无校验；
 //     - 节拍：clk_en = **每 bit 时间一个脉冲**（外部分频产生，

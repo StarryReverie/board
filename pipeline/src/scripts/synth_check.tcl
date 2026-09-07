@@ -1,12 +1,12 @@
 #=====================================================================
 # synth_check.tcl — 计组实验一 CPU core 综合自检（T20 验收）
 #   用法（本机 Vivado 2019.2）：
-#     vivado -mode batch -source scripts/synth_check.tcl
+#     vivado -mode batch -source pipeline/src/scripts/synth_check.tcl
 #   动作：内存式工程 + xc7a100tcsg324-1（EES-338 实物 100T）→ 读入 rtl/ 全部 RTL
 #         （defines/ 纯宏以 include_dirs 引入；test/ 为 TB 不读入）
 #         → synth_design pipeline_top
 #   判定：无 ERROR、synth_design 正常收尾即通过
-#   注：include_dirs=仓库根，模块内 `include "defines/*.v" 由此解析
+#   注：include_dirs=pipeline/src，模块内 `include "defines/*.v" 由此解析
 #=====================================================================
 
 set root [file normalize [file dirname [info script]]/..]

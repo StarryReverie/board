@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
-// uart_rx.v — 8N1 接收器（UART IP，exp2）
-//   文档：exp2/doc/modules/uart_rx.md
+// uart_rx.v — 8N1 接收器（UART IP）
+//   文档：UART/doc/modules/uart_rx.md
 //   口径：
 //     - 输入 rx 内部打两拍（rx1/rx2）防亚稳态；
 //     - 位定时：内部以**系统时钟**计数（参数 CLKS_PER_BIT），

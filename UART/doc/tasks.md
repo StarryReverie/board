@@ -1,6 +1,6 @@
-# 汇编实验任务分解与验收标准（exp2）
+# 汇编实验任务分解与验收标准（UART）
 
-> 工程根：`exp2/`（**实验二交付物 = UART 控制器 IP**）；SoC 集成层=`../soc/`（**整个项目的顶层，两课共建**）。总体设计文档：本目录（tasks/top_design/interface/modules）+ `../soc/doc/`（SoC 顶层设计/下板方案/固件/机器码）。根目录原 `../汇编实验设计方案.md`（v1.0/v1.1）内容已全部并入文档体系并于 2026-09-04 删除。跨课程契约以 `../../doc/`（top_design、isa、tasks §6 T40–T44、modules/dbus_decode.md）为单源，本目录文档引用不重复定义。状态随执行更新。
+> 工程根：`UART/`（**实验二交付物 = UART 控制器 IP**）；SoC 集成层=`../soc/`（**整个项目的顶层，两课共建**）。总体设计文档：本目录（tasks/top_design/interface/modules）+ `../soc/doc/`（SoC 顶层设计/下板方案/固件/机器码）。根目录原 `../汇编实验设计方案.md`（v1.0/v1.1）内容已全部并入文档体系并于 2026-09-04 删除。跨课程契约以 `../../pipeline/doc/`（top_design、isa、tasks §6 T40–T44、modules/dbus_decode.md）为单源，本目录文档引用不重复定义。状态随执行更新。
 
 ---
 
@@ -34,7 +34,7 @@
 
 ## 2. 模块编码任务（每模块：先文档→编码→单测 TB）
 
-> 仓库布局（参考实验1规范）：**IP 代码统一于 `src/`**——RTL `src/rtl/`、TB `src/test/`（`tb_*.v`）；文档 `doc/`。SoC 集成层在 `../soc/`（rtl/xdc/test 固件/doc）；计组 core 在 `../../src/rtl/`（引用不复制）；构建工具已删（2026-09-07）。
+> 仓库布局（参考实验1规范）：**IP 代码统一于 `src/`**——RTL `src/rtl/`、TB `src/test/`（`tb_*.v`）；文档 `doc/`。SoC 集成层在 `../soc/`（rtl/xdc/test 固件/doc）；计组 core 在 `../../pipeline/src/rtl/`（引用不复制）；构建工具已删（2026-09-07）。
 
 | 任务 | 模块/文件 | 依赖 | 产出 | 验收标准（可测） |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@
 
 ## 4. 固件与镜像任务（SoC 集成层，路径 ../soc/）
 
-> 软件口径、子程序代码与字符串方案见 `../soc/doc/firmware.md`（与 U40/U41 配套）。构建脚本 build_fw.ps1 随 2026-09-07 结构调整保留上游修复版（`exp2/src/scripts/build_fw.ps1`），其余构建脚本已删；手动流程见 firmware.md §6（需要时可从 git 历史恢复）。
+> 软件口径、子程序代码与字符串方案见 `../soc/doc/firmware.md`（与 U40/U41 配套）。构建脚本 build_fw.ps1 随 2026-09-07 结构调整保留上游修复版（`UART/src/scripts/build_fw.ps1`），其余构建脚本已删；手动流程见 firmware.md §6（需要时可从 git 历史恢复）。
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|

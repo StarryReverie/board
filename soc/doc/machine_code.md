@@ -8,7 +8,7 @@
 |---|---|---|
 | IMEM（哈佛，只读） | `0x0000_0000` 起（仿真 4KB；**下板 build 512B**） | 51 条指令（0x00–0xCC），综合期 .vh 固化，上电 PC=0 自跑 |
 | DMEM（数据） | `0x0000_0000`–`0x0FFF` | `0x40`–`0x57`：banner 字串（6 字，自初始化）；`0x100` 顶向下：栈（sp=0x100，下板 256B 顶；仿真 4KB 亦兼容） |
-| MMIO 窗口 | `0x0000_4000` | TX(+0)/STAT(+4)/RX(+8) 字槽，`lw`=in/r、`sw`=out/w（isa.md §4 / interface.md §3） |
+| MMIO 窗口 | `0x0000_4000` | TX(+0)/STAT(+4)/RX(+8) 字槽，`lw`=in/r、`sw`=out/w（pipeline/doc/isa.md §4 / UART/doc/interface.md §3） |
 
 寄存器使用约定：`t0`=UART_BASE（putc/getc 全局专用）；`t1`=STAT 轮询临时；`a0`=putc 字符/ getc 返回；`sp`=栈顶（0x100，下板 256B 顶）；`t4/t3/t2`=print_banner 指针/计数/字值；`ra`=返回地址（print_banner 内压栈保护）。
 

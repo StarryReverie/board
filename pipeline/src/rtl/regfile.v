@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // regfile.v — 寄存器堆（ID 读口 + WB 写口）
-//   文档：doc/modules/regfile.md；参考：ref/CPU/regfile.v
+//   文档：pipeline/doc/modules/regfile.md；参考：ref/CPU/regfile.v
 //   口径：
 //     - reg x[31:1]，x0 恒 0；写 waddr=0 无效；
 //     - 写：posedge clk（rst 异步高有效清全 0；we&&waddr!=0 → x[waddr]<=wdata）；

@@ -1,9 +1,9 @@
 # 性能分析报告（实验一 · 实测数据 v1.0）
 
 > 日期：2026-09-06 ｜ 状态：**仿真侧实测完成（T32/T33 落地）；Fmax/面积待综合侧（T34 复测）**
-> 数据来源：本机 Vivado 2019.2 xsim 实测；原始记录 `src/scripts/out/perf_summary.csv`
-> 方法与口径：`doc/perf_analysis.md`（方案）；测量 TB `src/test/tb_perf.v`（T32）；运行器 `src/scripts/run_perf.ps1`（T33）
-> 结论用途：课程报告"量化性能对比"章节素材（配合 `doc/perf_analysis.md` §8 模板）
+> 数据来源：本机 Vivado 2019.2 xsim 实测；原始记录 `pipeline/src/scripts/out/perf_summary.csv`
+> 方法与口径：`pipeline/doc/perf_analysis.md`（方案）；测量 TB `pipeline/src/test/tb_perf.v`（T32）；运行器 `pipeline/src/scripts/run_perf.ps1`（T33）
+> 结论用途：课程报告"量化性能对比"章节素材（配合 `pipeline/doc/perf_analysis.md` §8 模板）
 
 ---
 
@@ -67,7 +67,7 @@
 
 - **同频（100 MHz）下结构加速比 < 1 是预期的**：单周期 CPI=1 无停顿；流水线 CPI=1.20–1.40 含冻结+冲刷开销。小程序的固定开销使差距更明显。
 - **流水线的收益在频率**：时间加速比 = 结构加速比 × (f_流水线/f_单周期)。单周期关键路径 ≈ 整条数据通路（取指→译码→读寄存器→ALU→访存→写回），Fmax 显著低于 5 级流水线（每级 1/5 路径 + 段间寄存器）。待 T34 同器件复测得两设计 Fmax 后填入表 D（本机 Vivado 2019.2 时序报告环节已知会空转，移至综合侧执行）。
-- 若大三报告留有当年 Fmax/实测数据，按 `doc/ref_note.md` §4 注明出处引用作旁证。
+- 若大三报告留有当年 Fmax/实测数据，按 `pipeline/doc/ref_note.md` §4 注明出处引用作旁证。
 
 ## 5. 分析口径提醒（报告引用时）
 

@@ -1,8 +1,8 @@
 #=====================================================================
-# synth_check.tcl — exp2（UART SoC）综合自检（含固件固化 + XDC 校验）
-#   用法：vivado -mode batch -source exp2/src/scripts/synth_check.tcl
-#   动作：内存式工程 + xc7a100tcsg324-1 → 读入 exp2 rtl + 计组 core rtl
-#         （include：exp2/src、计组 src、固件 ROM 目录 out/fw_rom）
+# synth_check.tcl — UART（UART SoC）综合自检（含固件固化 + XDC 校验）
+#   用法：vivado -mode batch -source UART/src/scripts/synth_check.tcl
+#   动作：内存式工程 + xc7a100tcsg324-1 → 读入 UART rtl + 计组 core rtl
+#         （include：UART/src、计组 pipeline/src、固件 ROM 目录 out/fw_rom）
 #         → verilog_define IMEM_INIT_VH（启用 imem.v 的 initial 装载）
 #         → synth_design soc_top（不含 XDC——create_clock 触发时序引擎
 #           加载，本机 Vivado 2019.2 在此空转；时序/实现留综合侧执行，
@@ -17,7 +17,7 @@ set scr   [file dirname [file normalize [info script]]]
 set src   [file dirname $scr]
 set exp2  [file dirname $src]
 set board [file dirname $exp2]
-set coreSrc [file join $board src]
+set coreSrc [file join $board pipeline src]
 
 # ---- 固件 ROM：console_init.vh → out/fw_rom/imem_init.vh ----
 set fwRom  [file join $scr out fw_rom]

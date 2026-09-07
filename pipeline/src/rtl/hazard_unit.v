@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // hazard_unit.v — 冲突处理单元（段间协调，纯组合）
-//   文档：doc/modules/hazard_unit.md（判定逻辑权威）
+//   文档：pipeline/doc/modules/hazard_unit.md（判定逻辑权威）
 //   口径：
 //     前递（A/B 同规则，EX/MEM 优先，两个源同时命中取 EX/MEM）：
 //       exmem_reg_write && exmem_rd!=0 && !exmem_mem_read && exmem_rd==x → sel=1

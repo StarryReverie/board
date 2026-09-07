@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // dmem.v — 数据存储（MEM 段：同步写/组合读）
-//   文档：doc/modules/dmem.md；尺寸宏：defines/const_define.v
+//   文档：pipeline/doc/modules/dmem.md；尺寸宏：pipeline/src/defines/const_define.v
 //   口径：
 //     - 字节数组 reg[7:0] mem[0:DMEM_BYTES-1]，小端；wmask 字节写（sw 全字）；
 //     - 写=posedge clk；读=组合（周期内稳定，mem_wb 末沿捕获）；

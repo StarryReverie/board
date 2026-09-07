@@ -2,7 +2,7 @@
 // const_define.v — 计组实验一常量宏
 //   - ALU 操作码 / 标志位位号 / 立即数格式沿用 ref/CPU/defines/const_define.v
 //   - 新增：存储规模（IMEM_WORDS/DMEM_WORDS）、NOP 指令编码
-//   - 修改须先改 doc/top_design.md §2/§6 与 doc/isa.md 并登记变更记录
+//   - 修改须先改 pipeline/doc/top_design.md §2/§6 与 pipeline/doc/isa.md 并登记变更记录
 //=============================================================================
 `ifndef CONST_DEFINE_V
 `define CONST_DEFINE_V
@@ -41,7 +41,7 @@
 //   4KB×2 = 65k FF：XC7A35T（41.6k FF）超限且 Vivado 器件/时序加载阶段空转；
 //   1KB×2 组合读逻辑 ≈35.5k LUT：XC7A35T（20.8k LUT）超限；
 //   XC7A100T（63.4k LUT/126.8k FF）容量更大；本工程上板取 512B/256B，
-//   在两器件下资源与实现开销均收敛（详见 exp2/doc/tasks.md）。
+//   在两器件下资源与实现开销均收敛（详见 UART/doc/tasks.md）。
 // **地址索引固定 addr[11:0]**：本参数化只支持 ≤4KB 缩容场景，不可扩容。
 // 覆盖方式：综合缩容**至少**覆盖 IMEM_BYTES/DMEM_BYTES；IMEM_WORDS/DMEM_WORDS
 // 当前仅用于口径/文档说明（xvlog 宏体内不递归展开，BYTES 无法由 WORDS 派生）。

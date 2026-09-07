@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // id_ex.v — ID/EX 段间寄存器
-//   文档：doc/modules/id_ex.md
+//   文档：pipeline/doc/modules/id_ex.md
 //   口径：posedge clk：rst→全 0；else if(bubble)→全 0（灌气泡，load-use/
 //         分支冲刷后丢弃 ID 指令）；else→锁存全部输入。无独立 en（气泡=清零）。
 //   输出为寄存输出（idex_*），供 execute / hazard_unit。

@@ -1,11 +1,11 @@
-# exp2 — 汇编与接口课程设计代码（实验二：UART 控制器 IP）
+# UART — 汇编与接口课程设计代码（实验二：UART 控制器 IP）
 
-存放汇编与接口课程设计的**交付物——独立 UART 控制器 IP Core**（uart_ip_top 单模块：寄存器层已并入 + 内部层 uart_tx/uart_rx + 模块/IP 级测试）。**SoC 整机集成不属于实验二内容**：它是整个项目的顶层（两课共建），代码与文档在仓库根 [`../soc/`](../soc/)。设计文档在本目录 `doc/`（tasks/top_design/interface/ref_note/future_extensions/modules，仿 board/doc 体系）；跨课程架构口径以 `../doc/top_design.md`、`../doc/isa.md`、`../doc/tasks.md` §6 为准。
+存放汇编与接口课程设计的**交付物——独立 UART 控制器 IP Core**（uart_ip_top 单模块：寄存器层已并入 + 内部层 uart_tx/uart_rx + 模块/IP 级测试）。**SoC 整机集成不属于实验二内容**：它是整个项目的顶层（两课共建），代码与文档在仓库根 [`../soc/`](../soc/)。设计文档在本目录 `doc/`（tasks/top_design/interface/ref_note/future_extensions/modules，仿 pipeline/doc 体系）；跨课程架构口径以 `../pipeline/doc/top_design.md`、`../pipeline/doc/isa.md`、`../pipeline/doc/tasks.md` §6 为准。
 
 ## 目录结构
 
 ```text
-exp2/
+UART/
  ├─ doc/         IP 设计文档
  │   ├─ require                 任务书节选
  │   ├─ tasks.md                任务分解/验收/里程碑/分工（U10–U15 等）
@@ -22,7 +22,7 @@ exp2/
 
 ## SoC 集成（整个项目的顶层）
 
-`soc_top`（`../soc/rtl/soc_top.v`）＝ 计组 core（`../src/rtl/pipeline_top`，SOC_BUILD=1）＋ 本 IP（`uart_ip_top`）＋ 复位同步——core 穿出的 `cs_mmio/reg_off` 以 `addr={reg_off,2'b00}` 接入 IP。固件/XDC/系统级 TB/下板方案在 `../soc/`（`board_runbook.md` / `firmware.md` / `machine_code.md`）。
+`soc_top`（`../soc/rtl/soc_top.v`）＝ 计组 core（`../pipeline/src/rtl/pipeline_top`，SOC_BUILD=1）＋ 本 IP（`uart_ip_top`）＋ 复位同步——core 穿出的 `cs_mmio/reg_off` 以 `addr={reg_off,2'b00}` 接入 IP。固件/XDC/系统级 TB/下板方案在 `../soc/`（`board_runbook.md` / `firmware.md` / `machine_code.md`）。
 
 ## 设计要点（定稿 v1.2）
 

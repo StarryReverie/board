@@ -1,6 +1,6 @@
 # ==================================================================
-# demo.asm — 简易演示样例（由 src/scripts/simple_asm.py 自产 .hex）
-# 指令集口径：doc/isa.md（26 条冻结 + isa §3 伪指令白名单）
+# demo.asm — 简易演示样例（由 pipeline/src/scripts/simple_asm.py 自产 .hex）
+# 指令集口径：pipeline/doc/isa.md（26 条冻结 + isa §3 伪指令白名单）
 # 功能：把 5,4,3,2,1 递减写入 dmem[0x40..0x50]，每写一个就地 lw 读回并累加，
 #       结果存 dmem[0]，再用移位指令做 slli/srli/srai 演示，最后 beq 自循环 HALT。
 # 演示点：add/sub（RAW 前递）、sw→lw 同址往返、lw 后紧邻 add（load-use 恰 1 气泡）、

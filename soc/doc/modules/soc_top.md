@@ -28,7 +28,7 @@ uart_ip_top ── uart_tx_pin / ◄── uart_rx_pin
 ## 时钟
 - 单时钟域 `clk`（100 MHz）；波特率 clk_en 分频（uart_ip_top 寄存器层内）；uart_rx 输入打两拍防亚稳态。
 
-## 验收（U14/U32，任务见 ../exp2/doc/tasks.md）
+## 验收（U14/U32，任务见 ../UART/doc/tasks.md）
 - 例化/互联与 top_design.md §1/§2 一致；无悬空/多重驱动；Vivado 综合/实现/时序通过；上板：终端见 banner、键盘回显、复位重跑。
 
 ## 变更记录

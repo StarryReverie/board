@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_uart_ip_top.v — uart_ip_top IP 级独立测试（exp2 U15；uart_ip_top.md 验收）
+// tb_uart_ip_top.v — uart_ip_top IP 级独立测试（UART U15；UART/doc/modules/uart_ip_top.md 验收）
 //   CLKS_PER_BIT=4（bit=40ns）。无任何 CPU 依赖：总线直接驱动、串行帧逐位收发。
 //   检查：
 //     P1 默认态：各槽读 0 / cs=0 读 0 / TX 引脚空闲高

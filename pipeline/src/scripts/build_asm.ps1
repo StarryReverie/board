@@ -1,11 +1,11 @@
 ﻿<#
 =============================================================================
  build_asm.ps1 — 汇编测试程序 → 机器码镜像（T31 前置工具）
-   * 输入: test/*.asm
-   * 输出: test/<名>_rom.hex（objcopy -O verilog 字节式，$readmemh 直读）
-   * 副产品(scripts/out/asm/): .o 与 objdump 反汇编清单（供核对/报告）
+   * 输入: pipeline/src/test/*.asm
+   * 输出: pipeline/src/test/<名>_rom.hex（objcopy -O verilog 字节式，$readmemh 直读）
+   * 副产品(pipeline/src/scripts/out/asm/): .o 与 objdump 反汇编清单（供核对/报告）
    * 工具: riscv-none-elf-as（xPack GNU RISC-V，PATH 或默认安装目录）
-   * 用法: .\scripts\build_asm.ps1 [-One <basename>]
+   * 用法: .\pipeline\src\scripts\build_asm.ps1 [-One <basename>]
 =============================================================================
 #>
 param([string]$One = '')

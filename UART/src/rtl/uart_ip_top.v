@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 //=============================================================================
 // uart_ip_top.v — UART 控制器 IP 顶层（实验二交付物，独立可复用 IP Core）
-//   文档：exp2/doc/modules/uart_ip_top.md（端口/译码/验收权威）
-//         exp2/doc/top_design.md（IP 顶层设计）
+//   文档：UART/doc/modules/uart_ip_top.md（端口/译码/验收权威）
+//         UART/doc/top_design.md（IP 顶层设计）
 //   口径：
 //     - 独立 IP：寄存器层（分频 + TX 挂起/缓冲 + RX 字节/有效位 + 槽位义，
 //       原 uart_ctrl 已并入本模块）与 uart_tx/uart_rx 收发引擎一体例化，

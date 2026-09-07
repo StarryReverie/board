@@ -1,20 +1,19 @@
 #=====================================================================
-# create_vivado_proj.tcl — 生成 exp2（UART SoC）Vivado 工程
-#   用法：vivado -mode batch -source exp2/src/scripts/create_vivado_proj.tcl
-#   产出：exp2/vivado/exp2.xpr（exp2 工程目录 = exp2/vivado；本脚本只清理
-#         其中 exp2.* 自身产物，与 exp1（仓库根 vivado/）互不影响）
-#   入口：exp2/exp2_vivado.bat（双击打开/自动重建）
+# create_vivado_proj.tcl — 生成 UART（UART SoC）Vivado 工程
+#   用法：vivado -mode batch -source UART/src/scripts/create_vivado_proj.tcl
+#   产出：UART/vivado/exp2.xpr（工程目录 = UART/vivado；本脚本只清理
+#         其中 exp2.* 自身产物，与 exp1（pipeline/vivado/）互不影响）
 #   工程口径：
 #     - part: xc7a100tcsg324-1（EES-338 **实物实测为 XC7A100T**，用户手册误标 35T）
-#     - sources_1: exp2/src/rtl/*.v + 计组 src/rtl/*.v（soc_top 例化 pipeline_top）
+#     - sources_1: UART/src/rtl/*.v + 计组 pipeline/src/rtl/*.v（soc_top 例化 pipeline_top）
 #       top = soc_top
-#     - sim_1: exp2/src/test/tb_*.v，top = tb_soc_full（默认）
-#     - include 目录：exp2/src、计组 src（计组模块 `include "defines/*.v" 解析）
+#     - sim_1: UART/src/test/tb_*.v，top = tb_soc_full（默认）
+#     - include 目录：UART/src、计组 pipeline/src（计组模块 `include "defines/*.v" 解析）
 #       与 out/fw_rom（固件 ROM imem_init.vh）
 #     - verilog_define: IMEM_INIT_VH + 存储缩容（IMEM_WORDS=128=512B、
 #       DMEM_WORDS=64=256B、IMEM_BYTES=512、DMEM_BYTES=256——组合读寄存器
-#       阵列容量约束见 ../../src/defines/const_define.v 头注）
-#     - constrs_1: src/xdc/board.xdc（U32 板级约束，T5/T4/N5/P15）
+#       阵列容量约束见 ../../pipeline/src/defines/const_define.v 头注）
+#     - constrs_1: soc/xdc/board.xdc（U32 板级约束，T5/T4/N5/P15）
 #     - 文件均为原位引用（不拷贝）
 #   注：程序级 TB（tb_prog_*）经 $readmemh 读 .hex，GUI 直跑需把 hex 复制到
 #       xsim 工作目录；推荐用 run_tb.ps1 跑仿真。
@@ -24,15 +23,15 @@ set scr  [file dirname [file normalize [info script]]]
 set src  [file dirname $scr]
 set exp2 [file dirname $src]
 set board [file dirname $exp2]
-set coreSrc [file join $board src]
+set coreSrc [file join $board pipeline src]
 set proj [file join $exp2 vivado exp2]
 
-# 清理旧工程（idempotent；只清 exp2/vivado 下 exp2.*，与 exp1 的 vivado 互不影响）
+# 清理旧工程（idempotent；只清 UART/vivado 下 exp2.*，与 exp1 的 pipeline/vivado 互不影响）
 foreach suf {.xpr .cache .hw .ip_user_files .runs .sim} {
     file delete -force "$proj$suf"
 }
 
-# 建工程（exp2/vivado/ 内生成 exp2.xpr 及产物）
+# 建工程（UART/vivado/ 内生成 exp2.xpr 及产物）
 create_project exp2 [file dirname $proj] -part xc7a100tcsg324-1 -force
 set_property target_language Verilog [current_project]
 set_property simulator_language Verilog [current_project]
@@ -40,7 +39,7 @@ set_property simulator_language Verilog [current_project]
 set fs_syn [get_filesets sources_1]
 set fs_sim [get_filesets sim_1]
 
-# ---- 设计源：exp2 rtl + 计组 core rtl（原位引用）----
+# ---- 设计源：UART rtl + 计组 core rtl（原位引用）----
 set rtl_files {}
 foreach f [glob -nocomplain -directory [file join $src rtl] *.v] {
     lappend rtl_files [string map {\\ /} [file normalize $f]]
@@ -53,7 +52,7 @@ if {[llength $rtl_files] > 0} {
     set_property top soc_top $fs_syn
 }
 
-# ---- 仿真源：exp2 TB ----
+# ---- 仿真源：UART TB ----
 set tb_files {}
 foreach f [glob -nocomplain -directory [file join $src test] tb_*.v] {
     lappend tb_files [string map {\\ /} [file normalize $f]]
@@ -77,7 +76,7 @@ set_property include_dirs $incDirs $fs_syn
 set_property include_dirs $incDirs $fs_sim
 set_property verilog_define {IMEM_INIT_VH IMEM_WORDS=128 DMEM_WORDS=64 IMEM_BYTES=512 DMEM_BYTES=256} $fs_syn
 
-# ---- 板级约束（U32）：src/xdc/board.xdc ----
+# ---- 板级约束（U32）：soc/xdc/board.xdc ----
 set xdc [file join $src xdc board.xdc]
 if {[file exists $xdc]} {
     add_files -fileset constrs_1 -norecurse [string map {\\ /} [file normalize $xdc]]

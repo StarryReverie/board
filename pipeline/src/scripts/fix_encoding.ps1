@@ -20,7 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-if (-not $Root) { $Root = Split-Path -Parent (Split-Path -Parent $scriptDir) }  # 仓库根
+if (-not $Root) { $Root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptDir)) }  # 仓库根（scriptDir = pipeline/src/scripts，向上三级）
 $gbk   = [Text.Encoding]::GetEncoding(936)
 $utf8  = New-Object System.Text.UTF8Encoding($false)
 $utf8S = New-Object System.Text.UTF8Encoding($false, $true)   # 严格解码用

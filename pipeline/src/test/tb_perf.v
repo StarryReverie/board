@@ -1,8 +1,8 @@
 //=============================================================================
-// tb_perf.v — T32 性能测量 TB（doc/perf_analysis.md §5）
+// tb_perf.v — T32 性能测量 TB（pipeline/doc/perf_analysis.md §5）
 //   五档程序：PERF_TEST0（默认）/ PERF_TEST1 / PERF_SORT / PERF_COVER /
 //             PERF_HAZARD（xvlog -d 选择；run_perf.ps1 逐档编译）
-//   测量（全部经层次引用，RTL 零改动；口径见 doc/perf_analysis.md §3）：
+//   测量（全部经层次引用，RTL 零改动；口径见 pipeline/doc/perf_analysis.md §3）：
 //     EX 槽 e = rst 释放后第 e 个 posedge（#1 采样，寄存输出已稳定）
 //     真实指令：id_ex 控制字非全零（bubble/复位槽全零，译码全零不可能）
 //     伪 NOP：   br_taken 延迟 2 拍命中（flush 注入的 addi x0,x0,0，

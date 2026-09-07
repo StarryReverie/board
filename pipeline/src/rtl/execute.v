@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // execute.v — 执行组合：前递 mux + ALU + 目标加法 + 分支判决（EX 段）
-//   文档：doc/modules/execute.md（权威）；内例化 alu.v
+//   文档：pipeline/doc/modules/execute.md（权威）；内例化 alu.v
 //   口径：
 //     rs1/rs2_fwd = sel(fwd_a/b_sel){reg, EX/MEM, MEM/WB}
 //     alu_a/b   = src_a/b 选 {rs_fwd, pc/imm, 0/4}；lui: src_a=0,src_b=imm,op=OR

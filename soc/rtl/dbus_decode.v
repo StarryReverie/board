@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 //=============================================================================
 // dbus_decode.v — 数据侧总线译码（DMEM/MMIO 选路，纯组合）
-//   规范单源：计组 doc/modules/dbus_decode.md（地址分区/时序/验收）
-//   代码交付：exp2/src/rtl/（U13）；例化：计组 pipeline_top（SOC_BUILD=1）
+//   规范单源：计组 pipeline/doc/modules/dbus_decode.md（地址分区/时序/验收）
+//   代码交付：soc/rtl/（U13）；例化：计组 pipeline_top（SOC_BUILD=1）
 //   地址映射（与 isa.md v1.3 / top_design §9.2 一致）：
 //     0x0000_0000–0x0000_0FFF  → cs_dmem（数据 RAM）
 //     0x0000_4000 + {0x0,0x4,0x8} → cs_mmio（TX/STAT/RX，reg_off=addr[3:2]）

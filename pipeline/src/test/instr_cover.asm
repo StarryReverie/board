@@ -1,5 +1,5 @@
 # ==================================================================
-# instr_cover.asm — 26 条冻结指令全覆盖（doc/isa.md v1.3）
+# instr_cover.asm — 26 条冻结指令全覆盖（pipeline/doc/isa.md v1.3）
 # 运算 19：add/sub/sll/slt/sltu/xor/srl/sra/or/and + 9 条 I 型
 # 传送 3 ：lui/lw/sw     控制 4：beq/bne/jal/jalr
 # 期望终值：

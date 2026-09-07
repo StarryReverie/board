@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_alu.v — alu 单测（doc/modules/alu.md 验收口径，T30）
+// tb_alu.v — alu 单测（pipeline/doc/modules/alu.md 验收口径，T30）
 //   组合真值表 + 边界：逐 op；add 正+正溢出 OF=1；sub 相等 zero=1；
 //   移位取低 5 位；flags{CF,SF,ZF,PF} 抽查。
 //   约定：每项 PASS/FAIL 打印；结尾 === ALL PASS === / === FAIL ===

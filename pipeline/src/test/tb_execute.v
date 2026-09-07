@@ -1,5 +1,5 @@
 //=============================================================================
-// tb_execute.v — execute 单测（doc/modules/execute.md 验收，T30）
+// tb_execute.v — execute 单测（pipeline/doc/modules/execute.md 验收，T30）
 //   前递 0/1/2 选路；src_a/b 选源（rs1/imm/pc/0/4）；ALU op 结果；
 //   beq/bne 判决与目标；jal/jalr 恒 taken 与链接值；jalr 清 bit0；wdata=rs2_fwd。
 //=============================================================================

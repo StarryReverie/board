@@ -1,12 +1,12 @@
 `timescale 1ns/1ps
 //=============================================================================
 // pipeline_top.v — 顶层装配（RV32I 5 级流水线 CPU core）
-//   文档：doc/modules/pipeline_top.md（端口/互联权威）；doc/top_design.md §1–§8
+//   文档：pipeline/doc/modules/pipeline_top.md（端口/互联权威）；pipeline/doc/top_design.md §1–§8
 //   构建模式（参数 SOC_BUILD）：
 //     SOC_BUILD=0（实验一/默认）：dbus_decode 不例化——dmem.rdata 直连
 //       mem_wb.rdata；mmio 总线恒 0（H1–H5 口径不变）；
 //     SOC_BUILD=1（实验二 build，T40）：MEM 段例化 dbus_decode（代码在
-//       exp2/src/rtl/），rdata 经其 mux、dmem 写门控 we&cs_dmem、mmio 总线
+//       soc/rtl/），rdata 经其 mux、dmem 写门控 we&cs_dmem、mmio 总线
 //       穿出（cs_mmio/reg_off/mmio_we/mmio_wdata → uart_ip_top 等从机）。
 //   冲突策略：前递(EX/MEM、MEM/WB→EX) + load-use 冻结(1 气泡) +
 //              分支 EX taken 冲刷 2 条（IF/ID 置 NOP、ID/EX 气泡）。
@@ -86,7 +86,7 @@ module pipeline_top #(
 
     generate
         if (SOC_BUILD == 1) begin : soc_build
-            // 数据侧统一编址译码（T40；dbus_decode 代码在 exp2/src/rtl/）
+            // 数据侧统一编址译码（T40；dbus_decode 代码在 soc/rtl/）
             dbus_decode u_dbus (
                 .addr       (exmem_alu_result),
                 .we         (exmem_mem_write),

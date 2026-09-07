@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // imem.v — 指令存储（IF 段，字节数组、组合读 + 预留写口）
-//   文档：doc/modules/imem.md；尺寸宏：defines/const_define.v
+//   文档：pipeline/doc/modules/imem.md；尺寸宏：pipeline/src/defines/const_define.v
 //   口径：
 //     - 字节数组 reg[7:0] mem[0:IMEM_BYTES-1]，小端重组 inst={mem[a+3..a]}；
 //     - 读=组合（addr 稳定则 inst 稳定）；越界返回 0（无定义但无害）；

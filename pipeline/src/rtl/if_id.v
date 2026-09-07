@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 //=============================================================================
 // if_id.v — IF/ID 段间寄存器
-//   文档：doc/modules/if_id.md；冲刷置 NOP=`INST_NOP；en=0 保持。
+//   文档：pipeline/doc/modules/if_id.md；冲刷置 NOP=`INST_NOP；en=0 保持。
 //   时序：posedge clk：rst→全 0；else if(en)：pc<=pc_in，
 //         inst<= flush ? `INST_NOP : inst_in。
 //=============================================================================

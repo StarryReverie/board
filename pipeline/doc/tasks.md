@@ -6,31 +6,31 @@
 
 ## 0. 目标与口径
 
-分解 `doc/require` 的两门课程设计，当前聚焦**实验一：RV32I 5 级流水线 CPU**（实验二的 UART、集成、性能对比、下板在 CPU 本体定稿后追加）。
+分解 `pipeline/doc/require` 的两门课程设计，当前聚焦**实验一：RV32I 5 级流水线 CPU**（实验二的 UART、集成、性能对比、下板在 CPU 本体定稿后追加）。
 
 | 项 | 口径 |
 |---|---|
-| 指令集 | RISC-V **RV32I 子集**（`doc/isa.md` 拟定，26 条，含运算/传送/控制三类） |
+| 指令集 | RISC-V **RV32I 子集**（`pipeline/doc/isa.md` 拟定，26 条，含运算/传送/控制三类） |
 | 结构 | 5 级 `IF→ID→EX→MEM→WB`；哈佛 IMEM/DMEM 分离 |
 | 段间寄存器 | 4 组独立模块 `if_id/id_ex/ex_mem/mem_wb`（统一 `en/flush` 接口） |
 | 冲突处理 | 前递(EX/MEM、MEM/WB→EX) + load-use 冻结(1 气泡) + 分支 EX taken 冲刷 2 条；结构冒险靠存储分离 |
 | 控制器/附加 | 硬布线；溢出判断 `flags[OF]` |
 | 存储 | IMEM 指令存储运行期只读(.vh 初值装载)、预留 loader 写口(wen 恒 0)；DMEM 同步写；读均周期内组合（见 top_design §6/§9） |
-| 参考 | `ref/CPU/`（大三单周期，RV32I）——继承约定见 `doc/ref_note.md`；该工程不改动 |
+| 参考 | `ref/CPU/`（大三单周期，RV32I）——继承约定见 `pipeline/doc/ref_note.md`；该工程不改动 |
 | 语言/工具 | Verilog(沿用参考工程 Verilog-2001)；`riscv-none-elf-as -march=rv32i`（xPack GNU RISC-V，本机已装；与 musl-as 等价）+ `objcopy -O verilog` |
 | 本机职责 | 只写 源码+文档+TB+期望值+汇编镜像；仿真/综合在下板侧(Vivado) 执行 |
 
 ---
 
-## 1. 需求追溯（doc/require ↔ 任务）
+## 1. 需求追溯（pipeline/doc/require ↔ 任务）
 
 | require 原文要点 | 对应任务 |
 |---|---|
 | 特定指令集流水线处理器（级数不限），含运算/传送/控制三类；报告数据/结构/控制相关方案、测试程序、仿真 | 本 CPU（T10–T20）与 top_design.md、模块文档、T30/T31 |
-| 指令条数 ≥16 | `doc/isa.md`（T1），26 条 |
+| 指令条数 ≥16 | `pipeline/doc/isa.md`（T1），26 条 |
 | 控制器结构三选一 | 硬布线（见 top_design.md） |
 | 附加功能 ≥1 | 溢出判断 `flags[OF]`（T14，可观测出口） |
-| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `doc/perf_analysis.md`；`ref/CPU/` 基线见 T34） |
+| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `pipeline/doc/perf_analysis.md`；`ref/CPU/` 基线见 T34） |
 | 汇编与接口/外设控制器/集成 | **后追加**（实验二 §6：T40–T44） |
 | 提交物：源码/测试汇编+机器码/报告/PPT/视频/日志 | **后追加** |
 
@@ -41,16 +41,16 @@
 | 任务 | 产出 | 验收标准（全过方可编码） |
 |---|---|---|
 | T0 | **本文件** | 每条有 依赖/产出/验收；追溯表覆盖 require；状态列可用 |
-| T1 | `doc/isa.md` RV32I 子集定稿 | 指令≥16 三类齐全；每指令位域编码表；伪指令白名单；内存映射/HALT 约定；与 RV32I 官方逐条一致；评审通过 |
-| T2 | `doc/ref_note.md` | 继承/改造清单与实际代码一致；复用文件逐一点名(带路径) |
-| T3 | `doc/top_design.md` 顶层设计 | 5 段图+4 寄存器边界/字段+模块总览+连接表+时钟复位+存储+冲突策略；无未决信号；**接口变更必须先改本文件** |
-| T4 | `doc/modules/*.md`（每 RTL 文件一份） | 职责/端口/连接/时序/验收；与 top_design 一致 |
+| T1 | `pipeline/doc/isa.md` RV32I 子集定稿 | 指令≥16 三类齐全；每指令位域编码表；伪指令白名单；内存映射/HALT 约定；与 RV32I 官方逐条一致；评审通过 |
+| T2 | `pipeline/doc/ref_note.md` | 继承/改造清单与实际代码一致；复用文件逐一点名(带路径) |
+| T3 | `pipeline/doc/top_design.md` 顶层设计 | 5 段图+4 寄存器边界/字段+模块总览+连接表+时钟复位+存储+冲突策略；无未决信号；**接口变更必须先改本文件** |
+| T4 | `pipeline/doc/modules/*.md`（每 RTL 文件一份） | 职责/端口/连接/时序/验收；与 top_design 一致 |
 
 ---
 
 ## 3. 模块编码任务（每模块：先文档→再编码→再单测 TB）
 
-> 仓库布局：代码统一于 `src/`（RTL `*.v` 于 `src/rtl/`；宏 `src/defines/`；汇编/TB `src/test/`；工具 `src/scripts/`）；文档 `doc/`；汇编实验 `exp2/`（UART IP 交付）独立；SoC 集成顶层 `soc/`（两课共建）；参考工程 `ref/CPU/` 不动。`[组合]`=纯组合；`[寄存器]`=时序段间寄存器。
+> 仓库布局：代码统一于 `pipeline/src/`（RTL `*.v` 于 `pipeline/src/rtl/`；宏 `pipeline/src/defines/`；汇编/TB `pipeline/src/test/`；工具 `pipeline/src/scripts/`）；文档 `pipeline/doc/`；汇编实验 `UART/`（UART IP 交付）独立；SoC 集成顶层 `soc/`（两课共建）；参考工程 `ref/CPU/` 不动。`[组合]`=纯组合；`[寄存器]`=时序段间寄存器。
 
 | 任务 | 模块/文件 | 依赖 | 产出 | 验收标准（可测） |
 |---|---|---|---|---|
@@ -72,18 +72,18 @@
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|
-| T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
-| T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
-| T32 | 性能 TB：`test/tb_perf.v`（5 档 `PERF_*` 编译开关；WB 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用） | T31 全绿 | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` 5 档全 PASS；正确性断言与 tb_prog_* 一致（方案 §5） |
-| T33 | `scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `out/perf_summary.csv` | T32 | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
+| T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `pipeline/src/test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
+| T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `pipeline/src/test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
+| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（5 档 `PERF_*` 编译开关；WB 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用） | T31 全绿 | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` 5 档全 PASS；正确性断言与 tb_prog_* 一致（方案 §5） |
+| T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv` | T32 | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
 | T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动） | T33 | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
 | T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析 | T34 | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
 
-> 状态（2026-09-06）：**T32（`test/tb_perf.v`）与 T33（`scripts/run_perf.ps1`）已落地**——5 档程序实测全绿（恒等式 5/5 + 正确性断言全绿，随 run_tb 20 项回归）；实测数据与结论见 `doc/perf_report.md`。**T34/T35 待执行**（单周期 Fmax 复测在综合侧，本机时序报告环节已知空转限制）。
+> 状态（2026-09-06）：**T32（`pipeline/src/test/tb_perf.v`）与 T33（`pipeline/src/scripts/run_perf.ps1`）已落地**——5 档程序实测全绿（恒等式 5/5 + 正确性断言全绿，随 run_tb 20 项回归）；实测数据与结论见 `pipeline/doc/perf_report.md`。**T34/T35 待执行**（单周期 Fmax 复测在综合侧，本机时序报告环节已知空转限制）。
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
-- `scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
-- `verify_hex.py`（规划）：解码 `.hex` 与 `objdump -d` 对照，防工具链越界指令（当前以 build_asm 的 .lst 反汇编清单核对，见 `scripts/out/asm/`）。
+- `pipeline/src/scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `pipeline/src/test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
+- `verify_hex.py`（规划）：解码 `.hex` 与 `objdump -d` 对照，防工具链越界指令（当前以 build_asm 的 .lst 反汇编清单核对，见 `pipeline/src/scripts/out/asm/`）。
 
 ---
 
@@ -106,13 +106,13 @@
 
 | 任务 | 内容 | 产出 | 验收标准 |
 |---|---|---|---|
-| T40 | 数据侧总线译码：`dbus_decode.v`（MEM 段按地址选 {数据 RAM, MMIO 窗口}；映射定稿见 top_design §9.2 / isa.md §4：TX/STAT/RX 槽） | `dbus_decode.v` + `doc/modules/dbus_decode.md` | 低区命中 dmem、窗口命中 uart 槽（TX 写触发/STAT 位义/RX 读清位）；字访问正确；不新增气泡，回归 H1–H5 不变 |
+| T40 | 数据侧总线译码：`dbus_decode.v`（MEM 段按地址选 {数据 RAM, MMIO 窗口}；映射定稿见 top_design §9.2 / isa.md §4：TX/STAT/RX 槽） | `dbus_decode.v` + `pipeline/doc/modules/dbus_decode.md` | 低区命中 dmem、窗口命中 uart 槽（TX 写触发/STAT 位义/RX 读清位）；字访问正确；不新增气泡，回归 H1–H5 不变 |
 | T41 | UART 全双工从机封装（复用基础任务 IP）：`uart_tx` + `uart_rx`（位中心采样） + TX/STAT/RX 字槽 + 忙写丢弃 / RX 读清位 | `uart_ip_top.v`（IP 顶层，寄存器层已并入）+ 单测 TB（含 IP 级独立测试） | 收发逐位与字读回正确；TX_BUSY/RX_VALID 位义符合 top_design §9.4；波特率可配（分频参数仿真可覆盖） |
-| T42 | 固件/驱动（**固定程序**，.vh 固化）：`.equ` 内存映射头、putc/getc、console 主循环（banner + 回显） | `test/*.asm → *.hex/.vh` + verify | 上电自运行打印 banner；键盘回显往返正确（无 reload 命令） |
+| T42 | 固件/驱动（**固定程序**，.vh 固化）：`.equ` 内存映射头、putc/getc、console 主循环（banner + 回显） | `pipeline/src/test/*.asm → *.hex/.vh` + verify | 上电自运行打印 banner；键盘回显往返正确（无 reload 命令） |
 | T43 | 系统级 TB：行为级 UART 模型（双向收发）+ 整机跑固定固件 | `soc/test/tb_soc_*.v` | banner 字节与注释期望相等；回显往返断言 PASS；复位重跑一致 |
 | T44 | 下板：soc_top 例化 + 复位同步 + XDC（T5 晶振 / P15 复位键 / T4 uart_tx / N5 uart_rx）+ 综合/时序 | 约束 + 工程 | 终端 115200-8-N-1 见 banner、键盘回显正常；≤5 min 演示视频 |
 
-> ~~原 T42（loader 在线重载）~~：固化单程序模型下取消；imem 写口保留预留（恒 0）。若未来恢复，先回写 top_design §9 与 tasks.md（触发条件见 `doc/future_extensions.md` §1/§2）。
+> ~~原 T42（loader 在线重载）~~：固化单程序模型下取消；imem 写口保留预留（恒 0）。若未来恢复，先回写 top_design §9 与 tasks.md（触发条件见 `pipeline/doc/future_extensions.md` §1/§2）。
 
 ---
 
@@ -125,7 +125,7 @@
 | IMEM 综合初始化 | 用 `.vh`(initial 字面量) 装载；`.hex` 仅供仿真；两路一致性由脚本校验 |
 | 大三单周期数据 | `ref/CPU/` 保留作报告/性能对比引用，本阶段不动 |
 | HALT 停机约定 | 程序末尾自循环(`beq x0,x0,-`)，TB 检测 PC 不动即结束并比对结果 |
-| 未来可拓展设想（`doc/extensions.md`：取指侧 boot ROM 分区、monitor 固件模型、imem 扩容、MMIO 从机扩充等） | 均**暂缓实现**；各条标注改动量与触发条件，实现前须先回写 top_design/tasks 正文 |
+| 未来可拓展设想（`pipeline/doc/future_extensions.md`：取指侧 boot ROM 分区、monitor 固件模型、imem 扩容、MMIO 从机扩充等） | 均**暂缓实现**；各条标注改动量与触发条件，实现前须先回写 top_design/tasks 正文 |
 
 ---
 
