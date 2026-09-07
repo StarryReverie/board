@@ -5,13 +5,15 @@
 #         其中 exp2.* 自身产物，与 exp1（仓库根 vivado/）互不影响）
 #   入口：exp2/exp2_vivado.bat（双击打开/自动重建）
 #   工程口径：
-#     - part: xc7a35tcsg324-1（EES-338）
+#     - part: xc7a100tcsg324-1（EES-338 **实物实测为 XC7A100T**，用户手册误标 35T）
 #     - sources_1: exp2/src/rtl/*.v + 计组 src/rtl/*.v（soc_top 例化 pipeline_top）
 #       top = soc_top
 #     - sim_1: exp2/src/test/tb_*.v，top = tb_soc_full（默认）
 #     - include 目录：exp2/src、计组 src（计组模块 `include "defines/*.v" 解析）
 #       与 out/fw_rom（固件 ROM imem_init.vh）
-#     - verilog_define: IMEM_INIT_VH（imem.v 启用 initial 固件装载，固化程序模型）
+#     - verilog_define: IMEM_INIT_VH + 存储缩容（IMEM_WORDS=128=512B、
+#       DMEM_WORDS=64=256B、IMEM_BYTES=512、DMEM_BYTES=256——组合读寄存器
+#       阵列容量约束见 ../../src/defines/const_define.v 头注）
 #     - constrs_1: src/xdc/board.xdc（U32 板级约束，T5/T4/N5/P15）
 #     - 文件均为原位引用（不拷贝）
 #   注：程序级 TB（tb_prog_*）经 $readmemh 读 .hex，GUI 直跑需把 hex 复制到
@@ -31,7 +33,7 @@ foreach suf {.xpr .cache .hw .ip_user_files .runs .sim} {
 }
 
 # 建工程（exp2/vivado/ 内生成 exp2.xpr 及产物）
-create_project exp2 [file dirname $proj] -part xc7a35tcsg324-1 -force
+create_project exp2 [file dirname $proj] -part xc7a100tcsg324-1 -force
 set_property target_language Verilog [current_project]
 set_property simulator_language Verilog [current_project]
 
@@ -73,7 +75,7 @@ if {[file exists [file join $src test console_init.vh]]} {
 set incDirs [list [string map {\\ /} $src] [string map {\\ /} $coreSrc] [string map {\\ /} $fwRom]]
 set_property include_dirs $incDirs $fs_syn
 set_property include_dirs $incDirs $fs_sim
-set_property verilog_define IMEM_INIT_VH $fs_syn
+set_property verilog_define {IMEM_INIT_VH IMEM_WORDS=128 DMEM_WORDS=64 IMEM_BYTES=512 DMEM_BYTES=256} $fs_syn
 
 # ---- 板级约束（U32）：src/xdc/board.xdc ----
 set xdc [file join $src xdc board.xdc]

@@ -1,7 +1,7 @@
 #=====================================================================
 # synth_check.tcl — exp2（UART SoC）综合自检（含固件固化 + XDC 校验）
 #   用法：vivado -mode batch -source exp2/src/scripts/synth_check.tcl
-#   动作：内存式工程 + xc7a35tcsg324-1 → 读入 exp2 rtl + 计组 core rtl
+#   动作：内存式工程 + xc7a100tcsg324-1 → 读入 exp2 rtl + 计组 core rtl
 #         （include：exp2/src、计组 src、固件 ROM 目录 out/fw_rom）
 #         → verilog_define IMEM_INIT_VH（启用 imem.v 的 initial 装载）
 #         → synth_design soc_top（不含 XDC——create_clock 触发时序引擎
@@ -29,12 +29,12 @@ if {![file exists $initVh]} {
 }
 file copy -force $initVh [file join $fwRom imem_init.vh]
 
-create_project -in_memory exp2_synth -part xc7a35tcsg324-1 -force
+create_project -in_memory exp2_synth -part xc7a100tcsg324-1 -force
 set_property top soc_top [current_fileset]
 
 set incDirs [list [string map {\\ /} $src] [string map {\\ /} $coreSrc] [string map {\\ /} $fwRom]]
 set_property include_dirs $incDirs [current_fileset]
-set_property verilog_define IMEM_INIT_VH [current_fileset]
+set_property verilog_define {IMEM_INIT_VH IMEM_WORDS=128 DMEM_WORDS=64 IMEM_BYTES=512 DMEM_BYTES=256} [current_fileset]
 
 set rtl_files {}
 foreach f [glob -nocomplain -directory [file join $src rtl] *.v] {

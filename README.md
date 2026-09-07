@@ -36,7 +36,7 @@ vivado -mode batch -source src/scripts/synth_check.tcl
 powershell -File src/scripts/fix_encoding.ps1
 ```
 
-## 下板（exp2 U32，需 Vivado 正常的主机；完整方案见 exp2/doc/board_runbook.md）
+## 下板（exp2 U32：本机已可全流程出 bit+烧录；完整方案见 exp2/doc/board_runbook.md）
 
 ```powershell
 git clone https://github.com/StarryReverie/board.git && cd board

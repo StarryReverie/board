@@ -2,7 +2,7 @@
 # synth_check.tcl — 计组实验一 CPU core 综合自检（T20 验收）
 #   用法（本机 Vivado 2019.2）：
 #     vivado -mode batch -source scripts/synth_check.tcl
-#   动作：内存式工程 + xc7a35tcsg324-1（EES-338）→ 读入 rtl/ 全部 RTL
+#   动作：内存式工程 + xc7a100tcsg324-1（EES-338 实物 100T）→ 读入 rtl/ 全部 RTL
 #         （defines/ 纯宏以 include_dirs 引入；test/ 为 TB 不读入）
 #         → synth_design pipeline_top
 #   判定：无 ERROR、synth_design 正常收尾即通过
@@ -14,7 +14,7 @@ set out  [file join $root scripts out synth]
 file mkdir $out
 
 # 内存式工程（不落 .xpr）
-create_project -in_memory synth_check -part xc7a35tcsg324-1 -force
+create_project -in_memory synth_check -part xc7a100tcsg324-1 -force
 set_property top pipeline_top [current_fileset]
 
 # include 目录（模块内 `include "defines/*.v"）

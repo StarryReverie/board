@@ -35,10 +35,28 @@
 `define IMM_J  3'b101    // J 型
 
 //------------------------------- 存储规模（top_design §6） --------------------
-`define IMEM_WORDS 1024   // 指令存储字数（×32bit = 4KB，字节地址 0x0 起）
-`define DMEM_WORDS 1024   // 数据存储字数（×32bit = 4KB，字节地址 0x0 起）
-`define IMEM_BYTES (1024*4)
-`define DMEM_BYTES (1024*4)
+// 容量可参数化：仿真/契约默认 1024 字=4KB×2；**下板 build 缩容为
+// IMEM 128 字=512B、DMEM 64 字=256B**（2026-09-07 上板实测通过）。
+// 容量选型依据（组合读寄存器阵列，资源按器件分别记）：
+//   4KB×2 = 65k FF：XC7A35T（41.6k FF）超限且 Vivado 器件/时序加载阶段空转；
+//   1KB×2 组合读逻辑 ≈35.5k LUT：XC7A35T（20.8k LUT）超限；
+//   XC7A100T（63.4k LUT/126.8k FF）容量更大；本工程上板取 512B/256B，
+//   在两器件下资源与实现开销均收敛（详见 exp2/doc/tasks.md）。
+// **地址索引固定 addr[11:0]**：本参数化只支持 ≤4KB 缩容场景，不可扩容。
+// 覆盖方式：综合缩容**至少**覆盖 IMEM_BYTES/DMEM_BYTES；IMEM_WORDS/DMEM_WORDS
+// 当前仅用于口径/文档说明（xvlog 宏体内不递归展开，BYTES 无法由 WORDS 派生）。
+`ifndef IMEM_WORDS
+`define IMEM_WORDS 1024   // 指令存储字数（×32bit，默认 4KB）
+`endif
+`ifndef DMEM_WORDS
+`define DMEM_WORDS 1024   // 数据存储字数（×32bit，默认 4KB）
+`endif
+`ifndef IMEM_BYTES
+`define IMEM_BYTES (1024*4)   // 综合缩容必配；WORDS 当前仅作口径说明
+`endif
+`ifndef DMEM_BYTES
+`define DMEM_BYTES (1024*4)   // 综合缩容必配；WORDS 当前仅作口径说明
+`endif
 
 //------------------------------- 杂项 ----------------------------------------
 `define INST_NOP 32'h00000013  // nop = addi x0,x0,0（if_id 冲刷 / 气泡填充值）

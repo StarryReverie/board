@@ -49,7 +49,7 @@ echo_main:
          jal  x0, echo_main
 ```
 
-- 调用约定：caller 负责置 a0；子程序用 ra 返回（示例未用栈；若固件引入嵌套调用/栈，须自行初始化 sp 指向 dmem 安全区且不撞数据区）。**U40 实现注**：`print_banner` 嵌套调用 `uart_putc`，故 console.S 初始化 `sp=0x1000`（dmem 顶）并在进入/退出时保存/恢复 ra（addi/sw/lw，栈向低生长，不撞 BANNER_BUF 数据区）。
+- 调用约定：caller 负责置 a0；子程序用 ra 返回（示例未用栈；若固件引入嵌套调用/栈，须自行初始化 sp 指向 dmem 安全区且不撞数据区）。**U40 实现注**：`print_banner` 嵌套调用 `uart_putc`，故 console.S 初始化 `sp=0x100`（下板 256B dmem 顶；仿真 4KB 亦兼容）并在进入/退出时保存/恢复 ra（addi/sw/lw，栈向低生长，不撞 BANNER_BUF 数据区）。
 - **TX_BUSY 语义（interface v1.1）**：STAT bit0=1 含挂起待发与移位中——上例"busy=0 才写"轮询**无丢字窗口**（写接受仅限完全空闲，挂起期写亦丢弃）。
 - 无停机指令：console 常驻轮询（非 HALT 自循环）；系统 TB 按"期望字节收齐"判结束（见 tasks.md U31）。
 

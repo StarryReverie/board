@@ -14,7 +14,7 @@
 | CPU | 计组实验一交付的 RV32I 5 级流水线 core（pipeline_top），程序 **.vh 固化单程序模型**（上电自跑 0x0；换程序=重新综合重烧；无 loader/在线重载） |
 | 软件 | 程序查询（轮询 TX_BUSY/RX_VALID）；固定固件 console：banner + 键盘回显；全部指令限 26 条冻结集 |
 | 范围裁剪 | 无收发 FIFO、无中断、无 DMA、无硬件流控、无可配波特率寄存器（参数/分频综合前确定）；无 ILA（可选加分，U33）；无 loader/在线重载（换程序=重新生成 .vh→综合→重烧）；忙/溢出=软件轮询+丢弃 |
-| 板卡 | 依元素 EES-338（XC7A35T-1CSG324C）：clk=T5(100MHz)、uart_tx=T4、uart_rx=N5、rst_n=P15（极性以 demo XDC 为准） |
+| 板卡 | 依元素 EES-338（**实物 xc7a100tcsg324-1**，手册误标 35T，2026-09-07 idcode 实测）：clk=T5(100MHz)、uart_tx=T4、uart_rx=N5、rst_n=P15（极性实测低有效，soc_top `RST_ACTIVE_LOW` 参数兜底） |
 | 语言/工具 | RTL=Verilog/SystemVerilog（Vivado 可混用）；汇编=`riscv-none-elf-as` `-march=rv32i`（计组侧已本地化）+ objcopy；镜像校验=verify_hex.py/反汇编清单（与计组共用） |
 | 本机职责 | 写 源码+文档+TB+固件镜像+XDC 草稿；综合/仿真/下板在装有 Vivado 的机器执行 |
 
@@ -116,7 +116,7 @@
 
 | 开放项 | 默认假设/缓解 |
 |---|---|
-| 本机 Vivado 2019.2 对大设计器件模型加载空转 | 2026-09-06 实测：soc_top 规模设计在综合后"器件/时序模型加载"阶段 CPU 空转（小设计正常；in-memory/project/OOC/单线程/P 核亲和均复现无效）→ **.bit 需在健康的 Vivado 主机执行**；工程与一键脚本已备（`src/scripts/board_runs.tcl`），换机后无额外准备 |
+| 本机 Vivado 2019.2 对大设计器件模型加载空转 | **已解除（2026-09-07）**：病根=4KB×2 组合读寄存器阵列（器件加载阶段 CPU 空转、1KB×2 时 LUT 35.5k>20.8k 超限）；下板 build 缩容 **IMEM 512B/DMEM 256B** 后本机 synth→place→route→bitgen 全流程通过并烧录验收 PASS（仿真/契约仍 4KB，见 const_define.v 头注） |
 | EES-338 复位键极性（P15） | 以厂家 demo XDC/实测为准；soc_top `RST_ACTIVE_LOW` 参数隔离极性（默认低有效，实测相反置 0） |
 | RX 采样可靠性 | 位中心采样 + 停止位校验；TB 覆盖位边界 ±误差；实测分频误差 0.06% 余量充足 |
 | 仿真速度 | CLKS_PER_BIT 参数覆盖（系统 TB 用 8–100） |
@@ -127,6 +127,7 @@
 
 ## 7. 变更记录
 
+- 2026-09-07：**U32 上板实测打通（里程碑）**——实测板卡器件为 **XC7A100T**（手册误标 35T，idcode 实测）；存储缩容参数化（下板 build：IMEM 512B/DMEM 256B，组合读寄存器阵列容量约束见 `../../src/defines/const_define.v` 头注；仿真/契约仍 4KB）；本机 Vivado 2019.2 全流程（synth→place→route→bitgen）跑通并烧录成功；COM8 终端验收 **banner 23B 逐字节精确匹配 + AB 回显往返 ALL PASS**（bit=`board_small_100t.bit`，证据 uart_check_20260907_092503.log）。余：P15 按键复位人测、示波器波形、≤5min 视频取证。
 - 2026-09-06：异地下板方案成稿 `doc/board_runbook.md`（健康主机出 bit → 烧录 → 终端验收 → 证据），配套脚本 `src/scripts/program_devices.tcl`（批处理烧录）、`src/scripts/uart_check.ps1`（自动化 banner/回显取证）。
 - 2026-09-06：U32 前置完成——`src/xdc/board.xdc`（T5 clk 100MHz / T4 uart_tx / N5 uart_rx / P15 rst_n 低有效，LVCMOS33+PULLUP；自查清单见文件尾）；综合/工程脚本集成**固件 ROM 固化**（`verilog_define IMEM_INIT_VH` + out/fw_rom/imem_init.vh ← console_init.vh），带固件综合自检 41 s Finished Synthesize 无 ERROR；XDC 已单独 read_xdc 解析验证（本机 Vivado 2019.2 时序引擎空转限制：实现/时序报告在综合侧执行）。U41 成稿 `doc/machine_code.md`（li 展开实例、分支编码示例、10 种指令实测统计）。
 - 2026-09-06：U40 落地——`src/test/console.S`（51 条冻结集，banner="EES-338 RV32I UART OK\r\n" 数据区自初始化 + 回显主循环）经 `src/scripts/build_fw.ps1` 构建 → `console_rom.hex`/`console_init.vh`（objdump -M no-aliases 冻结集校验 + 字节数校验）；U31 固件版系统 TB `src/test/tb_soc_console.v` 全绿（banner 23B/回显/长串 8 字符/复位重跑四阶段）；uart_ctrl TX_BUSY 语义修正（STAT bit0 含挂起待发，写接受仅限完全空闲——消除连续 putc 丢字窗口，interface v1.1/isa v1.4/top_design v1.5）。

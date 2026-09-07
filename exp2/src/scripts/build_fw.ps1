@@ -4,17 +4,20 @@
    * 输入: exp2/src/test/<Name>.S
    * 输出:
        exp2/src/test/<Name>_rom.hex    objcopy -O verilog 字节式（$readmemh 直读）
-       exp2/src/test/<Name>_init.vh    imem 综合固化镜像（全 4096 字节字面量，
+       exp2/src/test/<Name>_init.vh    imem 综合固化镜像（默认按 -PadBytes 补零到 512 字节=下板 IMEM_BYTES；4KB 口径传 -PadBytes 4096；
                                        供 imem.v 的 `ifdef IMEM_INIT_VH 装载）
        src/scripts/out/asm/            .o/.lst（objdump 反汇编清单）
    * 校验（U40 验收）:
        1) 反汇编指令助记符 ⊆ 26 条冻结集（doc/isa.md §1）
        2) .hex 字节数 = 指令数×4
    * 工具: riscv-none-elf-as/objcopy/objdump（xPack，PATH 或默认目录）
-   * 用法: .\build_fw.ps1 [-Name console]
+   * 用法: .\build_fw.ps1 [-Name console] [-PadBytes 512]
 =============================================================================
 #>
-param([string]$Name = 'console')
+param(
+    [string]$Name = 'console',
+    [int]$PadBytes = 512      # .vh 补零字节数（对齐下板 IMEM_BYTES=512；4KB 口径传 4096）
+)
 
 $ErrorActionPreference = 'Stop'
 $root    = Split-Path -Parent $PSScriptRoot          # exp2/src
@@ -67,7 +70,15 @@ if ($bytes -ne $instrCnt * 4) {
     Write-Host "[FAIL] hex 字节数 $bytes != 指令数×4（$instrCnt×4）"; exit 1
 }
 
-# ---- 生成综合固化 .vh（全 4096 字节，程序后补 0；imem 4KB）----
+
+# ---- 校验 3：-PadBytes 合法性（4 字节对齐且不小于固件长度，防越界/截断 .vh）----
+if (($PadBytes % 4) -ne 0) {
+    Write-Host ("[FAIL] -PadBytes 必须 4 字节对齐（当前 {0}）" -f $PadBytes); exit 1
+}
+if ($bytes -gt $PadBytes) {
+    Write-Host ("[FAIL] 固件 {0} B 超过 -PadBytes={1}，请增大 PadBytes" -f $bytes, $PadBytes); exit 1
+}
+# ---- 生成综合固化 .vh（补零到 -PadBytes，默认 512=下板 IMEM_BYTES）----
 $sb = New-Object System.Text.StringBuilder
 $idx = 0
 foreach ($line in (Get-Content $hex)) {
@@ -77,7 +88,7 @@ foreach ($line in (Get-Content $hex)) {
         $idx++
     }
 }
-while ($idx -lt 4096) {
+while ($idx -lt $PadBytes) {
     [void]$sb.AppendLine('mem[' + $idx + "] = 8'h00;")
     $idx++
 }

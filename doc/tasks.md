@@ -120,7 +120,7 @@
 
 | 开放项 | 默认假设/缓解 |
 |---|---|
-| 精工板型号/器件/Vivado 版本（本机无 Vivado） | 代码保持可综合、无厂商原语；综合在装有 Vivado 的机器进行 |
+| 板卡器件/Vivado | EES-338 实物 xc7a100tcsg324-1（手册误标 35T，实测）；本机 Vivado 2019.2 可跑仿真与缩容下板 build（4KB×2 存储需缩容，见 const_define.v 头注） |
 | rv32i 汇编 | riscv-none-elf-as 已验(`-march=rv32i -mabi=ilp32`，as 2.45；与 musl-as 等价)；objcopy `-O verilog` 输出字节式 hex |
 | IMEM 综合初始化 | 用 `.vh`(initial 字面量) 装载；`.hex` 仅供仿真；两路一致性由脚本校验 |
 | 大三单周期数据 | `ref/CPU/` 保留作报告/性能对比引用，本阶段不动 |

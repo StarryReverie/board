@@ -6,11 +6,11 @@
 
 | 空间 | 范围 | 用途（console 内） |
 |---|---|---|
-| IMEM（哈佛，只读） | `0x0000_0000` 起，4KB | 51 条指令（0x00–0xCC），综合期 .vh 固化，上电 PC=0 自跑 |
-| DMEM（数据） | `0x0000_0000`–`0x0FFF` | `0x40`–`0x57`：banner 字串（6 字，自初始化）；`0x1000` 起向下：栈（sp=0x1000） |
+| IMEM（哈佛，只读） | `0x0000_0000` 起（仿真 4KB；**下板 build 512B**） | 51 条指令（0x00–0xCC），综合期 .vh 固化，上电 PC=0 自跑 |
+| DMEM（数据） | `0x0000_0000`–`0x0FFF` | `0x40`–`0x57`：banner 字串（6 字，自初始化）；`0x100` 顶向下：栈（sp=0x100，下板 256B 顶；仿真 4KB 亦兼容） |
 | MMIO 窗口 | `0x0000_4000` | TX(+0)/STAT(+4)/RX(+8) 字槽，`lw`=in/r、`sw`=out/w（isa.md §4 / interface.md §3） |
 
-寄存器使用约定：`t0`=UART_BASE（putc/getc 全局专用）；`t1`=STAT 轮询临时；`a0`=putc 字符/ getc 返回；`sp`=栈顶（0x1000）；`t4/t3/t2`=print_banner 指针/计数/字值；`ra`=返回地址（print_banner 内压栈保护）。
+寄存器使用约定：`t0`=UART_BASE（putc/getc 全局专用）；`t1`=STAT 轮询临时；`a0`=putc 字符/ getc 返回；`sp`=栈顶（0x100，下板 256B 顶）；`t4/t3/t2`=print_banner 指针/计数/字值；`ra`=返回地址（print_banner 内压栈保护）。
 
 ## 2. 伪指令 li 的展开（lui + addi 两例实测）
 
@@ -21,7 +21,7 @@
 | `li t0, UART_BASE`(0x4000) | `000042b7` | `lui t0,0x4`（lo12=0，无 addi） |
 | `li t2, 0x2D534545` | `2d5343b7` + `54538393` | `lui t2,0x2d534` + `addi t2,t2,1349`（0x545，正 lo12） |
 | `li t2, 0x000A0D4B` | `000a13b7` + `d4b38393` | `lui t2,0xa1` + `addi t2,t2,-693`（0xD4B 符号扩展→hi 补 1，0xA1000−0xD4B… = 0xA0D4B，hi=0xA1 已含进位） |
-| `li sp, STACK_TOP`(0x1000) | `00001137` | `lui sp,0x1` |
+| `li sp, STACK_TOP`(0x100) | `10000113` | `addi sp,x0,0x100`（12 位小立即数，无需 lui） |
 
 ## 3. 分支/跳转编码示例（相对 PC，字节偏移）
 

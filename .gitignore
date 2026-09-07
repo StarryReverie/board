@@ -39,3 +39,8 @@ vivado/
 # ---- perf: ref/CPU ���⸱����ֻ��Դ���������������ã�----
 build/
 
+
+# ---- Vivado 运行产物（评审 2026-09-07：勿再入库）----
+usage_statistics_webtalk.*
+tight_setup_hold_pins.txt
+/board_small*.bit
