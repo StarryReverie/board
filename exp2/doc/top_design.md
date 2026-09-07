@@ -17,7 +17,7 @@
  │  │    MEM: ex_mem ─► dbus_decode ─┬─► dmem（0x0–0xFFF）        │
  │  │                                └─► MMIO 窗口 0x4000          │
  │  │       mmio 总线穿出：cs_mmio/reg_off/mmio_we/mmio_wdata ──►  │
- │  └─ uart_ctrl（MMIO 从机，全双工）◄───────────────────────────┘│
+ │  └─ uart_ip_top（MMIO 从机，全双工）◄───────────────────────────┘│
  │        mmio_rdata ──►（core 内 rdata mux）                       │
  │        uart_tx ──► T4 ──► CP2102 ──► PC COM                     │
  │        uart_rx ◄── N5 ◄── CP2102 ◄── PC 键盘                     │
