@@ -88,11 +88,14 @@ function Build-WorkerBat {
     [void]$sb.AppendLine('if exist xsim.dir  rmdir /s /q xsim.dir')
     [void]$sb.AppendLine("call xvlog -i `"$root`" $allQuoted 2>&1")
     [void]$sb.AppendLine('if errorlevel 1 ( echo [WORKER_COMPILE_FAIL] & exit /b 2 )')
+    $i = 0
     foreach ($tb in $Subset) {
         [void]$sb.AppendLine("call xelab $tb -s $tb 2>&1")
-        [void]$sb.AppendLine("if errorlevel 1 ( echo [XELAB_FAIL] $tb & exit /b 3 )")
+        [void]$sb.AppendLine("if errorlevel 1 ( echo [XELAB_FAIL] $tb & goto :next_$i )")
         [void]$sb.AppendLine("call xsim $tb -runall -log `"$tb.log`" 2>&1")
-        [void]$sb.AppendLine("if errorlevel 1 ( echo [XSIM_FAIL] $tb & exit /b 4 )")
+        [void]$sb.AppendLine("if errorlevel 1 ( echo [XSIM_FAIL] $tb )")
+        [void]$sb.AppendLine(":next_$i")
+        $i++
     }
     [void]$sb.AppendLine('echo [WORKER_DONE]')
     [void]$sb.AppendLine('exit /b 0')
@@ -123,13 +126,19 @@ for ($w = 0; $w -lt $Jobs; $w++) {
             -RedirectStandardOutput (Join-Path $wDir 'worker.out') `
             -RedirectStandardError  (Join-Path $wDir 'worker.err') `
             -PassThru -WindowStyle Hidden
-    $allowed = $subset.Count * $TimeoutSec * 1000 + 90 * 1000
-    $procs += @{ id = $w; p = $p; allowedMs = $allowed; tbList = $subset }
+    # each worker gets an absolute deadline: per-case budget x cases + slack;
+    # slack scales with $Jobs because every worker recompiles all sources
+    # (the compile phase slows down as concurrency grows).
+    $slackSec = 90 * [Math]::Max(1, [int][Math]::Ceiling($Jobs / 8))
+    $allowedMs = $subset.Count * $TimeoutSec * 1000 + $slackSec * 1000
+    $deadline = (Get-Date).AddMilliseconds($allowedMs)
+    $procs += @{ id = $w; p = $p; allowedMs = $allowedMs; deadline = $deadline; tbList = $subset }
 }
 
 # wait with per-worker watchdog; kill hung worker tree
 foreach ($wp in $procs) {
-    $done = $wp.p.WaitForExit($wp.allowedMs)
+    $leftMs = [int][Math]::Max(0, ($wp.deadline - (Get-Date)).TotalMilliseconds)
+    $done = $wp.p.WaitForExit($leftMs)
     if (-not $done) {
         try { & taskkill.exe /PID $wp.p.Id /T /F 2>&1 | Out-Null } catch {}
         Write-Host ("  worker w{0} TIMEOUT(>{1:N0}s) killed" -f $wp.id, ($wp.allowedMs / 1000))
