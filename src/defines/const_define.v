@@ -39,7 +39,7 @@
 // IMEM 128 字=512B、DMEM 64 字=256B**（组合读寄存器阵列：4KB×2=65k FF
 // > XC7A35T/100T 容量且时序引擎卡死；1KB×2 需 35.5k LUT > 20.8k 超限；
 // 512B/256B 实测 LUT/FF 均收敛，2026-09-07 上板通过，见 exp2/doc/tasks.md）。
-// 覆盖方式：综合时 verilog_define 提供 IMEM_WORDS/DMEM_WORDS/IMEM_BYTES/
+// 覆盖方式：综合时 verilog_define 须**成对**提供 IMEM_WORDS/DMEM_WORDS/IMEM_BYTES/
 // DMEM_BYTES（须成对给全；默认 1024 字 4KB 不变）。
 `ifndef IMEM_WORDS
 `define IMEM_WORDS 1024   // 指令存储字数（×32bit，默认 4KB）
@@ -48,10 +48,10 @@
 `define DMEM_WORDS 1024   // 数据存储字数（×32bit，默认 4KB）
 `endif
 `ifndef IMEM_BYTES
-`define IMEM_BYTES (1024*4)
+`define IMEM_BYTES (1024*4)   // 须与 IMEM_WORDS 成对覆盖（xvlog 宏体内不递归展开，无法由 WORDS 派生）
 `endif
 `ifndef DMEM_BYTES
-`define DMEM_BYTES (1024*4)
+`define DMEM_BYTES (1024*4)   // 须与 DMEM_WORDS 成对覆盖
 `endif
 
 //------------------------------- 杂项 ----------------------------------------
