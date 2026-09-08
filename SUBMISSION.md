@@ -22,7 +22,7 @@
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
 | 接口控制器设计实验报告 | 素材：`UART/doc/top_design.md`（IP 顶层设计）、`UART/doc/interface.md`（编址方案 B/位义）、`soc/doc/firmware.md`、`soc/doc/machine_code.md`、`UART/doc/modules/*.md` 与 `soc/doc/modules/*.md`（IP 4 模块 + soc 2 模块）、本仓 `pipeline/doc/isa.md`/`pipeline/doc/top_design.md`（跨课契约）；**成稿待写（下板记录章占位）** | 🟡 | 套老师模板；含编址方式对比、仿真（IP 4/4 + SoC 5/5）与下板记录 |
-| 源代码 | `UART/src/`（**UART IP 交付物**：rtl=uart_ip_top（寄存器层已并入）/uart_tx/uart_rx + test=4 项 TB）+ `soc/`（**SoC 集成**：rtl=soc_top/reset_sync/dbus_decode + xdc/board.xdc + test=固件 console.*/系统 TB×5） | ✅ | 回归 TB 齐备（固件构建脚本保留 `UART/src/scripts/build_fw.ps1`，其余构建脚本已删——2026-09-07 结构调整；仿真在 Vivado GUI/xsim 直跑，下板重建步骤见 `soc/doc/board_runbook.md`） |
+| 源代码 | `UART/src/`（**UART IP 交付物**：rtl=uart_ip_top（寄存器层已并入）/uart_tx/uart_rx + test=4 项 TB）+ `soc/`（**SoC 集成**：rtl=soc_top/reset_sync/dbus_decode + xdc/board.xdc + test=固件 console.*/系统 TB×5） | ✅ | 回归 TB 齐备（构建脚本保留 `UART/src/scripts/build_fw.ps1`/`synth_check.tcl`/`create_vivado_proj.tcl`，其余已删——2026-09-07 结构调整；仿真在 Vivado GUI/xsim 直跑，下板重建步骤见 `soc/doc/board_runbook.md`） |
 | 可复用 IP 核（uart_ip_top/uart_tx/uart_rx 打包 + 集成说明） | 建议 `UART/ip_pkg/`：三模块源码副本 + 集成说明 + 例化示例（soc_top 即现成例化） | ⬜ | 报告/PPT 引用项；内容零上板依赖，随时可做 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建 | ⬜ | 汇报人/署名待提供 |
 | ≤5min 接口控制器下板演示视频 | 依赖 U32 下板（终端 banner/回显/复位 + 示波器波形） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；固件与 XDC 均已就绪（soc/） |
@@ -37,5 +37,5 @@
 
 ## 变更记录
 
-- 2026-09-07：结构调整——实验二交付=UART IP（exp2/），SoC=项目顶层（soc/）；exp2 侧构建脚本删除（重建见 soc/doc/board_runbook.md）；汇编源代码行与 IP 打包行同步。
+- 2026-09-07：结构调整——实验二交付=UART IP（UART/），SoC=项目顶层（soc/）；UART 侧构建脚本删至 build_fw/synth_check/create_vivado_proj（重建见 soc/doc/board_runbook.md）；汇编源代码行与 IP 打包行同步。
 - 2026-09-06：初版核对清单。
