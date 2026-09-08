@@ -43,11 +43,11 @@ module tb_prog_demo;
 
     task chk_word;
         input [31:0] addr;
-        input [31:0] expect;
+        input [31:0] expected;
         input [255:0] name;
         begin
             c(name, {u_cpu.u_dmem.mem[addr[11:0]+3], u_cpu.u_dmem.mem[addr[11:0]+2],
-                     u_cpu.u_dmem.mem[addr[11:0]+1], u_cpu.u_dmem.mem[addr[11:0]]} === expect);
+                     u_cpu.u_dmem.mem[addr[11:0]+1], u_cpu.u_dmem.mem[addr[11:0]]} === expected);
         end
     endtask
 
