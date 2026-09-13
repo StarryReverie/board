@@ -2,8 +2,8 @@
 # xsim v2019.2 (64-bit)
 # SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
 # IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
-# Start of session at: Sun Sep 13 19:36:47 2026
-# Process ID: 23936
+# Start of session at: Sun Sep 13 19:39:59 2026
+# Process ID: 14244
 # Current directory: C:/Users/oo-infty/Projects/board/pipeline/src/scripts/out/wave
 # Command line: xsim.exe -log wave_pipe.log -mode tcl -source {xsim.dir/wave_pipe/xsim_script.tcl}
 # Log file: C:/Users/oo-infty/Projects/board/pipeline/src/scripts/out/wave/wave_pipe.log
@@ -14,6 +14,7 @@ source xsim.dir/wave_pipe/xsim_script.tcl
 Vivado Simulator 2019.2
 Time resolution is 1 ps
 run -all
+WAVE_TIME: item=1 cycle=3 time=56
 PASS: 1 cover x1=3
 PASS: 2 cover x2=5
 PASS: 3 cover x3=8
@@ -40,6 +41,9 @@ PASS: 23 cover x23=lui
 PASS: 24 cover x24=lw
 PASS: 25 cover x25=8
 PASS: 26 cover mem[0]
+WAVE_TIME: item=2 cycle=3 time=886
+WAVE_TIME: item=3 cycle=5 time=906
+WAVE_TIME: item=4 cycle=14 time=996
 PASS: 27 hazard x1=1
 PASS: 28 hazard x2=2
 PASS: 29 hazard x3=3
@@ -52,15 +56,16 @@ PASS: 35 hazard x9=7
 PASS: 36 hazard x10=15
 PASS: 37 hazard dmem[0]
 PASS: 38 hazard dmem[4]
+WAVE_TIME: item=2b cycle=3 time=1716
 PASS: 39 prio x11=2
 PASS: 40 prio x12=2 (EX/MEM priority)
 PASS: 41 prio x13=4 (MEM/WB fwd)
 PASS: 42 prio x14=0
 WAVE_MARKS: item1=3 item2=3 item2b=3 item3=5 item4=14
 === ALL PASS ===
-$finish called at time : 2286 ns : File "C:/Users/oo-infty/Projects/board/pipeline/src/test/wave/wave_pipe.v" Line 301
+$finish called at time : 2286 ns : File "C:/Users/oo-infty/Projects/board/pipeline/src/test/wave/wave_pipe.v" Line 307
 exit
-INFO: [Common 17-206] Exiting xsim at Sun Sep 13 19:36:51 2026...
+INFO: [Common 17-206] Exiting xsim at Sun Sep 13 19:40:03 2026...
 
 复现: powershell -File pipeline/src/scripts/run_wave.ps1
 采样: wave_cover.csv / wave_cover.vcd

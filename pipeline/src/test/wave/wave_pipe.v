@@ -147,8 +147,8 @@ module wave_pipe;
         input integer fd;
         input integer cy;
         begin
-            $fwrite(fd, "#%0d\n0y\n", cy*10 - 5);
-            $fwrite(fd, "#%0d\n1y\n", cy*10);
+            $fwrite(fd, "#%0d\n1y\n", $time - 1);
+            $fwrite(fd, "#%0d\n", $time);
             $fwrite(fd, "b%b a\n", w_pc);
             $fwrite(fd, "b%b b\n", w_if);
             $fwrite(fd, "b%b c\n", w_id);
@@ -173,6 +173,7 @@ module wave_pipe;
             $fwrite(fd, "b%b v\n", w_br_tgt);
             $fwrite(fd, "b%b w\n", w_fa);
             $fwrite(fd, "b%b x\n", w_fb);
+            $fwrite(fd, "#%0d\n0y\n", $time + 4);
         end
     endtask
 
@@ -198,6 +199,7 @@ module wave_pipe;
             if (m1 < 0 && w_wb_we) begin
                 m1 = cyc;
                 $fwrite(fm, "1,cover,%0d,first WB valid (5 stages filled)\n", cyc);
+                $display("WAVE_TIME: item=1 cycle=%0d time=%0d", cyc, $time);
             end
         end
         $fclose(fc); $fclose(fv);
@@ -243,14 +245,17 @@ module wave_pipe;
             if (m2 < 0 && (w_fa == 2'b01) && (w_fb == 2'b10)) begin
                 m2 = cyc;
                 $fwrite(fm, "2,hazard,%0d,scene1 add x3: fwdA=EX/MEM fwdB=MEM/WB\n", cyc);
+                $display("WAVE_TIME: item=2 cycle=%0d time=%0d", cyc, $time);
             end
             if (m3 < 0 && w_stall) begin
                 m3 = cyc;
                 $fwrite(fm, "3,hazard,%0d,load-use stall pulse\n", cyc);
+                $display("WAVE_TIME: item=3 cycle=%0d time=%0d", cyc, $time);
             end
             if (m4 < 0 && w_br) begin
                 m4 = cyc;
                 $fwrite(fm, "4,hazard,%0d,beq taken (flush)\n", cyc);
+                $display("WAVE_TIME: item=4 cycle=%0d time=%0d", cyc, $time);
             end
         end
         $fclose(fc); $fclose(fv);
@@ -283,6 +288,7 @@ module wave_pipe;
             if (m2b < 0 && (w_fa == 2'b01) && (w_memwb_rd == 5'd11)) begin
                 m2b = cyc;
                 $fwrite(fm, "2b,priority,%0d,dual-hit x11: pick EX/MEM over MEM/WB\n", cyc);
+                $display("WAVE_TIME: item=2b cycle=%0d time=%0d", cyc, $time);
             end
         end
         $fclose(fc); $fclose(fv);
