@@ -1,0 +1,26 @@
+uart_ip_top 8N1 frame timing (xsim, CLKS_PER_BIT=868, 100 MHz)
+=================================================================
+bit width      : 868 clk = 8,680 ns = 8.680 us
+frame (10 bit) : 86,800 ns = 86.800 us
+baud error     : 0.0064 %  ((100e6/868 - 115200)/115200)
+
+TX start-bit falling edge at t = 17435 ns
+sampled frame  : start=0  data(LSB first)=01011010 = 0x5A  stop=1
+
+bit index :  0    1    2    3    4    5    6    7    8    9
+meaning   : str  d0   d1   d2   d3   d4   d5   d6   d7   stp
+level     :   0   0   1   0   1   1   0   1   0   1  
+
+bit-period strip (each cell = 8.68 us):
+TX pin   idle--------____----________----____----____
+              str  0   1   0   1   1   0   1   0   stp
+
+TX pin transitions inside the frame (ns, relative to start edge):
+  +      0 ns  -> 0   (bit 0, 0.0 bit periods)
+  +  17360 ns  -> 1   (bit 2, 2.0 bit periods)
+  +  26040 ns  -> 0   (bit 3, 3.0 bit periods)
+  +  34720 ns  -> 1   (bit 4, 4.0 bit periods)
+  +  52080 ns  -> 0   (bit 6, 6.0 bit periods)
+  +  60760 ns  -> 1   (bit 7, 7.0 bit periods)
+  +  69440 ns  -> 0   (bit 8, 8.0 bit periods)
+  +  78120 ns  -> 1   (bit 9, 9.0 bit periods)

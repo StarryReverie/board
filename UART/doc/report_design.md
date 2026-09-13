@@ -237,7 +237,7 @@ soc_top
 | UART IP 回归数字 | ⬜ | 目前经 Vivado xsim 直跑（`tb_uart_tx`/`tb_uart_rx`/`tb_uart_ip_top`）；运行器待补 |
 | SoC 回归数字 | ⬜ | 同上（5 项系统 TB）；运行器待补 |
 | 下板记录 | ⬜ | 按 `soc/doc/board_runbook.md` 分层记录（banner/回显/复位重跑/证据） |
-| 示波器波形 | ⬜ | TX 帧：空闲高、起始低、位宽≈8.68 µs、10 位帧≈86.8 µs |
+| 仿真时序证据（替代示波器） | ✅ 已具备 | `UART/doc/wave/uart_frame_868.txt`：真实分频 868 下单帧实测——位宽 8680 ns≈8.68 µs、帧长 86800 ns≈86.8 µs、波特率误差 0.0064%、跳变全落整数比特边界；复现命令见 `UART/doc/wave/README.md`（本方案不接示波器，故原"示波器波形"项改为仿真时序证据） |
 | ≤5 min 演示视频 | ⬜ | 上电 banner → 键盘回显 → 按键复位重跑 |
 | 架构框图/状态机图 | ⬜ | 按 §5.1 文字框图重绘（建议标注 `uart_ip_top` 与 `dbus_decode` 归属） |
 

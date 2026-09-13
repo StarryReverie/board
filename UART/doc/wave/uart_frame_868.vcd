@@ -1,0 +1,34 @@
+$date
+   build/tb_wave_868.v + build/extract_frame_vcd.ps1
+$end
+$version
+   xsim 2019.2 (pin transitions recorded by the testbench)
+$end
+$timescale
+   1ns
+$end
+$scope module uart_frame_868 $end
+$var wire 1 ! uart_tx_pin $end
+$var wire 1 " uart_rx_pin $end
+$upscope $end
+$enddefinitions $end
+#0
+1!
+1"
+#4340
+0!
+#21700
+1!
+#30380
+0!
+#39060
+1!
+#56420
+0!
+#65100
+1!
+#73780
+0!
+#82460
+0"
+1!

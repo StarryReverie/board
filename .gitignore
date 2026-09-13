@@ -1,4 +1,4 @@
-﻿# ---- Vivado / xsim 产物（本机与下板侧）----
+# ---- Vivado / xsim 产物（本机与下板侧）----
 .Xil/
 xsim.dir/
 .cache/
@@ -22,6 +22,9 @@ hw_handoff/
 *.fst
 **/scripts/out/
 
+# 例外：UART 一帧时序证据（替代示波器）随文档入库，见 UART/doc/wave/README.md
+!UART/doc/wave/uart_frame_868.vcd
+
 # ---- Python ----
 __pycache__/
 *.pyc
@@ -40,3 +43,7 @@ build/
 usage_statistics_webtalk.*
 tight_setup_hold_pins.txt
 /board_small*.bit
+
+# ---- 本地归档与智能体指南（仅本机使用，不入库）----
+archive/
+AGENTS.md
