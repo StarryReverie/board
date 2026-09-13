@@ -40,3 +40,6 @@ build/
 usage_statistics_webtalk.*
 tight_setup_hold_pins.txt
 /board_small*.bit
+
+# ---- 仿真证据日志（保留，覆盖上面的 *.log 全局忽略）----
+!pipeline/doc/sim_shots/**/*.log
