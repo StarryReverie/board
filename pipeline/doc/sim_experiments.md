@@ -65,7 +65,7 @@
 
 | 位置 | 写法 |
 |---|---|
-| §7 仿真测试用例、结果及分析 | 开头一句话 + 一张表：**21/21（14 模块单测 + 6 程序级 + 1 性能）**，表内只列**用例名与断言数**，不展开；附运行命令 `powershell -File pipeline/src/scripts/run_tb.ps1` 与日期。汇总表：`pipeline/doc/sim_shots/auto/reg_summary_<日期>.png/.md`（断言数自动统计，本次运行合计 250；含性能 5 档合计 `tb_perf=74`） |
+| §7 仿真测试用例、结果及分析 | 开头一句话 + 一张表：**21/21（14 模块单测 + 6 程序级 + 1 性能）**，表内只列**用例名与断言数**，不展开；附运行命令 `powershell -File pipeline/src/scripts/run_tb.ps1` 与日期。汇总表：`pipeline/doc/sim_shots/auto/reg_summary_<日期>.png/.md`（断言数自动统计：本次 21 项运行 **250**，其中 `tb_perf` 单档 10；性能 5 档合计 74，按 5 档计则 **314**） |
 | §7 功能性测试 | 指向上面的汇总表 + 本文 4 项关键仿真 |
 | §7 性能测试 | CPI/IPC/MIPS/CPU time 5 档 + 恒等式 `C = IC + (F−1) + L + 2T`（5/5，见 `perf_report.md` 表 A/C）+ **单周期资源/Fmax 对比**（`pipeline/doc/perf_report.md` 表 D 待补） |
 | §7 下板测试 | 如实写"未下板" + 准备清单（工程/脚本/固件/XDC 就绪）+ 兜底路径（课程允许仿真验收） |

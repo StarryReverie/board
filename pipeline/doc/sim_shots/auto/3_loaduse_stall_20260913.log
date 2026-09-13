@@ -2,8 +2,8 @@
 # xsim v2019.2 (64-bit)
 # SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
 # IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
-# Start of session at: Sun Sep 13 19:39:59 2026
-# Process ID: 14244
+# Start of session at: Sun Sep 13 20:25:35 2026
+# Process ID: 27004
 # Current directory: C:/Users/oo-infty/Projects/board/pipeline/src/scripts/out/wave
 # Command line: xsim.exe -log wave_pipe.log -mode tcl -source {xsim.dir/wave_pipe/xsim_script.tcl}
 # Log file: C:/Users/oo-infty/Projects/board/pipeline/src/scripts/out/wave/wave_pipe.log
@@ -65,7 +65,7 @@ WAVE_MARKS: item1=3 item2=3 item2b=3 item3=5 item4=14
 === ALL PASS ===
 $finish called at time : 2286 ns : File "C:/Users/oo-infty/Projects/board/pipeline/src/test/wave/wave_pipe.v" Line 307
 exit
-INFO: [Common 17-206] Exiting xsim at Sun Sep 13 19:40:03 2026...
+INFO: [Common 17-206] Exiting xsim at Sun Sep 13 20:25:39 2026...
 
 复现: powershell -File pipeline/src/scripts/run_wave.ps1
 采样: wave_hazard.csv

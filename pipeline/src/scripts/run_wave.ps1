@@ -56,7 +56,12 @@ $log = Join-Path $outDir 'wave_pipe.log'
 $pass = Select-String -Path $log -Pattern '=== ALL PASS ===' -Quiet
 $marks = (Select-String -Path $log -Pattern 'WAVE_MARKS:').Line
 Write-Host "  $marks"
-if ($pass) { Write-Host '  wave_pipe: === ALL PASS ===' } else { Write-Host '  wave_pipe: FAIL（见 out\wave\wave_pipe.log）'; exit 1 }
+if ($pass -and $marks -and $marks -notmatch '=-1(?:\s|$)') {
+    Write-Host '  wave_pipe: === ALL PASS ==='
+} else {
+    Write-Host '  wave_pipe: FAIL（波形标记缺失或未全 PASS，见 out\wave\wave_pipe.log）'
+    exit 1
+}
 
 if (-not $NoRender) {
     $png = Join-Path $PSScriptRoot 'wave_png.ps1'

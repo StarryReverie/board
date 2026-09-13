@@ -107,10 +107,14 @@ $groups = @(
 )
 $logMap = @{}
 foreach ($l in Get-ChildItem (Join-Path $outRoot 'w*\tb_*.log')) {
-    $logMap[$l.BaseName] = (Select-String -Path $l.FullName -Pattern '^PASS:').Count
+    $lines = Get-Content -LiteralPath $l.FullName
+    $cnt = @($lines | Where-Object { $_ -match '^PASS:' }).Count
+    $ok  = (@($lines | Where-Object { $_ -match 'ALL PASS' }).Count -gt 0) -and
+           (@($lines | Where-Object { $_ -match 'FAIL' }).Count -eq 0)
+    $logMap[$l.BaseName] = @{ count = $cnt; ok = $ok }
 }
 $rows = New-Object System.Collections.ArrayList
-$idx = 0; $sum = 0
+$idx = 0; $sum = 0; $regOk = $true
 $md = @('# §7 回归测试汇总（21/21）','',
         '命令：`powershell -File pipeline/src/scripts/run_tb.ps1`　日期：' + $date + '　（每例 PASS/FAIL 见 `out/w*/tb_*.log`）','',
         '| 层级 | # | 用例 | 断言数 | 结果 |','|---|---|---|---|---|')
@@ -119,19 +123,28 @@ foreach ($grp in $groups) {
     $md += ('| **{0}** | | | | |' -f $grp.title)
     foreach ($nm in $grp.names) {
         $idx++
-        $a = $logMap[$nm]
+        $e = $logMap[$nm]
+        $a = if ($e) { $e.count } else { 0 }
+        $ok = if ($e) { $e.ok } else { $false }
+        if (-not $ok) { $regOk = $false }
+        $res = if (-not $e) { 'MISSING' } elseif ($ok) { 'PASS' } else { 'FAIL' }
         if ($nm -eq 'tb_perf') { $aTxt = "$a（单档）/ 74（5 档）" } else { $aTxt = "$a" }
         $sum += $a
-        [void]$rows.Add(@{ v = @("$idx", $nm, "$aTxt", 'PASS') })
-        $md += ('| {0} | {1} | {2} | {3} | PASS |' -f $grp.title, $idx, $nm, $aTxt)
+        [void]$rows.Add(@{ v = @("$idx", $nm, "$aTxt", $res) })
+        $md += ('| {0} | {1} | {2} | {3} | {4} |' -f $grp.title, $idx, $nm, $aTxt, $res)
     }
 }
-$foot = "合计 21/21 PASS（本次 21 项运行断言数 $sum；含性能 5 档合计 tb_perf=74）　$stamp"
-$md += '', ('**合计：21/21 PASS**；本次运行断言数 {0}（含性能 5 档合计 tb_perf=74）' -f $sum)
+$perfCnt = if ($logMap['tb_perf']) { $logMap['tb_perf'].count } else { 0 }
+$foot = "本次 21 项运行断言数 $sum（其中 tb_perf 单档 $perfCnt；性能 5 档合计 74，按 5 档计则 $($sum - $perfCnt + 74)）　$stamp"
+$md += '', ('**本次 21 项运行断言数 {0}**（其中 `tb_perf` 单档 {1}；性能 5 档合计 74，按 5 档计则 {2}）' -f $sum, $perfCnt, ($sum - $perfCnt + 74))
 $cols = @('#','用例','断言数','结果'); $wid = @(46,220,170,90)
-$bmp = New-Table -Title '§7 回归测试汇总（21/21 PASS）' -Sub ("命令: powershell -File pipeline/src/scripts/run_tb.ps1　｜　$stamp") `
-    -Cols $cols -Widths $wid -Rows $rows -Foot $foot
-Save-Both $bmp 'reg_summary' $md
+if ($regOk) {
+    $bmp = New-Table -Title '§7 回归测试汇总（21/21 PASS）' -Sub ("命令: powershell -File pipeline/src/scripts/run_tb.ps1　｜　$stamp") `
+        -Cols $cols -Widths $wid -Rows $rows -Foot $foot
+    Save-Both $bmp 'reg_summary' $md
+} else {
+    Write-Host '[FAIL] 回归日志缺失或未全 PASS，未生成汇总表'
+}
 
 # ================= 性能表 =================
 $perf = Import-Csv (Join-Path $outRoot 'perf_summary.csv')
@@ -140,7 +153,11 @@ $rows2 = New-Object System.Collections.ArrayList
 $md2 = @('# §7 性能测试（5 档 + 恒等式 C == IC + (F−1) + L + 2T）','',
          '命令：`powershell -File pipeline/src/scripts/run_perf.ps1`　日期：' + $date + '　时钟：100 MHz 名义（Tclk=10 ns）','',
          '| 程序 | 静态字数 | IC | C(拍) | L | T | CPI | IPC | CPU time(ns) | MIPS | 恒等式 |','|---|---|---|---|---|---|---|---|---|---|---|')
+$expected = @('test0','test1','sort','cover','hazard')
 $allOk = $true
+foreach ($e in $expected) {
+    if (-not ($perf | Where-Object { $_.prog -eq $e })) { $allOk = $false; Write-Host "[FAIL] 性能表缺少档: $e" }
+}
 foreach ($p in $perf) {
     $cpu = [int]$p.c * 10
     $mips = [math]::Round([double]$p.ipc * 100, 1)
@@ -154,9 +171,13 @@ $foot2 = "恒等式 5/5 PASS　｜　正确性门禁（同源 tb_prog_* 终值�
 $md2 += '', '恒等式 **5/5 PASS**；每档内嵌正确性断言全绿（防“为快而错”）。'
 $cols2 = @('程序','静态字数','IC','C(拍)','L','T','CPI','IPC','CPU time(ns)','MIPS','恒等式')
 $wid2  = @(80,90,60,66,46,46,66,66,120,66,90)
-$bmp2 = New-Table -Title '§7 性能测试（5 档 + 恒等式）' -Sub ("命令: powershell -File pipeline/src/scripts/run_perf.ps1　｜　100 MHz 名义　｜　$stamp") `
-    -Cols $cols2 -Widths $wid2 -Rows $rows2 -Foot $foot2
-Save-Both $bmp2 'perf_table' $md2
+if ($allOk) {
+    $bmp2 = New-Table -Title '§7 性能测试（5 档 + 恒等式）' -Sub ("命令: powershell -File pipeline/src/scripts/run_perf.ps1　｜　100 MHz 名义　｜　$stamp") `
+        -Cols $cols2 -Widths $wid2 -Rows $rows2 -Foot $foot2
+    Save-Both $bmp2 'perf_table' $md2
+} else {
+    Write-Host '[FAIL] 性能数据缺失或未全 PASS，未生成汇总表'
+}
 
 Write-Host ''
 Write-Host ("报告素材输出目录: $outDir")
