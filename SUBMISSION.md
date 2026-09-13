@@ -9,9 +9,9 @@
 
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
-| 流水线 CPU 仿真实验报告（未下板成功版本） | 素材：`pipeline/doc/top_design.md`（结构/冲突方案）、`pipeline/doc/isa.md`、`pipeline/doc/modules/*.md`（14 模块）、`pipeline/doc/ref_note.md`、`pipeline/doc/perf_report.md`（性能实测）；**成稿待写** | 🟡 | 套老师模板后交付；若团队下板成功则改交"仿真与下板实验报告"版本并补板级章节 |
+| 流水线 CPU 仿真实验报告（未下板成功版本） | 素材：`pipeline/doc/top_design.md`（结构/冲突方案）、`pipeline/doc/isa.md`、`pipeline/doc/modules/*.md`（14 模块）、`pipeline/doc/ref_note.md`、`pipeline/doc/perf_report.md`（性能实测）、**关键仿真说明 `pipeline/doc/sim_experiments.md`**；脚本生成图/表在 `pipeline/doc/sim_shots/auto/`（展示/参照），**报告正文用人工截图归档于 `pipeline/doc/sim_shots/`**；**成稿待写** | 🟡 | 套老师模板后交付；若团队下板成功则改交"仿真与下板实验报告"版本并补板级章节 |
 | 源代码 | `pipeline/src/rtl/*.v`（pipeline_top 等 14 模块）、`pipeline/src/defines/*.v`、`pipeline/src/scripts/`（run_tb/run_perf/build_asm/fix_encoding/synth_check/create_vivado_proj） | ✅ | 综合自检通过；工程 `pipeline/vivado/board.xpr`（exp1 工程目录 = pipeline/vivado/）本地生成（gitignore，不入库；入口 `pipeline/exp1_vivado.bat`） |
-| 测试汇编代码和机器码 | `pipeline/src/test/*.asm`（test0/test1/test_sort/instr_cover/hazard_cover）+ `*_rom.hex`；程序级 TB `tb_prog_*.v`、性能 TB `tb_perf.v` | ✅ | 20/20 回归 PASS；.asm↔.hex 由 build_asm.ps1 维护 |
+| 测试汇编代码和机器码 | `pipeline/src/test/*.asm`（test0/test1/test_sort/instr_cover/hazard_cover/fwd_priority）+ `*_rom.hex`；程序级 TB `tb_prog_*.v`、性能 TB `tb_perf.v`、波形 TB `wave/wave_pipe.v` | ✅ | 21/21 回归 PASS；.asm↔.hex 由 simple_asm.py 维护 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建（素材同上 + perf 表 A–D） | ⬜ | 汇报人/署名待提供 |
 | ≤5min 下板演示视频 | — | — | **仅"下板成功"路径需要**；当前按仿真版报告走，可豁免（若中途下板成功需补拍） |
 | 个人日志（10 分/人） | 待建（9/2–9/18 每日条目） | ⬜ | 格式按课程群日志模板，各成员填写 |
@@ -31,11 +31,12 @@
 
 ## 仓库总态（2026-09-07）
 
-- 计组：T0–T33 完成（回归 20/20、性能实测 5/5 恒等式）；T34（Fmax 复测，综合侧）、T35（报告素材）待执行。
+- 计组：T0–T33 完成（回归 21/21、性能实测 5/5 恒等式）；关键波形 4 项（脚本生成图/表 `pipeline/doc/sim_shots/auto/`，`run_wave.ps1` 一键复现；人工截图入 `pipeline/doc/sim_shots/`）；T34（Fmax 复测，综合侧，本机 2019.2 空转已回滚）、T35（报告素材）待执行。
 - 汇编：U10–U15、U30、U31、U40、U41 完成——**实验二交付物收敛为独立 UART IP**（uart_ip_top + IP 级独立测试）；SoC 上移为整个项目的顶层 `soc/`（集成代码/固件/XDC/系统 TB/下板方案随迁）；U32 板级（XDC/固件就绪）、U33 可选 ILA——见 UART/doc/tasks.md。
 - 与 origin/dev 同步 ✅。
 
 ## 变更记录
 
+- 2026-09-13：新增计组关键波形 4 项（五级总览/前递优先级/load-use 冻结/分支冲刷）与 §7 回归·性能汇总表，归档 `pipeline/doc/sim_shots/`；回归口径 21/21（新增 `fwd_priority` 独立场景不入回归）；表 D（Fmax/资源）本机综合空转，暂留综合侧。
 - 2026-09-07：结构调整——实验二交付=UART IP（UART/），SoC=项目顶层（soc/）；UART 侧构建脚本删至 build_fw/synth_check/create_vivado_proj（重建见 soc/doc/board_runbook.md）；汇编源代码行与 IP 打包行同步。
 - 2026-09-06：初版核对清单。

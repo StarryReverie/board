@@ -78,8 +78,10 @@
 | T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（依赖 T32） | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
 | T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动；依赖 T33） | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
 | T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析（依赖 T34） | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
+| T36 | 关键仿真波形（4 项）：五级运行总览 / 数据前递与前递优先级 / load-use 冻结 1 拍 / 分支预测不跳+冲刷 2 拍；说明见 `pipeline/doc/sim_experiments.md` | `test/wave/wave_pipe.v` + `test/fwd_priority.asm` + `scripts/{run_wave,wave_png,report_png}.ps1` + `doc/sim_shots/auto/` | 4 图 + 同名日志 + 汇总表；TB 内嵌验收断言全 PASS；回归口径不变 **21/21** |
 
 > 状态（2026-09-06）：**T32（`pipeline/src/test/tb_perf.v`）与 T33（`pipeline/src/scripts/run_perf.ps1`）已落地**——5 档程序实测全绿（恒等式 5/5 + 正确性断言全绿，随 run_tb 20 项回归）；实测数据与结论见 `pipeline/doc/perf_report.md`。**T34/T35 待执行**（单周期 Fmax 复测在综合侧，本机时序报告环节已知空转限制）。
+> 状态（2026-09-13）：**T36 关键仿真波形 4 项已落地**（`pipeline/doc/sim_experiments.md`）；回归扩为 **21/21**（14 模块 + 6 程序 + 1 性能）。**T34 表 D** 本机综合空转已回滚，留待综合侧；T35 报告素材除表 D 外齐备。
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
 - `pipeline/src/scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `pipeline/src/test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
@@ -131,6 +133,7 @@
 
 ## 8. 变更记录
 
+- 2026-09-13：新增关键波形仿真（4 项：五级总览/前递优先级/load-use 冻结/分支冲刷）——`test/wave/wave_pipe.v`（逐拍采样出 CSV+VCD）+ `scripts/run_wave.ps1`（仿真）+ `scripts/wave_png.ps1`（System.Drawing 渲染 PNG）+ `scripts/report_png.ps1`（回归/性能汇总表）；产物归档 `doc/sim_shots/`；回归仍 **21/21**（新增 `fwd_priority.asm` 独立场景不入回归）。T34 表 D 本机综合收尾/报告空转，已回滚，留待综合侧。
 - 2026-09-07：实验二交付物收敛为独立 UART IP（uart_ip_top，exp2/）——SoC 上移为项目顶层 `soc/`（soc_top/reset_sync/dbus_decode 随迁）；§3 布局说明、§6 T41/T43 行同步（core 侧 RTL 零改动）。
 - 2026-09-06：T32/T33 落地——`test/tb_perf.v`（5 档 PERF_* + 恒等式/正确性断言）、`scripts/run_perf.ps1`（汇总 `out/perf_summary.csv`）；5 档实测全绿，报告成稿 `doc/perf_report.md`（T34/T35 待执行，Fmax 复测在综合侧）。
 - 2026-09-06：新增性能分析任务 T32–T35 与 M4（方案 `doc/perf_analysis.md`，追溯表行"量化性能测试"由"后追加"转正）；全仓编码排查结论：文本均纯 UTF-8（乱码为 GBK 环境显示假象，见 ref_note §4）；新增编码校验工具 `src/scripts/fix_encoding.ps1`。

@@ -1,0 +1,47 @@
+compile+elaborate+simulate 21 test(s) across 21 worker(s) (watchdog 30s/case)
+  tb_alu               PASS
+  tb_decode            PASS
+  tb_dmem              PASS
+  tb_execute           PASS
+  tb_ex_mem            PASS
+  tb_hazard_unit       PASS
+  tb_id_ex             PASS
+  tb_if_id             PASS
+  tb_imem              PASS
+  tb_mem_wb            PASS
+  tb_pc_reg            PASS
+  tb_perf              PASS
+  tb_pipeline_top      PASS
+  tb_prog_cover        PASS
+  tb_prog_demo         PASS
+  tb_prog_hazard       PASS
+  tb_prog_sort         PASS
+  tb_prog_test0        PASS
+  tb_prog_test1        PASS
+  tb_regfile           PASS
+  tb_wb                PASS
+
+== summary ==
+  tb_alu PASS
+  tb_decode PASS
+  tb_dmem PASS
+  tb_execute PASS
+  tb_ex_mem PASS
+  tb_hazard_unit PASS
+  tb_id_ex PASS
+  tb_if_id PASS
+  tb_imem PASS
+  tb_mem_wb PASS
+  tb_pc_reg PASS
+  tb_perf PASS
+  tb_pipeline_top PASS
+  tb_prog_cover PASS
+  tb_prog_demo PASS
+  tb_prog_hazard PASS
+  tb_prog_sort PASS
+  tb_prog_test0 PASS
+  tb_prog_test1 PASS
+  tb_regfile PASS
+  tb_wb PASS
+
+PASS 21/21  (missing/timeout 0)  elapsed 16 s  workers: 21  logs: C:\Users\oo-infty\Projects\board\pipeline\src\scripts\out
