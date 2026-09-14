@@ -34,6 +34,8 @@
   stall=1 → pc_reg.en=0、if_id.en=0、id_ex.bubble=1（恰 1 气泡）。
 - 优先级：flush_branch 与 stall 不会同拍同时为 1（EX 段单指令不可能既是 load 又是分支），top 端 `id_ex.bubble = stall | br_taken`、`if_id.flush = br_taken`。
 
+> **历史 L1 线索已撤销（见 `pipeline/doc/known_issues.md`）**：此前将 `add x8,x8,x6` 的 load-use 场景判为累加器自 RAW 缺陷，但复核发现原见证程序的期望值错误，当前 RTL 结果与真实指令流一致。该场景仍可作为冒险行为审计样例，不作为已确认缺陷或正确性失败证据。
+
 ## 为什么恰 1 气泡 / 恰 2 冲刷
 见 top_design §3/§4 时序推导：load 数据在 MEM/WB 就绪于其 WB 拍，消费者 EX 拍前递；分支 taken 清 IF/ID+ID/EX 两条。
 

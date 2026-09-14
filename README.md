@@ -9,7 +9,7 @@ board/
  │   ├─ src/defines/      指令/常量宏
  │   ├─ src/test/         TB + 汇编测试程序（.asm/.hex）
  │   ├─ src/scripts/      run_tb.ps1（批量仿真）、run_perf.ps1（性能测量）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
- │   ├─ doc/              计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis/perf_report）
+ │   ├─ doc/              计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis 性能分析方案 v2.1/perf_report 实测数据）
  │   └─ exp1_vivado.bat   exp1 Vivado 工程入口
  ├─ UART/                汇编与接口课程（交付物：UART 控制器 IP——uart_ip_top + 内部层 + IP 级独立测试）
  ├─ soc/                 整个项目的顶层（SoC 集成，两课共建：soc_top/reset_sync/dbus_decode + 固件/XDC/系统 TB）
@@ -28,7 +28,7 @@ powershell -File pipeline/src/scripts/run_tb.ps1 -Case alu # 按名过滤
 # 汇编测试程序 → 机器码镜像
 powershell -File pipeline/src/scripts/build_asm.ps1
 
-# 性能测量（5 档程序：CPI/IPC/停顿分解，汇总 out/perf_summary.csv）
+# 性能测量（8 档程序：CPI/IPC/停顿分解，汇总 out/perf_summary.csv）
 powershell -File pipeline/src/scripts/run_perf.ps1
 
 # Vivado 综合自检（include 目录 = pipeline/src/）

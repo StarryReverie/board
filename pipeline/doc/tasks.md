@@ -30,7 +30,7 @@
 | 指令条数 ≥16 | `pipeline/doc/isa.md`（T1），26 条 |
 | 控制器结构三选一 | 硬布线（见 top_design.md） |
 | 附加功能 ≥1 | 溢出判断 `flags[OF]`（T14，可观测出口） |
-| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `pipeline/doc/perf_analysis.md`；`ref/CPU/` 基线见 T34） |
+| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `pipeline/doc/perf_analysis.md` v2.1；**当前对比基线 = `ref/CPU/` 同条件复测，原始大三记录待交叉核对**，见方案 §4） |
 | 汇编与接口/外设控制器/集成 | **后追加**（实验二 §6：T40–T44） |
 | 提交物：源码/测试汇编+机器码/报告/PPT/视频/日志 | **后追加** |
 
@@ -63,7 +63,7 @@
 | T16 | 访存组合：`dmem.v` | T3 | 同步写 RAM(sw/lw, wmask)，读周期内组合有效 | 同址 `sw` 后紧邻 `lw`(下拍读) 值一致；读写同拍语义按文档定义 |
 | T17 | `mem_wb.v` `[寄存器]` | T3 | MEM/WB：`{rdata,alu_result,rd,Ctrl_WB}` | 常规打入 |
 | T18 | 回写组合 `wb` | T3 | `MemtoReg` 选路→regfile 写口 | MemtoReg=1 取 rdata，=0 取 alu_result；rd=x0 不写；WB 末沿直写 |
-| T19 | `hazard_unit.v`（冲突处理） | T3,T14 | `fwdA/fwdB`、`pc_freeze`、`ifid_en`、ID/EX 气泡、`flush_branch` | 前递源：EX/MEM 优先于 MEM/WB；load-use→冻结 PC+IF/ID 且 ID/EX 灌气泡(恰 1)；分支 taken→清 IF/ID+ID/EX(恰 2) |
+| T19 | `hazard_unit.v`（冲突处理） | T3,T14 | `fwdA/fwdB`、`pc_freeze`、`ifid_en`、ID/EX 气泡、`flush_branch` | 前递源：EX/MEM 优先于 MEM/WB；load-use→冻结 PC+IF/ID 且 ID/EX 灌气泡(恰 1)；分支 taken→清 IF/ID+ID/EX(恰 2)。历史 L1 线索已撤销，审计记录见 `pipeline/doc/known_issues.md` |
 | T20 | `pipeline_top.v` 顶层装配 | T10–T19 | 交替例化组合段与寄存器 + HALT 观测口 | 端口与 top_design 连接表一致；无悬空/多重驱动；可综合；Vivado 综合通过(下板侧) |
 
 ---
@@ -74,14 +74,17 @@
 |---|---|---|---|
 | T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `pipeline/src/test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
 | T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `pipeline/src/test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
-| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（5 档 `PERF_*` 编译开关；WB 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用；依赖 T31 全绿） | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` 5 档全 PASS；正确性断言与 tb_prog_* 一致（方案 §5） |
-| T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（依赖 T32） | run_perf.ps1 + CSV | 一键 5 档；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==` |
-| T34 | 单周期基线：`cycles_single = IC` 理论基线表；（可选）ref 副本综合复测 Fmax/资源（副本入 `build/`，ref 零改动；依赖 T33） | 基线表/复测数据 | 表 A/B/D 数据齐；数据来源逐项注明（方案 §6） |
-| T35 | 报告性能章节素材：表 A–D + 停顿堆叠图 + 结论分析（依赖 T34） | 报告/PPT 素材 | 覆盖 require"量化性能对比"；恒等式与停顿分解自洽（方案 §8） |
+| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（**8 档** `PERF_*` 编译开关 = 5 主档 + 3 规模档；`PERF_MAXCYC` 看门狗；EX 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 主档正确性断言；依赖 T31 全绿） | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` **8 档全 PASS**；主档复用 tb_prog_* 正确性断言，规模档只断言控制流收敛并标记为性能证据（方案 §5） |
+| T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（依赖 T32） | run_perf.ps1 + CSV | 一键 **8 档**（5 主档 + 3 规模档）；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==`（实测 8/8 PASS） |
+| T34 | 单周期基线：① 单周期**拍数实测**（`ref/CPU` 只读副本，TB 数 PC 变化次数）；② 资源/Fmax 两阶段综合（副本入 `build/`，ref 零改动；依赖 T33） | `pipeline/doc/ref_baseline_measured.md` + 报告表 4/5 | ✅ 拍数 11/20/178；单周期/流水线资源、WNS、Fmax 均已按同器件同约束出数 |
+| T35 | 报告性能章节：三窗口、停顿分解、规模收敛、单周期对比、资源/Fmax 与系统层结论（依赖 T34） | `pipeline/doc/perf_report.md` | ✅ `perf_report.md` v2.1 完成；数字均可回溯至 CSV/综合报告，结论注明不可实现的 LUT 约束与规模档功能证据范围 |
 | T36 | 关键仿真波形（4 项）：五级运行总览 / 数据前递与前递优先级 / load-use 冻结 1 拍 / 分支预测不跳+冲刷 2 拍；说明见 `pipeline/doc/sim_experiments.md` | `test/wave/wave_pipe.v` + `test/fwd_priority.asm` + `scripts/{run_wave,wave_png,report_png}.ps1` + `doc/sim_shots/auto/` | 4 图 + 同名日志 + 汇总表；TB 内嵌验收断言全 PASS；回归口径不变 **21/21** |
 
-> 状态（2026-09-06）：**T32（`pipeline/src/test/tb_perf.v`）与 T33（`pipeline/src/scripts/run_perf.ps1`）已落地**——5 档程序实测全绿（恒等式 5/5 + 正确性断言全绿，随 run_tb 20 项回归）；实测数据与结论见 `pipeline/doc/perf_report.md`。**T34/T35 待执行**（单周期 Fmax 复测在综合侧，本机时序报告环节已知空转限制）。
-> 状态（2026-09-13）：**T36 关键仿真波形 4 项已落地**（`pipeline/doc/sim_experiments.md`）；回归扩为 **21/21**（14 模块 + 6 程序 + 1 性能）。**T34 表 D** 本机综合空转已回滚，留待综合侧；T35 报告素材除表 D 外齐备。
+> 状态（2026-09-14）：**T32/T33 已按 v2.1 升级并重出数据**——`tb_perf.v` 支持 8 档（5 主档 + 3 规模档 `loop_heavy_{8,32,128}`，含 `PERF_MAXCYC` 看门狗），`run_perf.ps1` 同步支持 8 档，**8/8 全 PASS 且恒等式全过**；汇总数据 `pipeline/doc/perf_data/2026-09-14_perf_summary.csv`（含 `C_total`/`C_steady`/`C_fixed` 与恒等式残差）。
+> **T34 拍数部分已完成**：`pipeline/doc/ref_baseline_measured.md` —— 单周期实测 11/20/178 拍，与流水线 `IC` 精确满足 `C_单周期 = IC + 1`，**CPI ≡ 1.00 得证**；资源/Fmax 走两阶段综合（`build/run_both_synth.ps1`）。
+> **冒险审计记录** `pipeline/doc/known_issues.md`：原 L1 线索已复核并撤销，`accwitness.asm` 保留为真实指令流审计样例；RTL 功能回归维持 21/21。
+> **T35 已完成**：最终性能章节见 `pipeline/doc/perf_report.md`；旧版 `perf_report_skeleton.md` 已删除。
+> **T36 已完成**：关键波形 4 项、自动图表与日志均已归档；回归口径维持 21/21。
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
 - `pipeline/src/scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `pipeline/src/test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
@@ -96,7 +99,7 @@
 | M1 | 文档定稿(T0–T4) | isa.md 与 top_design.md 评审通过；模块文档齐全 |
 | M2 | 模块编码(T10–T20) | 每模块代码通过静态核对；pipeline_top 无悬空/无多重驱动 |
 | M3 | 测试(T30–T31) | 整机回归程序全部 PASS（下板侧跑） |
-| M4 | 性能测量(T32–T35) | 恒等式 5/5 PASS；回归全绿；perf_summary.csv 齐；对比数据注明来源 |
+| M4 | 性能测量(T32–T35) | 恒等式 **8/8 PASS**；功能回归 **21/21** 全绿；`perf_data/2026-09-14_perf_summary.csv` 齐；对比数据注明来源（单周期基准 = `ref_baseline_measured.md` 本轮实测） |
 
 > M2/M3 的实际 PASS 依赖 Vivado 侧运行；本机完成源码、TB、期望值与镜像后，交付下板侧验证。
 
@@ -135,6 +138,7 @@
 
 - 2026-09-13：新增关键波形仿真（4 项：五级总览/前递优先级/load-use 冻结/分支冲刷）——`test/wave/wave_pipe.v`（逐拍采样出 CSV+VCD）+ `scripts/run_wave.ps1`（仿真）+ `scripts/wave_png.ps1`（System.Drawing 渲染 PNG）+ `scripts/report_png.ps1`（回归/性能汇总表）；产物归档 `doc/sim_shots/`；回归仍 **21/21**（新增 `fwd_priority.asm` 独立场景不入回归）。T34 表 D 本机综合收尾/报告空转，已回滚，留待综合侧。
 - 2026-09-07：实验二交付物收敛为独立 UART IP（uart_ip_top，exp2/）——SoC 上移为项目顶层 `soc/`（soc_top/reset_sync/dbus_decode 随迁）；§3 布局说明、§6 T41/T43 行同步（core 侧 RTL 零改动）。
+- 2026-09-13：**性能分析方案重写为 `doc/perf_analysis.md` v2.0**（取代 v1.0 并删除旧文）——指标选择依据、三窗口口径 + 恒等式 A/B 自检、负载收敛为 4 主档 + 1 规模档、**对比基线改为组内成员大三阶段单周期实验数据**（不再复测 `ref/CPU` 副本）、报告新增"大三单周期 CPU 结构与工作原理简介"；§1 追溯表行与上一条状态同步。
 - 2026-09-06：T32/T33 落地——`test/tb_perf.v`（5 档 PERF_* + 恒等式/正确性断言）、`scripts/run_perf.ps1`（汇总 `out/perf_summary.csv`）；5 档实测全绿，报告成稿 `doc/perf_report.md`（T34/T35 待执行，Fmax 复测在综合侧）。
 - 2026-09-06：新增性能分析任务 T32–T35 与 M4（方案 `doc/perf_analysis.md`，追溯表行"量化性能测试"由"后追加"转正）；全仓编码排查结论：文本均纯 UTF-8（乱码为 GBK 环境显示假象，见 ref_note §4）；新增编码校验工具 `src/scripts/fix_encoding.ps1`。
 - 2026-09-04：实验二任务块按定稿改版（§6，T40–T44）：UART 全双工（T41）、固定固件 console（T42）、系统 TB（T43）、下板（T44）；取消 loader 在线重载（原 T42、原 T45 重载演示），imem 写口保留预留。
