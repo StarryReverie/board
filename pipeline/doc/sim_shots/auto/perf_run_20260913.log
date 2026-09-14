@@ -1,0 +1,20 @@
+[运行] test0    (test0_rom.hex)
+  ic=10  c=12  f=1  l=0  t=1  ident=1  allpass=True
+[运行] test1    (test1_rom.hex)
+  ic=19  c=24  f=1  l=1  t=2  ident=1  allpass=True
+[运行] sort     (test_sort_rom.hex)
+  ic=177  c=247  f=1  l=10  t=30  ident=1  allpass=True
+[运行] cover    (instr_cover_rom.hex)
+  ic=33  c=43  f=1  l=0  t=5  ident=1  allpass=True
+[运行] hazard   (hazard_cover_rom.hex)
+  ic=16  c=22  f=1  l=2  t=2  ident=1  allpass=True
+
+== PERF 汇总 ==
+  test0    ic=10    c=12    CPI=1.2     IPC=0.833   CPI_s=1.2     ident=1 allpass=True
+  test1    ic=19    c=24    CPI=1.263   IPC=0.792   CPI_s=1.263   ident=1 allpass=True
+  sort     ic=177   c=247   CPI=1.395   IPC=0.717   CPI_s=1.395   ident=1 allpass=True
+  cover    ic=33    c=43    CPI=1.303   IPC=0.767   CPI_s=1.303   ident=1 allpass=True
+  hazard   ic=16    c=22    CPI=1.375   IPC=0.727   CPI_s=1.375   ident=1 allpass=True
+
+汇总: C:\Users\oo-infty\Projects\board\pipeline\src\scripts\out\perf_summary.csv
+== PERF ALL PASS ==

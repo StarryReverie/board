@@ -47,3 +47,6 @@ tight_setup_hold_pins.txt
 # ---- 本地归档与智能体指南（仅本机使用，不入库）----
 archive/
 AGENTS.md
+
+# ---- 仿真证据日志（保留，覆盖上面的 *.log 全局忽略）----
+!pipeline/doc/sim_shots/**/*.log

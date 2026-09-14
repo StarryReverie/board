@@ -78,11 +78,13 @@
 | T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（依赖 T32） | run_perf.ps1 + CSV | 一键 **8 档**（5 主档 + 3 规模档）；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==`（实测 8/8 PASS） |
 | T34 | 单周期基线：① 单周期**拍数实测**（`ref/CPU` 只读副本，TB 数 PC 变化次数）；② 资源/Fmax 两阶段综合（副本入 `build/`，ref 零改动；依赖 T33） | `pipeline/doc/ref_baseline_measured.md` + 报告表 4/5 | ✅ 拍数 11/20/178；单周期/流水线资源、WNS、Fmax 均已按同器件同约束出数 |
 | T35 | 报告性能章节：三窗口、停顿分解、规模收敛、单周期对比、资源/Fmax 与系统层结论（依赖 T34） | `pipeline/doc/perf_report.md` | ✅ `perf_report.md` v2.1 完成；数字均可回溯至 CSV/综合报告，结论注明不可实现的 LUT 约束与规模档 L1 限制 |
+| T36 | 关键仿真波形（4 项）：五级运行总览 / 数据前递与前递优先级 / load-use 冻结 1 拍 / 分支预测不跳+冲刷 2 拍；说明见 `pipeline/doc/sim_experiments.md` | `test/wave/wave_pipe.v` + `test/fwd_priority.asm` + `scripts/{run_wave,wave_png,report_png}.ps1` + `doc/sim_shots/auto/` | 4 图 + 同名日志 + 汇总表；TB 内嵌验收断言全 PASS；回归口径不变 **21/21** |
 
 > 状态（2026-09-14）：**T32/T33 已按 v2.1 升级并重出数据**——`tb_perf.v` 支持 8 档（5 主档 + 3 规模档 `loop_heavy_{8,32,128}`，含 `PERF_MAXCYC` 看门狗），`run_perf.ps1` 同步支持 8 档，**8/8 全 PASS 且恒等式全过**；汇总数据 `pipeline/doc/perf_data/2026-09-14_perf_summary.csv`（含 `C_total`/`C_steady`/`C_fixed` 与恒等式残差）。
 > **T34 拍数部分已完成**：`pipeline/doc/ref_baseline_measured.md` —— 单周期实测 11/20/178 拍，与流水线 `IC` 精确满足 `C_单周期 = IC + 1`，**CPI ≡ 1.00 得证**；资源/Fmax 走两阶段综合（`build/run_both_synth.ps1`）。
-> **新增缺陷台账** `pipeline/doc/known_issues.md`（L1：累加寄存器自 RAW × load-use，含最小复现 `pipeline/src/test/accwitness.asm`）；RTL 已回退至无回归状态（功能 20/20）。
+> **新增缺陷台账** `pipeline/doc/known_issues.md`（L1：累加寄存器自 RAW × load-use，含最小复现 `pipeline/src/test/accwitness.asm`）；RTL 已回退至无回归状态（功能 21/21）。
 > **T35 已完成**：最终性能章节见 `pipeline/doc/perf_report.md`；旧骨架仅保留为索引。
+> **T36 已完成**：关键波形 4 项、自动图表与日志均已归档；回归口径维持 21/21。
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
 - `pipeline/src/scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `pipeline/src/test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
@@ -134,6 +136,7 @@
 
 ## 8. 变更记录
 
+- 2026-09-13：新增关键波形仿真（4 项：五级总览/前递优先级/load-use 冻结/分支冲刷）——`test/wave/wave_pipe.v`（逐拍采样出 CSV+VCD）+ `scripts/run_wave.ps1`（仿真）+ `scripts/wave_png.ps1`（System.Drawing 渲染 PNG）+ `scripts/report_png.ps1`（回归/性能汇总表）；产物归档 `doc/sim_shots/`；回归仍 **21/21**（新增 `fwd_priority.asm` 独立场景不入回归）。T34 表 D 本机综合收尾/报告空转，已回滚，留待综合侧。
 - 2026-09-07：实验二交付物收敛为独立 UART IP（uart_ip_top，exp2/）——SoC 上移为项目顶层 `soc/`（soc_top/reset_sync/dbus_decode 随迁）；§3 布局说明、§6 T41/T43 行同步（core 侧 RTL 零改动）。
 - 2026-09-13：**性能分析方案重写为 `doc/perf_analysis.md` v2.0**（取代 v1.0 并删除旧文）——指标选择依据、三窗口口径 + 恒等式 A/B 自检、负载收敛为 4 主档 + 1 规模档、**对比基线改为组内成员大三阶段单周期实验数据**（不再复测 `ref/CPU` 副本）、报告新增"大三单周期 CPU 结构与工作原理简介"；§1 追溯表行与上一条状态同步。
 - 2026-09-06：T32/T33 落地——`test/tb_perf.v`（5 档 PERF_* + 恒等式/正确性断言）、`scripts/run_perf.ps1`（汇总 `out/perf_summary.csv`）；5 档实测全绿，报告成稿 `doc/perf_report.md`（T34/T35 待执行，Fmax 复测在综合侧）。
