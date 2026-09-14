@@ -1,4 +1,4 @@
-# extract_frame_vcd.ps1 - build a one-frame VCD + bit-level ASCII timing from the
+﻿# extract_frame_vcd.ps1 - build a one-frame VCD + bit-level ASCII timing from the
 # pin-transition log written by UART/src/test/tb_wave_868.v (times in ns).
 # ASCII-only on purpose: Windows PowerShell 5.1 reads BOM-less files as ANSI.
 # in : build/wave868/wave_868_events.txt   (xsim scratch, produced by run_wave868.ps1)

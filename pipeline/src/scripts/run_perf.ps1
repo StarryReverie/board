@@ -1,17 +1,20 @@
 ﻿<#
 =============================================================================
- run_perf.ps1 — T33 性能批量测量运行器（pipeline/doc/perf_analysis.md §5.3）
-   五档程序逐档编译运行 tb_perf.v（xvlog -d PERF_*），解析
+ run_perf.ps1 — T33 性能批量测量运行器（pipeline/doc/perf_analysis.md v2.0 §5）
+   八档程序逐档编译运行 tb_perf.v（xvlog -d PERF_*），解析
    PERF_SUMMARY 行 → 汇总 pipeline/src/scripts/out/perf_summary.csv
-   指标口径见 pipeline/doc/perf_analysis.md §3（C==IC+(F-1)+L+2T 恒等式由 TB 断言）
+   档位：5 主档（test0/test1/sort/cover/hazard）+ 3 规模档（loop8/loop32/loop128）
+   指标口径见 pipeline/doc/perf_analysis.md v2.0 §2（三窗口 + 恒等式；
+   IC 包含末尾停机自旋，IC_useful=IC-1）
    用法：
-     powershell -File pipeline/src/scripts/run_perf.ps1       # 跑全部 5 档
+     powershell -File pipeline/src/scripts/run_perf.ps1       # 跑全部 8 档
      powershell -File pipeline/src/scripts/run_perf.ps1 -Case sort,hazard
+     powershell -File pipeline/src/scripts/run_perf.ps1 -Case loop   # 3 档规模档
    环境：默认 C:\Xilinx\Vivado\2019.2；可用 $env:XVIVADO_ROOT 覆盖
 =============================================================================
 #>
 param(
-    [string]$Case = ''     # 过滤：逗号分隔程序名子串（test0/test1/sort/cover/hazard）
+    [string]$Case = ''     # 过滤：逗号分隔程序名子串（test0/test1/sort/cover/hazard/loop8/loop32/loop128）
 )
 
 $ErrorActionPreference = 'Stop'
@@ -20,13 +23,16 @@ $vivado  = if ($env:XVIVADO_ROOT) { $env:XVIVADO_ROOT } else { 'C:\Xilinx\Vivado
 $settings = Join-Path $vivado 'settings64.bat'
 if (-not (Test-Path $settings)) { Write-Error "找不到 $settings"; exit 1 }
 
-# ---- 五档程序表：名称 / 镜像 / 编译开关 / 说明 ----
+# ---- 八档程序表：名称 / 镜像 / 编译开关 ----
 $progs = @(
-    @{ name = 'test0';  hex = 'test0_rom.hex';        def = '' },
-    @{ name = 'test1';  hex = 'test1_rom.hex';        def = 'PERF_TEST1' },
-    @{ name = 'sort';   hex = 'test_sort_rom.hex';    def = 'PERF_SORT' },
-    @{ name = 'cover';  hex = 'instr_cover_rom.hex';  def = 'PERF_COVER' },
-    @{ name = 'hazard'; hex = 'hazard_cover_rom.hex'; def = 'PERF_HAZARD' }
+    @{ name = 'test0';   hex = 'test0_rom.hex';           def = '' },
+    @{ name = 'test1';   hex = 'test1_rom.hex';           def = 'PERF_TEST1' },
+    @{ name = 'sort';    hex = 'test_sort_rom.hex';       def = 'PERF_SORT' },
+    @{ name = 'cover';   hex = 'instr_cover_rom.hex';     def = 'PERF_COVER' },
+    @{ name = 'hazard';  hex = 'hazard_cover_rom.hex';    def = 'PERF_HAZARD' },
+    @{ name = 'loop8';   hex = 'loop_heavy_8_rom.hex';    def = 'PERF_LOOP8' },
+    @{ name = 'loop32';  hex = 'loop_heavy_32_rom.hex';   def = 'PERF_LOOP32' },
+    @{ name = 'loop128'; hex = 'loop_heavy_128_rom.hex';  def = 'PERF_LOOP128' }
 )
 if ($Case) {
     $keys = $Case -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
@@ -78,31 +84,37 @@ foreach ($p in $progs) {
     if ($LASTEXITCODE -ne 0) { Write-Host ("  [异常] 退出码 {0}" -f $LASTEXITCODE); exit 1 }
 
     $log = Join-Path $dir 'tb.log'
-    $line = Select-String -Path $log -Pattern 'PERF_SUMMARY: name=(\S+) ic=(\S+) f=(\d+) c=(\d+) l=(\d+) t=(\d+) ident=(\d+) ok=(\d+)'
+    $line = Select-String -Path $log -Pattern 'PERF_SUMMARY: name=(\S+) ic=(\d+) f=(\d+) h=(\d+) c_total=(\d+) c_steady=(\d+) c_fixed=(\d+) l=(\d+) t=(\d+) ident_a=(\d+) ident_b=(\d+) residual=(-?\d+) ok=(\d+)'
     if (-not $line) { Write-Host '  [异常] 未找到 PERF_SUMMARY 行'; exit 1 }
     $m = $line.Matches[0]
-    $r = @{ name = $m.Groups[1].Value; ic = $m.Groups[2].Value; f = [int]$m.Groups[3].Value
-            c  = [int]$m.Groups[4].Value; l = [int]$m.Groups[5].Value; t = [int]$m.Groups[6].Value
-            ident = [int]$m.Groups[7].Value; ok = [int]$m.Groups[8].Value }
+    $r = @{ name = $m.Groups[1].Value; ic = [int]$m.Groups[2].Value; f = [int]$m.Groups[3].Value
+            h = [int]$m.Groups[4].Value; c = [int]$m.Groups[5].Value; cs = [int]$m.Groups[6].Value
+            cf = [int]$m.Groups[7].Value; l = [int]$m.Groups[8].Value; t = [int]$m.Groups[9].Value
+            ident_a = [int]$m.Groups[10].Value; ident_b = [int]$m.Groups[11].Value
+            residual = [int]$m.Groups[12].Value; ok = [int]$m.Groups[13].Value }
     $r.allpass = [bool](Select-String -Path $log -Pattern '=== ALL PASS ===' -Quiet)
     $rows += $r
-    Write-Host ("  ic={0}  c={1}  f={2}  l={3}  t={4}  ident={5}  allpass={6}" -f
-                $r.ic, $r.c, $r.f, $r.l, $r.t, $r.ident, $r.allpass)
+    Write-Host ("  ic={0}  c={1}  cs={2}  f={3}  l={4}  t={5}  A/B={6}/{7}  allpass={8}" -f
+                $r.ic, $r.c, $r.cs, $r.f, $r.l, $r.t, $r.ident_a, $r.ident_b, $r.allpass)
 }
 
 # ---- 汇总 CSV + 指标表 ----
-$lines = @('prog,ic,f,c,l,t,cpi,ipc,cpi_steady,ident,allpass')
+$lines = @('prog,IC,F,h,C_total,C_steady,C_fixed,L_loaduse,T_redirect,CPI_total,CPI_steady,IPC_steady,MIPS_100M,CPUtime_100M_ns,ident_a,ident_b,residual,correctness')
 Write-Host "`n== PERF 汇总 =="
 $allOk = $true
 foreach ($r in $rows) {
-    $cpi  = if ($r.ic -match '^\d+$' -and $r.ic -ne 0) { [math]::Round($r.c / $r.ic, 3) } else { '' }
-    $ipc  = if ($cpi -ne '') { [math]::Round($r.ic / $r.c, 3) } else { '' }
-    $cs   = if ($cpi -ne '') { [math]::Round(($r.c - ($r.f - 1)) / $r.ic, 3) } else { '' }
-    $lines += ('{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}' -f
-               $r.name, $r.ic, $r.f, $r.c, $r.l, $r.t, $cpi, $ipc, $cs, $r.ident, $r.allpass)
-    Write-Host ("  {0,-8} ic={1,-5} c={2,-5} CPI={3,-7} IPC={4,-7} CPI_s={5,-7} ident={6} allpass={7}" -f
-                $r.name, $r.ic, $r.c, $cpi, $ipc, $cs, $r.ident, $r.allpass)
-    if ($r.ident -ne 1 -or -not $r.allpass) { $allOk = $false }
+    $useful = $r.ic - 1
+    $cpi  = [math]::Round($r.c / $r.ic, 3)
+    $cpiS = [math]::Round($r.cs / $useful, 3)
+    $ipc  = [math]::Round($useful / $r.cs, 3)
+    $mips = [math]::Round(100.0 * $useful / $r.c, 3)
+    $time = $r.c * 10
+    $lines += ('{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17}' -f
+               $r.name, $r.ic, $r.f, $r.h, $r.c, $r.cs, $r.cf, $r.l, $r.t,
+               $cpi, $cpiS, $ipc, $mips, $time, $r.ident_a, $r.ident_b, $r.residual, $r.ok)
+    Write-Host ("  {0,-8} ic={1,-5} c={2,-5} CPI={3,-7} CPI_s={4,-7} IPC_s={5,-7} MIPS={6,-7} A/B={7}/{8} allpass={9}" -f
+                $r.name, $r.ic, $r.c, $cpi, $cpiS, $ipc, $mips, $r.ident_a, $r.ident_b, $r.allpass)
+    if ($r.ident_a -ne 1 -or $r.ident_b -ne 1 -or $r.residual -ne 0 -or $r.ok -ne 1 -or -not $r.allpass) { $allOk = $false }
 }
 Set-Content -Path $summary -Value $lines -Encoding ASCII
 Write-Host ''

@@ -9,9 +9,9 @@
 
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
-| 流水线 CPU 仿真实验报告（未下板成功版本） | 素材：`pipeline/doc/top_design.md`（结构/冲突方案）、`pipeline/doc/isa.md`、`pipeline/doc/modules/*.md`（14 模块）、`pipeline/doc/ref_note.md`、`pipeline/doc/perf_report.md`（性能实测）；**成稿待写** | 🟡 | 套老师模板后交付；若团队下板成功则改交"仿真与下板实验报告"版本并补板级章节 |
+| 流水线 CPU 仿真实验报告（未下板成功版本） | 素材：`pipeline/doc/top_design.md`、`pipeline/doc/isa.md`、`pipeline/doc/modules/*.md`、`pipeline/doc/ref_note.md`、**`pipeline/doc/perf_analysis.md` v2.1（性能分析方案）**、**`pipeline/doc/ref_baseline_measured.md`（单周期拍数/资源/Fmax 本轮实测）**、**`pipeline/doc/perf_report.md`（性能分析完成版）**、`pipeline/doc/known_issues.md`（缺陷台账）**；性能章节已成稿** | 🟡 | 套老师模板后交付；若团队下板成功则改交"仿真与下板实验报告"版本并补板级章节 |
 | 源代码 | `pipeline/src/rtl/*.v`（pipeline_top 等 14 模块）、`pipeline/src/defines/*.v`、`pipeline/src/scripts/`（run_tb/run_perf/build_asm/fix_encoding/synth_check/create_vivado_proj） | ✅ | 综合自检通过；工程 `pipeline/vivado/board.xpr`（exp1 工程目录 = pipeline/vivado/）本地生成（gitignore，不入库；入口 `pipeline/exp1_vivado.bat`） |
-| 测试汇编代码和机器码 | `pipeline/src/test/*.asm`（test0/test1/test_sort/instr_cover/hazard_cover）+ `*_rom.hex`；程序级 TB `tb_prog_*.v`、性能 TB `tb_perf.v` | ✅ | 20/20 回归 PASS；.asm↔.hex 由 build_asm.ps1 维护 |
+| 测试汇编代码和机器码 | `pipeline/src/test/*.asm`（test0/test1/test_sort/instr_cover/hazard_cover/loop_heavy_8,32,128）+ `*_rom.hex`；程序级 TB `tb_prog_*.v`、性能 TB `tb_perf.v`（含 3 档规模档）；缺陷最小复现 `accwitness.asm` | ✅ | 21/21 功能回归 + 8/8 性能档 PASS；.asm↔.hex 由 build_asm.ps1 / simple_asm.py 维护 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建（素材同上 + perf 表 A–D） | ⬜ | 汇报人/署名待提供 |
 | ≤5min 下板演示视频 | — | — | **仅"下板成功"路径需要**；当前按仿真版报告走，可豁免（若中途下板成功需补拍） |
 | 个人日志（10 分/人） | 待建（9/2–9/18 每日条目） | ⬜ | 格式按课程群日志模板，各成员填写 |
@@ -29,13 +29,15 @@
 | 汇编实验测试（20 分，现场） | 依课程安排 | 🚫 | 现场测试，需板 |
 | 个人日志（10 分/人） | 待建 | ⬜ | 同计组：课程群模板 |
 
-## 仓库总态（2026-09-07）
+## 仓库总态（2026-09-14）
 
-- 计组：T0–T33 完成（回归 20/20、性能实测 5/5 恒等式）；T34（Fmax 复测，综合侧）、T35（报告素材）待执行。
+- 计组：T0–T35 完成（功能回归 **21/21**、性能 **8/8** 全 PASS 且恒等式全过）；**性能分析方案 `pipeline/doc/perf_analysis.md` v2.1 已落实**（指标依据 / 三窗口口径 / 5 档 + 3 规模档 / 与大三单周期对比）；**大三单周期基准已实测**（`pipeline/doc/ref_baseline_measured.md`：拍数 11/20/178、资源/Fmax 与流水线同条件综合，CPI≡1.00）；**性能报告 `pipeline/doc/perf_report.md` v2.1 已成稿**；**已知缺陷 L1 已定案入账**（`pipeline/doc/known_issues.md`）。
 - 汇编：U10–U15、U30、U31、U40、U41 完成——**实验二交付物收敛为独立 UART IP**（uart_ip_top + IP 级独立测试）；SoC 上移为整个项目的顶层 `soc/`（集成代码/固件/XDC/系统 TB/下板方案随迁）；U32 板级（XDC/固件就绪）、U33 可选 ILA——见 UART/doc/tasks.md。
 - 与 origin/dev 同步 ✅。
 
 ## 变更记录
 
+- 2026-09-14：**大三单周期基准与性能分析全部落地**——新增 `pipeline/doc/ref_baseline_measured.md`（拍数 11/20/178、资源/Fmax 同条件综合、CPI≡1.00）；`perf_analysis.md` 升级 v2.1，`perf_report.md` 完成最终性能章节；**新增缺陷台账** `pipeline/doc/known_issues.md`（L1：累加寄存器自 RAW × load-use）；RTL 回归 21/21 + 性能 8/8 全绿。**规模档修复并入库**：`loop_heavy_{8,32,128}` 三档，`tb_perf.v`/`run_perf.ps1` 支持三窗口与恒等式 A/B，汇总 CSV 为 `perf_data/2026-09-14_perf_summary.csv`。
+- 2026-09-13：性能分析方案重写为 `pipeline/doc/perf_analysis.md` v2.0（旧 v1.0 已删除并接替同名位置）——对比基线改为**组内成员大三阶段单周期实验数据**、指标选择依据与三窗口口径写入方案；报告素材行补该方案与 `ref_note.md`（大三单周期结构梳理）；仓库总态更新为回归 20/20。
 - 2026-09-07：结构调整——实验二交付=UART IP（UART/），SoC=项目顶层（soc/）；UART 侧构建脚本删至 build_fw/synth_check/create_vivado_proj（重建见 soc/doc/board_runbook.md）；汇编源代码行与 IP 打包行同步。
 - 2026-09-06：初版核对清单。

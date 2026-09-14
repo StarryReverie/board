@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $vivado  = if ($env:XVIVADO_ROOT) { $env:XVIVADO_ROOT } else { 'C:\Xilinx\Vivado\2019.2' }
 $scriptsDir = Split-Path -Parent $MyInvocation.MyCommand.Path   # UART/src/scripts
 $srcDir     = Split-Path -Parent $scriptsDir                    # UART/src

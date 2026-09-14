@@ -34,6 +34,8 @@
   stall=1 → pc_reg.en=0、if_id.en=0、id_ex.bubble=1（恰 1 气泡）。
 - 优先级：flush_branch 与 stall 不会同拍同时为 1（EX 段单指令不可能既是 load 又是分支），top 端 `id_ex.bubble = stall | br_taken`、`if_id.flush = br_taken`。
 
+> **已知缺陷（L1，待修，见 `pipeline/doc/known_issues.md`）**：当 load-use 消费者是"累加寄存器自 RAW"形式（如 `add x8,x8,x6`，x8 由本拍之前的非 load 指令产生）时，ID/EX 的 `bubble=1` 把消费者冲掉、消费者靠 PC/IF-ID 冻结在下一拍重放，而重放拍其操作数快照已被生产者冲掉的那一拍污染 → 读到陈旧操作数。最小复现：`pipeline/src/test/accwitness.asm`（复现步骤与逐拍证据见 `known_issues.md`）。
+
 ## 为什么恰 1 气泡 / 恰 2 冲刷
 见 top_design §3/§4 时序推导：load 数据在 MEM/WB 就绪于其 WB 拍，消费者 EX 拍前递；分支 taken 清 IF/ID+ID/EX 两条。
 
