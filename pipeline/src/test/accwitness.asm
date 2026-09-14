@@ -1,8 +1,8 @@
-# accwitness.asm: accumulator self-RAW + load-use, strict unit steps
-#   per iteration: x8 += dmem[0]; x8 += dmem[4]; dmem[0]++; dmem[4]++; dmem[8]++
-#   dmem[0]=dmem[4]=dmem[8]=1 at entry, so every term grows by exactly 1
-#   4 iterations -> second-add terms 2,3,4,5 (sum 14); final x8 = 10 + 14 = 24
-#   final dmem[0]=5 dmem[4]=5 dmem[8]=5
+# accwitness.asm: load-use sequence used to audit the retired L1 hypothesis
+#   setup writes dmem[0]=1, dmem[4]=2 and dmem[8]=1, then performs four
+#   loads from dmem[0], each immediately consumed by add x8,x8,xN.
+#   The stream has no increment loop: final x8=4, x9=4 and dmem[8]=4.
+#   These values match the RTL result, so this program is not a defect witness.
     addi x1, x0, 1
     sw   x1, 0(x0)
     sw   x1, 4(x0)

@@ -101,7 +101,7 @@ residual = C_steady - (IC + L + 2T - C_fixed) = 0
 - 固定开销 `C_fixed/C_total` 从 `test0` 的 25.0% 降至 `loop128` 的 0.17%，说明短程序 CPI 偏高主要来自停机固定开销。
 - `loop8/32/128` 中 `L=2N`、`T=N`，`CPI_steady` 从 1.349 收敛至 1.397，反映循环体自身的停顿结构。
 
-三个规模档命中已知缺陷 L1（累加寄存器自 RAW 与 load-use 组合，见 `pipeline/doc/known_issues.md`）。因此规模档只使用 `IC/L/T/C_total/C_steady` 计数和控制流收敛断言，不使用累加寄存器终值作为功能判据；这些计数与数据值无关，恒等式残差仍为 0。
+三个规模档包含重复的 load-use 与回边分支，用于观察停顿随规模的收敛。当前性能 TB 只断言控制流收敛，不把 `x8` 终值作为功能正确性证据；这是一项测试范围限定，并非已确认的 RTL 缺陷。此前的 L1 线索因见证程序期望值错误已撤销，审计记录见 `pipeline/doc/known_issues.md`。
 
 ## 3. 与大三单周期 CPU 的对比
 
@@ -201,4 +201,4 @@ residual = C_steady - (IC + L + 2T - C_fixed) = 0
 powershell -File pipeline/src/scripts/run_perf.ps1
 ```
 
-2026-09-14 复测结果：8/8 性能档通过；每档恒等式 A/B=1，`residual=0`，功能门禁通过。报告中的每个统计数字均可回溯至 CSV 或 `ref_baseline_measured.md` 的对应章节。
+2026-09-14 复测结果：8/8 性能档通过；每档恒等式 A/B=1，`residual=0`，5 个主档功能门禁通过，3 个规模档控制流检查通过且明确排除完整功能证据。报告中的每个统计数字均可回溯至 CSV 或 `ref_baseline_measured.md` 的对应章节。

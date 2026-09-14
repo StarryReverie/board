@@ -1,7 +1,7 @@
-# loop_heavy: dynamic-IC load tier for perf_analysis v2.0 sec.3
+# loop_heavy: dynamic-IC load tier for perf_analysis v2.1 sec.3
 # body per iteration: lw-add-sw-lw-add-sw + backward bne (taken)
-#   -> 1 load-use stall + 1 branch redirect (2-slot flush) per iteration
-# expected: N=8 x8=27 dmem0=9 dmem4=9 ; N=32 99/33/33 ; N=128 387/129/129
+#   -> 2 load-use stalls; the backedge redirects N-1 times (terminal iteration excluded)
+# expected for N=32: x8=1088 dmem0=33 dmem4=34
     addi x1, x0, 1
     sw   x1, 0(x0)
     addi x1, x0, 2

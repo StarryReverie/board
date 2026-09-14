@@ -31,13 +31,13 @@
 
 ## 仓库总态（2026-09-14）
 
-- 计组：T0–T36 完成（功能回归 **21/21**、性能 **8/8** 全 PASS 且恒等式全过）；**性能分析方案 `pipeline/doc/perf_analysis.md` v2.1 已落实**，单周期基线、资源/Fmax 与最终报告均已完成；**关键波形 4 项已落地**（`pipeline/doc/sim_experiments.md`、`pipeline/doc/sim_shots/`，含自动图表/日志）；**已知缺陷 L1 已定案入账**（`pipeline/doc/known_issues.md`）。
+- 计组：T0–T36 完成（功能回归 **21/21**、性能 **8/8** 全 PASS 且恒等式全过）；**性能分析方案 `pipeline/doc/perf_analysis.md` v2.1 已落实**，单周期基线、资源/Fmax 与最终报告均已完成；**关键波形 4 项已落地**（`pipeline/doc/sim_experiments.md`、`pipeline/doc/sim_shots/`，含自动图表/日志）；冒险审计记录已归档，原 L1 线索经复核撤销（`pipeline/doc/known_issues.md`）。
 - 汇编：U10–U15、U30、U31、U40、U41 完成——**实验二交付物收敛为独立 UART IP**（uart_ip_top + IP 级独立测试）；SoC 上移为整个项目的顶层 `soc/`（集成代码/固件/XDC/系统 TB/下板方案随迁）；U32 板级（XDC/固件就绪）、U33 可选 ILA——见 UART/doc/tasks.md。
 - 与 origin/dev 同步 ✅。
 
 ## 变更记录
 
-- 2026-09-14：**大三单周期基准与性能分析全部落地**——新增 `pipeline/doc/ref_baseline_measured.md`（拍数 11/20/178、资源/Fmax 同条件综合、CPI≡1.00）；`perf_analysis.md` 升级 v2.1，`perf_report.md` 完成最终性能章节；**新增缺陷台账** `pipeline/doc/known_issues.md`（L1：累加寄存器自 RAW × load-use）；RTL 回归 21/21 + 性能 8/8 全绿。**规模档修复并入库**：`loop_heavy_{8,32,128}` 三档，`tb_perf.v`/`run_perf.ps1` 支持三窗口与恒等式 A/B，汇总 CSV 为 `perf_data/2026-09-14_perf_summary.csv`。
+- 2026-09-14：**大三单周期基准与性能分析全部落地**——新增 `pipeline/doc/ref_baseline_measured.md`（拍数 11/20/178、资源/Fmax 同条件综合、CPI≡1.00）；`perf_analysis.md` 升级 v2.1，`perf_report.md` 完成最终性能章节；新增冒险审计记录 `pipeline/doc/known_issues.md`，原 L1 线索经复核撤销；RTL 回归 21/21 + 性能 8/8 全绿。**规模档修复并入库**：`loop_heavy_{8,32,128}` 三档，`tb_perf.v`/`run_perf.ps1` 支持三窗口与恒等式 A/B，汇总 CSV 为 `perf_data/2026-09-14_perf_summary.csv`。
 - 2026-09-13：性能分析方案重写为 `pipeline/doc/perf_analysis.md` v2.0（旧 v1.0 已删除并接替同名位置）——对比基线改为**组内成员大三阶段单周期实验数据**、指标选择依据与三窗口口径写入方案；报告素材行补该方案与 `ref_note.md`（大三单周期结构梳理）；仓库总态更新为回归 20/20。
 - 2026-09-13：新增计组关键波形 4 项（五级总览/前递优先级/load-use 冻结/分支冲刷）与 §7 回归·性能汇总表，归档 `pipeline/doc/sim_shots/`；回归口径 21/21（新增 `fwd_priority` 独立场景不入回归）；表 D（Fmax/资源）本机综合空转，暂留综合侧。
 - 2026-09-07：结构调整——实验二交付=UART IP（UART/），SoC=项目顶层（soc/）；UART 侧构建脚本删至 build_fw/synth_check/create_vivado_proj（重建见 soc/doc/board_runbook.md）；汇编源代码行与 IP 打包行同步。

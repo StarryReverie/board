@@ -2,7 +2,7 @@
 // tb_perf.v — T32 性能测量 TB（pipeline/doc/perf_analysis.md §5）
 //   五档程序：PERF_TEST0（默认）/ PERF_TEST1 / PERF_SORT / PERF_COVER /
 //             PERF_HAZARD（xvlog -d 选择；run_perf.ps1 逐档编译）
-//   规模档（v2.0 §3，同程序三档循环次数，用于验证 CPI 随规模收敛）：
+//   规模档（v2.1 §3，同程序三档循环次数，用于验证 CPI 随规模收敛）：
 //             PERF_LOOP8 / PERF_LOOP32 / PERF_LOOP128
 //   测量（全部经层次引用，RTL 零改动；口径见 pipeline/doc/perf_analysis.md §3）：
 //     EX 槽 e = rst 释放后第 e 个 posedge（#1 采样，寄存输出已稳定）
@@ -14,7 +14,8 @@
 //     C_fixed = 3（停机自旋 1 拍 + 冲刷尾 2 拍），C_steady = C_total - C_fixed
 //     恒等式：   C == IC + (F-1) + L + 2T   （F=首个真实 EX 槽拍号；
 //                L=stall 冻结拍数；T=br_taken 重定向数）
-//   正确性：每档内嵌 tb_prog_* 同源期望断言（T31 回归口径复用）
+//   正确性：主档内嵌 tb_prog_* 同源期望断言；规模档只做控制流/计数检查，
+//            不断言累加寄存器 x8，因此不能作为完整功能正确性证据。
 //   假定实例名：u_cpu.u_imem/u_regfile/u_dmem；顶层 wire idex_*/stall/br_taken
 //   end_addr：最后一个 0x00000063（beq x0,x0,0 自旋）字；无则取最后一个
 //             非零字（jalr 自旋，如 instr_cover）——test1 自旋后带死代码，
@@ -274,9 +275,8 @@ module tb_perf;
 `elsif PERF_LOOP8
         // 规模档 loop_heavy（pipeline/doc/perf_analysis.md §3）：
         //   仅断言"控制流已正确收敛"——循环计数 x5 归零、dmem[0]/dmem[4] 递增 N 次。
-        //   累加寄存器 x8 的期望值此处不断言：该形态命中已知缺陷 L1
-        //   （累加寄存器自 RAW × load-use，见 pipeline/doc/known_issues.md），
-        //   本档位仅用于 CPI 随规模收敛的测量，不作功能正确性判据。
+        //   累加寄存器 x8 的期望值此处不断言：本档位仅用于 CPI 随规模收敛的测量，
+        //   不作为完整功能正确性判据（详见 pipeline/doc/known_issues.md）。
         chk("x5=0(loop count exhausted)", u_cpu.u_regfile.x[5] === 32'd0);
         chk("dmem[0]=9", {u_cpu.u_dmem.mem[3], u_cpu.u_dmem.mem[2],
                           u_cpu.u_dmem.mem[1], u_cpu.u_dmem.mem[0]} === 32'd9);
@@ -309,9 +309,9 @@ module tb_perf;
 `endif
 
         // ---- 汇总：放在功能断言之后，ok 才代表整档测试通过 ----
-        $display("PERF_SUMMARY: name=%0s ic=%0d f=%0d h=%0d c_total=%0d c_steady=%0d c_fixed=%0d l=%0d t=%0d ident_a=%0d ident_b=%0d residual=%0d ok=%0d",
+        $display("PERF_SUMMARY: name=%0s ic=%0d f=%0d h=%0d c_total=%0d c_steady=%0d c_fixed=%0d l=%0d t=%0d ident_a=%0d ident_b=%0d residual=%0d checks_passed=%0d checks_total=%0d ok=%0d",
                  `PERF_NAME, IC, F_ex, hh, C_total, C_steady, C_fixed, L, R,
-                 ident_a, ident_b, residual, (err == 0));
+                 ident_a, ident_b, residual, n - err, n, (err == 0));
         if (err == 0) $display("=== ALL PASS ===");
         else          $display("=== FAIL === (%0d/%0d)", err, n);
         $finish;

@@ -30,7 +30,7 @@
 | 指令条数 ≥16 | `pipeline/doc/isa.md`（T1），26 条 |
 | 控制器结构三选一 | 硬布线（见 top_design.md） |
 | 附加功能 ≥1 | 溢出判断 `flags[OF]`（T14，可观测出口） |
-| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `pipeline/doc/perf_analysis.md` v2.0；**对比基线 = 组内成员大三阶段单周期实验数据**，见方案 §4） |
+| 量化性能测试(CPI/IPC/MIPS/CPU time)并对比大三单周期 | T32–T35（方案 `pipeline/doc/perf_analysis.md` v2.1；**当前对比基线 = `ref/CPU/` 同条件复测，原始大三记录待交叉核对**，见方案 §4） |
 | 汇编与接口/外设控制器/集成 | **后追加**（实验二 §6：T40–T44） |
 | 提交物：源码/测试汇编+机器码/报告/PPT/视频/日志 | **后追加** |
 
@@ -63,7 +63,7 @@
 | T16 | 访存组合：`dmem.v` | T3 | 同步写 RAM(sw/lw, wmask)，读周期内组合有效 | 同址 `sw` 后紧邻 `lw`(下拍读) 值一致；读写同拍语义按文档定义 |
 | T17 | `mem_wb.v` `[寄存器]` | T3 | MEM/WB：`{rdata,alu_result,rd,Ctrl_WB}` | 常规打入 |
 | T18 | 回写组合 `wb` | T3 | `MemtoReg` 选路→regfile 写口 | MemtoReg=1 取 rdata，=0 取 alu_result；rd=x0 不写；WB 末沿直写 |
-| T19 | `hazard_unit.v`（冲突处理） | T3,T14 | `fwdA/fwdB`、`pc_freeze`、`ifid_en`、ID/EX 气泡、`flush_branch` | 前递源：EX/MEM 优先于 MEM/WB；load-use→冻结 PC+IF/ID 且 ID/EX 灌气泡(恰 1)；分支 taken→清 IF/ID+ID/EX(恰 2)。**已知缺陷 L1**（累加寄存器自 RAW × load-use）见 `pipeline/doc/known_issues.md` |
+| T19 | `hazard_unit.v`（冲突处理） | T3,T14 | `fwdA/fwdB`、`pc_freeze`、`ifid_en`、ID/EX 气泡、`flush_branch` | 前递源：EX/MEM 优先于 MEM/WB；load-use→冻结 PC+IF/ID 且 ID/EX 灌气泡(恰 1)；分支 taken→清 IF/ID+ID/EX(恰 2)。历史 L1 线索已撤销，审计记录见 `pipeline/doc/known_issues.md` |
 | T20 | `pipeline_top.v` 顶层装配 | T10–T19 | 交替例化组合段与寄存器 + HALT 观测口 | 端口与 top_design 连接表一致；无悬空/多重驱动；可综合；Vivado 综合通过(下板侧) |
 
 ---
@@ -74,16 +74,16 @@
 |---|---|---|---|
 | T30 | 模块单测 TB（组合真值表 / 寄存器 en·flush / hazard 场景），每模块一份 | `pipeline/src/test/tb_*.v` + 期望值注释 | 下板侧 Vivado 运行：各 TB `$display` 全 PASS |
 | T31 | 整机回归：迁移 `ref/CPU/test/test0·test1·sort`（注释预期已核验）+ 新增覆盖指令清单全部指令与 hazard 的程序 | `pipeline/src/test/*.asm → *.hex`（HALT 自循环收尾）+ `tb_pipeline_top.v` | 运行 N 周期后：寄存器堆与 dmem 终值与注释期望逐一相等；TB 逐项断言 PASS |
-| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（**8 档** `PERF_*` 编译开关 = 5 主档 + 3 规模档；`PERF_MAXCYC` 看门狗；EX 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 正确性断言复用；依赖 T31 全绿） | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` **8 档全 PASS**；正确性断言与 tb_prog_* 一致（规模档只断言控制流收敛，见 `known_issues.md` L1）（方案 §5） |
+| T32 | 性能 TB：`pipeline/src/test/tb_perf.v`（**8 档** `PERF_*` 编译开关 = 5 主档 + 3 规模档；`PERF_MAXCYC` 看门狗；EX 段 retire/HALT 检测 + `L/T` 停顿计数 + 恒等式断言 + 主档正确性断言；依赖 T31 全绿） | `tb_perf.v` | 恒等式 `C == IC+(F−1)+L+2T` **8 档全 PASS**；主档复用 tb_prog_* 正确性断言，规模档只断言控制流收敛并标记为性能证据（方案 §5） |
 | T33 | `pipeline/src/scripts/run_perf.ps1`：逐档编译运行 → 解析 CSV → 汇总 `pipeline/src/scripts/out/perf_summary.csv`（依赖 T32） | run_perf.ps1 + CSV | 一键 **8 档**（5 主档 + 3 规模档）；CSV 含恒等式结果列；打印 `== PERF ALL PASS ==`（实测 8/8 PASS） |
 | T34 | 单周期基线：① 单周期**拍数实测**（`ref/CPU` 只读副本，TB 数 PC 变化次数）；② 资源/Fmax 两阶段综合（副本入 `build/`，ref 零改动；依赖 T33） | `pipeline/doc/ref_baseline_measured.md` + 报告表 4/5 | ✅ 拍数 11/20/178；单周期/流水线资源、WNS、Fmax 均已按同器件同约束出数 |
-| T35 | 报告性能章节：三窗口、停顿分解、规模收敛、单周期对比、资源/Fmax 与系统层结论（依赖 T34） | `pipeline/doc/perf_report.md` | ✅ `perf_report.md` v2.1 完成；数字均可回溯至 CSV/综合报告，结论注明不可实现的 LUT 约束与规模档 L1 限制 |
+| T35 | 报告性能章节：三窗口、停顿分解、规模收敛、单周期对比、资源/Fmax 与系统层结论（依赖 T34） | `pipeline/doc/perf_report.md` | ✅ `perf_report.md` v2.1 完成；数字均可回溯至 CSV/综合报告，结论注明不可实现的 LUT 约束与规模档功能证据范围 |
 | T36 | 关键仿真波形（4 项）：五级运行总览 / 数据前递与前递优先级 / load-use 冻结 1 拍 / 分支预测不跳+冲刷 2 拍；说明见 `pipeline/doc/sim_experiments.md` | `test/wave/wave_pipe.v` + `test/fwd_priority.asm` + `scripts/{run_wave,wave_png,report_png}.ps1` + `doc/sim_shots/auto/` | 4 图 + 同名日志 + 汇总表；TB 内嵌验收断言全 PASS；回归口径不变 **21/21** |
 
 > 状态（2026-09-14）：**T32/T33 已按 v2.1 升级并重出数据**——`tb_perf.v` 支持 8 档（5 主档 + 3 规模档 `loop_heavy_{8,32,128}`，含 `PERF_MAXCYC` 看门狗），`run_perf.ps1` 同步支持 8 档，**8/8 全 PASS 且恒等式全过**；汇总数据 `pipeline/doc/perf_data/2026-09-14_perf_summary.csv`（含 `C_total`/`C_steady`/`C_fixed` 与恒等式残差）。
 > **T34 拍数部分已完成**：`pipeline/doc/ref_baseline_measured.md` —— 单周期实测 11/20/178 拍，与流水线 `IC` 精确满足 `C_单周期 = IC + 1`，**CPI ≡ 1.00 得证**；资源/Fmax 走两阶段综合（`build/run_both_synth.ps1`）。
-> **新增缺陷台账** `pipeline/doc/known_issues.md`（L1：累加寄存器自 RAW × load-use，含最小复现 `pipeline/src/test/accwitness.asm`）；RTL 已回退至无回归状态（功能 21/21）。
-> **T35 已完成**：最终性能章节见 `pipeline/doc/perf_report.md`；旧骨架仅保留为索引。
+> **冒险审计记录** `pipeline/doc/known_issues.md`：原 L1 线索已复核并撤销，`accwitness.asm` 保留为真实指令流审计样例；RTL 功能回归维持 21/21。
+> **T35 已完成**：最终性能章节见 `pipeline/doc/perf_report.md`；旧版 `perf_report_skeleton.md` 已删除。
 > **T36 已完成**：关键波形 4 项、自动图表与日志均已归档；回归口径维持 21/21。
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：

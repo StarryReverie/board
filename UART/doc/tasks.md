@@ -9,7 +9,7 @@
 | 项 | 口径 |
 |---|---|
 | 课程任务 | 汇编与接口课程设计：基础=UART 接口控制器并形成 **独立 IP 核**（本目录交付，含 IP 顶层 uart_ip_top 与独立测试）；进阶=与计组 CPU core 集成成自定义计算机系统（SoC 集成层 `../soc/`，仿真正确 + EES-338 下板，两课共建）；ILA=可选加分 |
-| 接口控制器 | **全双工 UART**（uart_tx + uart_rx），8N1@115200，单时钟域 clk_en 分频（100 MHz → 868，误差 ≈0.06%） |
+| 接口控制器 | **全双工 UART**（uart_tx + uart_rx），8N1@115200，单时钟域 clk_en 分频（100 MHz → 868，误差 ≈0.0064%） |
 | I/O 方式 | **统一编址 MMIO（方案 B）**：不新增 in/out 指令；`lw`=外设读（in/r）、`sw`=外设写（out/w）；窗口 `0x0000_4000`（TX/STAT/RX 三字槽） |
 | CPU | 计组实验一交付的 RV32I 5 级流水线 core（pipeline_top），程序 **.vh 固化单程序模型**（上电自跑 0x0；换程序=重新综合重烧；无 loader/在线重载） |
 | 软件 | 程序查询（轮询 TX_BUSY/RX_VALID）；固定固件 console：banner + 键盘回显；全部指令限 26 条冻结集 |
@@ -119,7 +119,7 @@
 |---|---|
 | 本机 Vivado 2019.2 对大设计器件模型加载空转 | **已解除（2026-09-07）**：病根=4KB×2 组合读寄存器阵列（器件加载阶段 CPU 空转、1KB×2 时 LUT 35.5k>20.8k 超限）；下板 build 缩容 **IMEM 512B/DMEM 256B** 后本机 synth→place→route→bitgen 全流程通过并烧录验收 PASS（仿真/契约仍 4KB，见 const_define.v 头注）；构建脚本随结构调整删减（仅保留 build_fw/synth_check/create_vivado_proj 修复版），无脚本建工程步骤见 `../soc/doc/board_runbook.md` §1 |
 | EES-338 复位键极性（P15） | 以厂家 demo XDC/实测为准；soc_top `RST_ACTIVE_LOW` 参数隔离极性（默认低有效，实测相反置 0） |
-| RX 采样可靠性 | 位中心采样 + 停止位校验；TB 覆盖位边界 ±误差；实测分频误差 0.06% 余量充足 |
+| RX 采样可靠性 | 位中心采样 + 停止位校验；TB 覆盖位边界 ±误差；实测分频误差 0.0064% 余量充足 |
 | 仿真速度 | CLKS_PER_BIT 参数覆盖（系统 TB 用 8–100） |
 | dmem 复位不清 | 固件启动自初始化数据区（方案 §6.1） |
 | 与计组联调窗口 | 依赖计组 M1–M3（core 编码与回归）与 mmio 总线端口冻结；UART IP 部分独立先行 |

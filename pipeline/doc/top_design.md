@@ -182,7 +182,7 @@
 
 ### 9.4 MMIO 外设：uart_ip_top（全双工 UART 接口控制器 IP）
 
-- 地位：**实验二交付物——基础任务 UART 控制器 IP 的顶层**（`UART/src/rtl/uart_ip_top.v`），作 dbus_decode 的 MMIO 从机；IP 自含槽译码（addr[3:2]→TX/STAT/RX），soc_top 内以 `addr={reg_off,2'b00}` 接入；寄存器层（原 `uart_ctrl`：分频/TX 挂起/RX 寄存器/位义）已并入本模块，与例化的 `uart_tx`/`uart_rx` 一体交付。**全双工**：两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.06%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
+- 地位：**实验二交付物——基础任务 UART 控制器 IP 的顶层**（`UART/src/rtl/uart_ip_top.v`），作 dbus_decode 的 MMIO 从机；IP 自含槽译码（addr[3:2]→TX/STAT/RX），soc_top 内以 `addr={reg_off,2'b00}` 接入；寄存器层（原 `uart_ctrl`：分频/TX 挂起/RX 寄存器/位义）已并入本模块，与例化的 `uart_tx`/`uart_rx` 一体交付。**全双工**：两路独立工作，8N1@115200（板载 100 MHz，`clk_en` 分频 868，位误差 ≈0.0064%）。字槽访问用 `sw`/`lw` 即可，无需 sb/lbu。
 - 寄存器映射（定稿，见 §9.2 表）：TX 槽（`sw` 写=发送）、STAT 槽（`lw` 读：bit0=TX_BUSY（1=发送忙：挂起待发或移位中）、bit1=RX_VALID（1=有未读字节））、RX 槽（`lw` 读=字节，读后清 RX_VALID）。
 - 收发语义：写 TX 仅在完全空闲（TX_BUSY=0，无挂起无移位）时有效，挂起/忙时写入丢弃（软件轮询保证不丢）；收到完整字节置 RX_VALID；**无 FIFO**：RX_VALID 未清期间到达的新字节丢弃；读 RX 在访存段末沿清 RX_VALID。
 - 时序：字槽访问在 MEM 段一拍完成（组合读/末沿写），不卡流水、无 wait——**波特率远慢于 CPU**，固件连发多字节须轮询 TX_BUSY，收侧由 RX_VALID 回馈轮询。`uart_rx` 输入打两拍防亚稳态。

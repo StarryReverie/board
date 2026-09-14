@@ -48,11 +48,11 @@ module tb_wave_868;
 
     always #5 clk = ~clk;          // 100 MHz
 
-    // ---- 事件记录：在 bit_tick 拍采样引脚（引脚正是在该拍翻转；避免 #1 采样读到旧值）----
+    // ---- 事件记录：引脚变化时立即采样，保留真实仿真时刻 ----
     reg tx_prev = 1'b1;
     reg rx_prev = 1'b1;
-    always @(posedge clk) begin
-        if (dut.bit_tick) begin
+    always @(uart_tx_pin or uart_rx_pin) begin
+        if ($time > 0) begin
             if (uart_tx_pin !== tx_prev) begin
                 if (nev < 8192) begin ev_t[nev] = $time; ev_p[nev] = 1'b1; ev_v[nev] = uart_tx_pin; nev = nev + 1; end
                 tx_prev = uart_tx_pin;

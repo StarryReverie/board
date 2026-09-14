@@ -1,10 +1,10 @@
 ﻿<#
 =============================================================================
- run_perf.ps1 — T33 性能批量测量运行器（pipeline/doc/perf_analysis.md v2.0 §5）
+ run_perf.ps1 — T33 性能批量测量运行器（pipeline/doc/perf_analysis.md v2.1 §5）
    八档程序逐档编译运行 tb_perf.v（xvlog -d PERF_*），解析
    PERF_SUMMARY 行 → 汇总 pipeline/src/scripts/out/perf_summary.csv
    档位：5 主档（test0/test1/sort/cover/hazard）+ 3 规模档（loop8/loop32/loop128）
-   指标口径见 pipeline/doc/perf_analysis.md v2.0 §2（三窗口 + 恒等式；
+   指标口径见 pipeline/doc/perf_analysis.md v2.1 §2（三窗口 + 恒等式；
    IC 包含末尾停机自旋，IC_useful=IC-1）
    用法：
      powershell -File pipeline/src/scripts/run_perf.ps1       # 跑全部 8 档
@@ -84,14 +84,15 @@ foreach ($p in $progs) {
     if ($LASTEXITCODE -ne 0) { Write-Host ("  [异常] 退出码 {0}" -f $LASTEXITCODE); exit 1 }
 
     $log = Join-Path $dir 'tb.log'
-    $line = Select-String -Path $log -Pattern 'PERF_SUMMARY: name=(\S+) ic=(\d+) f=(\d+) h=(\d+) c_total=(\d+) c_steady=(\d+) c_fixed=(\d+) l=(\d+) t=(\d+) ident_a=(\d+) ident_b=(\d+) residual=(-?\d+) ok=(\d+)'
+    $line = Select-String -Path $log -Pattern 'PERF_SUMMARY: name=(\S+) ic=(\d+) f=(\d+) h=(\d+) c_total=(\d+) c_steady=(\d+) c_fixed=(\d+) l=(\d+) t=(\d+) ident_a=(\d+) ident_b=(\d+) residual=(-?\d+) checks_passed=(\d+) checks_total=(\d+) ok=(\d+)'
     if (-not $line) { Write-Host '  [异常] 未找到 PERF_SUMMARY 行'; exit 1 }
     $m = $line.Matches[0]
     $r = @{ name = $m.Groups[1].Value; ic = [int]$m.Groups[2].Value; f = [int]$m.Groups[3].Value
             h = [int]$m.Groups[4].Value; c = [int]$m.Groups[5].Value; cs = [int]$m.Groups[6].Value
             cf = [int]$m.Groups[7].Value; l = [int]$m.Groups[8].Value; t = [int]$m.Groups[9].Value
             ident_a = [int]$m.Groups[10].Value; ident_b = [int]$m.Groups[11].Value
-            residual = [int]$m.Groups[12].Value; ok = [int]$m.Groups[13].Value }
+            residual = [int]$m.Groups[12].Value; checks_passed = [int]$m.Groups[13].Value
+            checks_total = [int]$m.Groups[14].Value; ok = [int]$m.Groups[15].Value }
     $r.allpass = [bool](Select-String -Path $log -Pattern '=== ALL PASS ===' -Quiet)
     $rows += $r
     Write-Host ("  ic={0}  c={1}  cs={2}  f={3}  l={4}  t={5}  A/B={6}/{7}  allpass={8}" -f
@@ -99,9 +100,11 @@ foreach ($p in $progs) {
 }
 
 # ---- 汇总 CSV + 指标表 ----
-$lines = @('prog,IC,F,h,C_total,C_steady,C_fixed,L_loaduse,T_redirect,CPI_total,CPI_steady,IPC_steady,MIPS_100M,CPUtime_100M_ns,ident_a,ident_b,residual,correctness')
+$lines = @('prog,IC,F,h,C_total,C_steady,C_fixed,L_loaduse,T_redirect,CPI_total,CPI_steady,IPC_steady,MIPS_100M,CPUtime_100M_ns,ident_a,ident_b,residual,checks_passed,checks_total,correctness_evidence')
 Write-Host "`n== PERF 汇总 =="
-$allOk = $true
+$perfOk = $true
+$functionalOk = $true
+$functionalRows = 0
 foreach ($r in $rows) {
     $useful = $r.ic - 1
     $cpi  = [math]::Round($r.c / $r.ic, 3)
@@ -109,15 +112,29 @@ foreach ($r in $rows) {
     $ipc  = [math]::Round($useful / $r.cs, 3)
     $mips = [math]::Round(100.0 * $useful / $r.c, 3)
     $time = $r.c * 10
-    $lines += ('{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17}' -f
+    $isLoop = $r.name -like 'loop*'
+    if ($isLoop) { $evidence = 'excluded_partial_no_x8' }
+    elseif ($r.ok -eq 1) { $evidence = 'full_pass' }
+    else { $evidence = 'fail' }
+    $lines += ('{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19}' -f
                $r.name, $r.ic, $r.f, $r.h, $r.c, $r.cs, $r.cf, $r.l, $r.t,
-               $cpi, $cpiS, $ipc, $mips, $time, $r.ident_a, $r.ident_b, $r.residual, $r.ok)
-    Write-Host ("  {0,-8} ic={1,-5} c={2,-5} CPI={3,-7} CPI_s={4,-7} IPC_s={5,-7} MIPS={6,-7} A/B={7}/{8} allpass={9}" -f
-                $r.name, $r.ic, $r.c, $cpi, $cpiS, $ipc, $mips, $r.ident_a, $r.ident_b, $r.allpass)
-    if ($r.ident_a -ne 1 -or $r.ident_b -ne 1 -or $r.residual -ne 0 -or $r.ok -ne 1 -or -not $r.allpass) { $allOk = $false }
+               $cpi, $cpiS, $ipc, $mips, $time, $r.ident_a, $r.ident_b, $r.residual,
+               $r.checks_passed, $r.checks_total, $evidence)
+    Write-Host ("  {0,-8} ic={1,-5} c={2,-5} CPI={3,-7} CPI_s={4,-7} IPC_s={5,-7} MIPS={6,-7} A/B={7}/{8} checks={9}/{10} evidence={11}" -f
+                $r.name, $r.ic, $r.c, $cpi, $cpiS, $ipc, $mips, $r.ident_a, $r.ident_b,
+                $r.checks_passed, $r.checks_total, $evidence)
+    if ($r.ident_a -ne 1 -or $r.ident_b -ne 1 -or $r.residual -ne 0 -or -not $r.allpass) { $perfOk = $false }
+    if (-not $isLoop) {
+        $functionalRows++
+        if ($r.ok -ne 1) { $functionalOk = $false }
+    }
 }
 Set-Content -Path $summary -Value $lines -Encoding ASCII
 Write-Host ''
 Write-Host ("汇总: $summary")
-if ($allOk) { Write-Host '== PERF ALL PASS =='; exit 0 }
+if ($functionalRows -eq 0) { $functionalOk = $true }
+if ($perfOk -and $functionalOk) {
+    Write-Host ("== PERF ALL PASS == (functional evidence rows: {0}; loop rows excluded from functional evidence)" -f $functionalRows)
+    exit 0
+}
 Write-Host '== PERF FAIL =='; exit 1

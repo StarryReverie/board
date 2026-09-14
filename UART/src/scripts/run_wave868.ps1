@@ -29,4 +29,13 @@ $lines = @(
 )
 Set-Content -Path $bat -Value $lines -Encoding ASCII
 & cmd.exe /c $bat
-exit $LASTEXITCODE
+$runExit = $LASTEXITCODE
+if ($runExit -ne 0) { exit $runExit }
+
+$waveLog = Join-Path $out 'wave868.log'
+if (-not (Test-Path $waveLog) -or -not (Select-String -Path $waveLog -Pattern 'ALL PASS' -Quiet)) {
+    Write-Host '[WAVE_FAIL] wave868.log missing ALL PASS marker'
+    exit 5
+}
+Write-Host '[WAVE_DONE] ALL PASS marker verified'
+exit 0
