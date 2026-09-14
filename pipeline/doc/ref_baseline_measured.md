@@ -1,7 +1,7 @@
 # 大三单周期 CPU 基准实测（实验一性能对比基线）
 
 > **用途**：为实验一性能分析提供"大三单周期 CPU"侧的**实测**数据。
-> 上位文档：`pipeline/doc/perf_analysis.md` §4、报告章节骨架 `pipeline/doc/perf_report_skeleton.md` §6.4 / 表 3。
+> 上位文档：`pipeline/doc/perf_analysis.md` §4、性能报告 `pipeline/doc/perf_report.md` §6.4 / 表 3。
 > 记录日期：2026-09-14。**本文件所有数字均为本轮实测，不含估算或折算。**
 
 ---
@@ -54,7 +54,7 @@
    `C_单周期 = IC_流水线 + 1`，两者**完全一致**，说明两套 TB 的计数口径都可信。
 3. **流水线的 CPI 溢价来源清晰**：流水线在同源程序上需要 `C_steady`= 9 / 21 / 244 拍，
    以剔除停机自旋后的 `IC_useful=9/18/176` 计，`CPI_steady` = 1.000 / 1.167 / 1.386；比单周期多出的部分即
-   **填充（`C_fixed`）+ load-use 冻结（`L`）+ 分支冲刷（`2T`）**，与 `perf_report_skeleton.md` 表 2 的拆解一一对应。
+   **填充（`C_fixed`）+ load-use 冻结（`L`）+ 分支冲刷（`2T`）**，与 `perf_report.md` 表 2 的拆解一一对应。
 
 ### 2.3 复现命令
 
