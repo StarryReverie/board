@@ -1,0 +1,6 @@
+item,phase,cycle,desc
+1,cover,3,first WB valid (5 stages filled)
+2,hazard,3,scene1 add x3: fwdA=EX/MEM fwdB=MEM/WB
+3,hazard,5,load-use stall pulse
+4,hazard,14,beq taken (flush)
+2b,priority,3,dual-hit x11: pick EX/MEM over MEM/WB
