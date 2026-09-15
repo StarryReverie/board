@@ -1,10 +1,11 @@
 //=============================================================================
 // tb_prog_board_demo.v — 上板验收程序回归：exp1_board_demo_rom.hex
 //   与 pipeline/src/test/exp1_board_demo.asm 的阶段注释逐一对应。
-//   验的是"板上 PASS 判据的充分性"：签名 dmem[0]=0x0F 只可能在
-//   阶段3（循环和=15）与阶段1（x7=20）同时正确时写出，故本 TB 同时断言
-//   两个里程碑与全部中间结果，确保板上若亮 PASS 则程序确实全对。
-//   运行 400 拍后采样（HALT 自循环内）。
+//   验的是"板上 PASS 判据的充分性"：阶段5 把**每一项**覆盖结果与期望值
+//   异或后或进累积器 x31，只有 x31 == 0 才写出签名 0x0F；故板上亮 PASS
+//   ⇒ lw / load-use 前递 / lui / 移位 / 有符号比较等全部覆盖项均正确。
+//   本 TB 逐一断言全部中间结果与自检链终值，与 .asm 阶段注释一一对应。
+//   运行 400 拍后采样（HALT 自循环内；本程序约 130 拍跑完）。
 //=============================================================================
 `timescale 1ns/1ps
 
@@ -94,12 +95,12 @@ module tb_prog_board_demo;
         c("x25=1(slt neg)", u_cpu.u_regfile.x[25] === 32'd1);
         c("x26=0(sltu neg)", u_cpu.u_regfile.x[26] === 32'd0);
 
-        // ---- 阶段5：自检链（里程碑 → 掩码 → 签名）----
-        c("x27=15(expect)", u_cpu.u_regfile.x[27] === 32'd15);
-        c("x28=0(x18^15)",  u_cpu.u_regfile.x[28] === 32'd0);
-        c("x29=20(expect)", u_cpu.u_regfile.x[29] === 32'd20);
-        c("x30=0(x7^20)",   u_cpu.u_regfile.x[30] === 32'd0);
-        c("x31=0(err flag)",u_cpu.u_regfile.x[31] === 32'd0);
+        // ---- 阶段5：逐项自检链（失配累积 → 掩码 → 签名）----
+        c("x27=15(sig mask)",     u_cpu.u_regfile.x[27] === 32'd15);
+        c("x28=0(last expect)",   u_cpu.u_regfile.x[28] === 32'd0);
+        c("x29=0(last mismatch)", u_cpu.u_regfile.x[29] === 32'd0);
+        c("x30=0(err copy)",      u_cpu.u_regfile.x[30] === 32'd0);
+        c("x31=0(err accum)",     u_cpu.u_regfile.x[31] === 32'd0);
         c("x5=0(mask)",     u_cpu.u_regfile.x[5]  === 32'd0);
         c("x6=0(mask)",     u_cpu.u_regfile.x[6]  === 32'd0);
         c("x7=15(sig)",     u_cpu.u_regfile.x[7]  === 32'd15);
