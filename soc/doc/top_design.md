@@ -2,14 +2,14 @@
 
 - 版本：v1.1（2026-09-07：SoC 上移为项目顶层 `soc/`——实验二交付物收敛为 UART IP（`../../UART/`），本目录=SoC 集成层（rtl/xdc/test/doc）；从机改经 `uart_ip_top`（IP 顶层，自含槽译码）接入，soc_top 内把 core 穿出的 `reg_off[1:0]` 适配为 `addr[3:0]={reg_off,2'b00}`；UART 侧构建脚本随结构调整删除）。
 - 总体入口：本目录文档体系（top_design/board_runbook/firmware/machine_code/modules）；课程任务清单在 `../../UART/doc/tasks.md`（SoC 集成区 U13/U14/U31–U41）；跨课程接口契约见 `../../UART/doc/interface.md`，其单源为计组 `../../pipeline/doc/isa.md` / `../../pipeline/doc/top_design.md` / `../../pipeline/doc/modules/dbus_decode.md`。本设计建立于计组交付的 CPU core（`../../pipeline/doc/top_design.md` §1–§8）与实验二交付的 UART IP（`../../UART/doc/top_design.md`）之上。
-- 布局：SoC 集成代码在本目录（RTL `rtl/`、TB/固件 `test/`、约束 `xdc/`）；UART IP 在 `../../UART/src/rtl/`；CPU core 在 `../../pipeline/src/rtl/`；工程构建脚本已删（重建见 board_runbook.md §1；固件构建脚本保留 `UART/src/scripts/build_fw.ps1`，见 firmware.md §6）。
+- 布局：SoC 集成代码在本目录（RTL `rtl/`、TB/固件 `test/`、约束 `xdc/`、建工程脚本 `scripts/`）；UART IP 在 `../../UART/src/rtl/`；CPU core 在 `../../pipeline/src/rtl/`；工程由 `soc/scripts/create_soc_proj.tcl` 一条命令生成（口径见 board_runbook.md §1；固件构建脚本保留 `UART/src/scripts/build_fw.ps1`，见 firmware.md §6）。
 
 ---
 
 ## 1. 系统结构（soc_top 装配总图）
 
 ```
- EES-338 板（XC7A35T-1CSG324C，100 MHz @ T5）
+ EES-338 板（实测器件 `xc7a100tcsg324-1`，用户手册误标 35T；100 MHz @ T5）
  ┌──────────────────────────────────────────────────────────────┐
  │ soc_top                                                       │
  │  ├─ reset_sync：rst_n(P15) ─(异步置位/同步释放)─► rst(异步高有效) │

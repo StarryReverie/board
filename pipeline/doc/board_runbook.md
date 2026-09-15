@@ -12,7 +12,7 @@
 | 文件 | 职责 |
 |---|---|
 | `pipeline/src/rtl/exp1_board_top.v` | 板级顶层：复位同步 + CPU + 事件监视器 + LED/数码管显示 |
-| `pipeline/src/rtl/exp1_reset_sync.v` | 板上按键（低有效）→ core 复位（异步高有效、同步释放） |
+| `pipeline/src/rtl/exp1_reset_sync.v` | 板上按键（低有效）→ core 复位（异步高有效、同步释放 + **释放去抖 `STABLE_CYCLES`**，板顶默认 20 ms） |
 | `pipeline/src/rtl/pipeline_top.v` | CPU core（`SOC_BUILD=0`）；新增 `dbg_*` **只读观测口**供板级使用 |
 | `pipeline/src/test/exp1_board_demo.asm` | 上板验收程序（自检 + 写验收签名 `dmem[0]=0x0F` + HALT） |
 | `pipeline/src/test/exp1_board_demo_rom.hex` | 上述程序的仿真镜像（`simple_asm.py` 产出） |
@@ -29,7 +29,7 @@
 
 ```
 exp1_board_top
- ├─ exp1_reset_sync #(STAGES=2)      rst_n(P15,低有效) → rst(异步高有效/同步释放)
+ ├─ exp1_reset_sync #(STAGES=2, STABLE_CYCLES=20ms)  rst_n(P15,低有效) → rst(异步高有效/同步释放 + 释放去抖)
  ├─ pipeline_top #(SOC_BUILD=0)      程序经 imem 的 `include "imem_init.vh"` 综合固化
  ├─ 事件与结果监视器                  dbg_pc / dbg_stall / dbg_br_taken / dbg_halt /
  │                                    dbg_store_valid/addr/data → 锁存板级状态
@@ -256,13 +256,13 @@ sw   x8,  0(x0)        # ★ 只有全部核对项正确才写出 0x0F
 
 **灵敏度已两层实测**：
 
-1. **指令级变异**（`build/tb_mut.v`，build 侧临时验证、不入库）：把 23 条与"正确运行
+1. **指令级变异**（`pipeline/src/test/mut/tb_mut.v`，运行 `pipeline/src/scripts/run_mut.ps1`）：把 23 条与"正确运行
    签名"相关的指令逐条改成 NOP（`sltu` 一条改成交换操作数）→ **23/23 全部使签名 ≠ 0x0F、
    0 漏检**。含边界情形：循环计数不递减（死循环）→ 根本不写签名；签名常数/第二条
    机制/写口被改 → 写出非 `0x0F` 的值。
    注：只在"有错"场景才起作用的签名尾指令（如 `add x31,x31,x30`）被改掉时，**正确运行**
    的签名不变，属**等价变异**，故不计入本层；这类"自检机制自身的鲁棒性"由第 2 层覆盖。
-2. **ALU 级故障变异**（`build/alu_fault_<op>.v` + `build/tb_mut_alu.v`）：把 ALU 的单个
+2. **ALU 级故障变异**（`pipeline/src/test/mut/alu_fault_<op>.v` + 同目录 `tb_mut_alu.v`，运行 `pipeline/src/scripts/run_mut_alu.ps1`）：把 ALU 的单个
    opcode 强制返回 0，分别跑旧固件（`or` 累加）与新固件，实测矩阵：
 
    | ALU 单点故障 | 旧固件（`or` 累加） | **新固件（本版）** |
@@ -359,6 +359,7 @@ sw   x8,  0(x0)        # ★ 只有全部核对项正确才写出 0x0F
 | 数码管乱码/错位 | 段序 `{DP,G,F,E,D,C,B,A}` 与实物是否一致（改 `exp1_board_top` 的 `seg_act` 位序）；另：本设计只保证"**一个 `F` + 七个 `0`**"，F 在最左或最右取决于模块排列 |
 | 结果不是 `0000000F` | CPU 逻辑问题：看仿真回归（`tb_prog_board_demo` / `tb_exp1_board_top`）是否全绿 |
 | 复位后不能重复运行 | 监视器是否被 `rst` 清零（本设计已清）；dmem 无复位初值，靠程序自初始化 |
+| **松开 `RESET` 后前几拍出现一次"乱跳/错值"** | **按键松开抖动**（0.1–5 ms）使 core 在抖动窗口内反复置位/释放（程序会从中间重跑、数码管可能瞬时错值）。2026-09-16 起 `exp1_reset_sync` 增加**释放去抖**（板顶参数 `DEBOUNCE_MS` 默认 20 ms：按下仍立即生效，松开需连续稳定 20 ms 才启动）→ 按 §3.1 重建 bit 后消失 |
 | LED7 亮（超时） | 程序未进入 HALT 或签名未写入 → 先跑仿真回归定位 |
 | 综合资源超限 | 确认 `IMEM_BYTES=512`/`DMEM_BYTES=256` 生效，勿回落到默认 4 KB |
 
@@ -367,11 +368,21 @@ sw   x8,  0(x0)        # ★ 只有全部核对项正确才写出 0x0F
 ## 8. 仿真自检（上板前必做）
 
 ```powershell
-# 全量功能回归（含上板程序与板级顶层）
+# ① 全量功能回归（23 项：14 模块 TB + tb_perf + 7 程序级 TB + 板级 tb_exp1_board_top）
 powershell -File pipeline/src/scripts/run_tb.ps1
-# 备用（若本机 Start-Process 仍受环境变量大小写重复影响）：
-powershell -File build/run_cases.ps1 -Kind tb
+# ② 性能档 8 档（CPI/IPC/MIPS/CPU 时间 + 恒等式 A/B）
+powershell -File pipeline/src/scripts/run_perf.ps1
+
+# ③ 证据脚本（按需运行；都在 test/ 子目录下，不占 23 项回归计数）
+powershell -File pipeline/src/scripts/run_trace_bd.ps1    # 逐拍 trace：动态指令/前递/停顿/分支/访存 + 拍数恒等式
+powershell -File pipeline/src/scripts/run_mut.ps1         # 指令级变异（23/23 必须全部检出）
+powershell -File pipeline/src/scripts/run_mut_alu.ps1     # ALU 级故障矩阵（5/5 单点故障必须检出）
+powershell -File soc/scripts/run_soc_tb.ps1               # 实验二 SoC/UART 侧 TB（默认 3 项；-All 全跑）
 ```
+
+> `build/run_cases.ps1` 是历史上为规避"本机进程环境变量大小写重复使 `Start-Process` 抛异常"
+> 而写的兼容 runner，**不入库**；如今 `run_tb.ps1` 已可在本机直接跑全量，一般不再需要它。
+> 上列脚本的产物统一落在 `build/`（gitignore），可反复重跑。
 
 当前口径 **23/23 PASS**（14 模块 TB + `tb_perf` + 7 程序级 TB + 板级 `tb_exp1_board_top`）。
 其中与上板判据一一对应的两项：
@@ -500,3 +511,13 @@ ALU 级故障变异 **5/5 单 opcode 故障全部检出**（加固前有 3 个 o
 > load-use 前递、`lui`、三种移位与有/无符号比较），且**单 opcode 故障不会假 PASS**，
 > 比构建 A 的结论强得多；报告里应同时给出"指令级变异 23/23 + ALU 级故障 5/5"作为
 > 该判据的灵敏度证据。
+
+> ⚠️ **2026-09-16 起 RTL 增加"复位释放去抖"**：`exp1_reset_sync` 新增 `STABLE_CYCLES` 参数、
+> 板顶 `exp1_board_top` 经 `DEBOUNCE_MS`（默认 20 ms）开启——按下复位仍立即生效，松开需
+> **连续稳定 20 ms** 才启动（滤掉按键松开抖动导致的"前几拍乱跳"）。**上表 bit 是去抖前
+> 的构建**；需要去抖效果时按 §3.1 重建，并把新 bit 指纹/资源另记一节（建议 §10.5，构建 D）。
+>
+> 又（同日 review 加固）：`exp1_reset_sync` 的**释放路径全部移入同步域**（异步级仅 1 个
+> `meta_q`，去抖计数与释放链纯同步，避免 recovery/removal 亚稳提前满足去抖门限）；
+> **释放时序逐拍不变**（`STABLE_CYCLES=0` 仍 2 拍释放），故上表/上文口径无需改，但
+> 仍需按 §3.1 重建 bit——**新 bit 同时含去抖与本次加固**。

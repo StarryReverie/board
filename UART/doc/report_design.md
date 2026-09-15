@@ -1,7 +1,7 @@
 # 接口控制器设计实验报告 · 设计部分（新稿）
 
-> 版本：v1.0（2026-09-07）｜用途：替换 `汇编与接口课程设计报告_前五章.docx` 中需修订的正文（项目简述/组员分工/设计目的/设计环境/第 5 章设计原理及内容），并**新增 §5.8「与计组实验的接口与分工」**。
-> 事实依据（单源）：`pipeline/doc/isa.md` v1.4、`pipeline/doc/top_design.md` v1.7、`pipeline/doc/modules/{pipeline_top,dbus_decode}.md`、`UART/doc/top_design.md` v1.2、`UART/doc/interface.md` v1.3、`UART/doc/modules/*.md`、`soc/doc/{top_design.md v1.1, firmware.md v1.3, machine_code.md, board_runbook.md v1.2}`、`UART/doc/tasks.md`。
+> 版本：v1.1（2026-09-16）｜用途：替换 `汇编与接口课程设计报告_前五章.docx` 中需修订的正文（项目简述/组员分工/设计目的/设计环境/第 5 章设计原理及内容），并**新增 §5.8「与计组实验的接口与分工」**。
+> 事实依据（单源）：`pipeline/doc/isa.md` v1.4、`pipeline/doc/top_design.md` v1.7、`pipeline/doc/modules/{pipeline_top,dbus_decode}.md`、`UART/doc/top_design.md` v1.2、`UART/doc/interface.md` v1.3、`UART/doc/modules/*.md`、`soc/doc/{top_design.md v1.1, firmware.md v1.3, machine_code.md, board_runbook.md v1.6}`、`UART/doc/tasks.md`。
 > 待人工补充项统一以 ⬜ 标注（姓名、下板记录、波形/视频、最终回归数字）。
 
 ---
@@ -89,7 +89,7 @@ soc_top
 
 - **取指侧**：`pc_reg` 输出程序计数器驱动 `imem`（指令存储器）组合读出指令，经 `if_id` 锁存进入译码段；指令存储器内容由 `.vh` 在综合期固化，上电复位后 PC 恒从 `0x0000_0000` 开始取指。
 - **访存侧**：`ex_mem` 输出访存地址与写数据进入 `dbus_decode` 做统一编址译码——低区 `0x0000_0000–0x0000_0FFF` 命中 `dmem`；MMIO 窗口 `0x0000_4000` 命中 UART IP，译码器产生 `cs_mmio / reg_off / mmio_we / mmio_wdata` 穿出 core，读回 `mmio_rdata` 经 rdata 多路选择写回 `mem_wb`，最终回写寄存器堆。**整机单时钟域：访存一拍完成，外设读写不卡流水、不引入新冒险。**
-- **串行侧**：`uart_ip_top` 内部例化 `uart_tx`（发送）与 `uart_rx`（接收）；发送引脚经 `soc_top` 连至板载 T4（CP2102 的 FPGA 发送端），接收引脚连至 N5（FPGA 接收端），与 PC 的 USB 转串口直接通信。
+- **串行侧**：`uart_ip_top` 内部例化 `uart_tx`（发送）与 `uart_rx`（接收）；发送引脚经 `soc_top` 连至板载 T4（FPGA 发送端，接 USB-UART 桥），接收引脚连至 N5（FPGA 接收端），与 PC 的 USB 转串口直接通信。桥型号以**设备管理器实测**为准：本机实物板载桥为 **FTDI（VID_0403/PID_6010，枚举 "USB Serial Port (COM8)"）**，手册标 CP2102（见 `soc/doc/board_runbook.md` §4）。
 - **复位与时钟**：板上复位键 `rst_n`（P15，实测低有效）→ `reset_sync`（异步置位、同步释放的两级同步器）→ `rst`（异步高有效，对齐 core 语义）；`soc_top` 提供 `RST_ACTIVE_LOW` 参数（默认 1）以便极性相反时仅顶层反相。整机单时钟 100 MHz（T5）。
 - **存储容量双口径**（详见 §5.7）：
 
@@ -145,9 +145,9 @@ soc_top
 
 | 层 | 测试用例 | 运行方式 |
 |---|---|---|
-| 计组 core | 21 项（模块单测 + 程序级回归 + 性能 TB） | `powershell -File pipeline/src/scripts/run_tb.ps1`（并行，全量约 20–30 s） |
-| UART IP | 3 项：`tb_uart_tx` / `tb_uart_rx` / `tb_uart_ip_top`（IP 级：帧逐位、STAT 位义含挂起、忙写丢弃、读清位、溢出丢弃、全双工同现） | Vivado xsim（⬜ 运行器待补，见附录 B） |
-| SoC 集成 | 5 项：`tb_dbus_decode` / `tb_reset_sync` / `tb_pipe_soc` / `tb_soc_full` / `tb_soc_console`（banner 23 B、回显往返、长串、复位重跑） | Vivado xsim（⬜ 同上） |
+| 计组 core | 23 项（模块单测 + 程序级回归 + 性能 TB） | `powershell -File pipeline/src/scripts/run_tb.ps1`（并行，全量约 20–30 s） |
+| UART IP | 4 项：`tb_uart_tx` / `tb_uart_rx` / `tb_uart_ip_top`（IP 级：帧逐位、STAT 位义含挂起、忙写丢弃、读清位、溢出丢弃、全双工同现）+ `tb_wave_868`（868 分频波形取证） | `powershell -File soc/scripts/run_soc_tb.ps1 -All`（仓库自带 runner，覆盖 `UART/src/test` 全部 `tb_*.v`，判据 `sim.log` 内 `ALL PASS` 且退出码 0） |
+| SoC 集成 | 5 项：`tb_dbus_decode` / `tb_reset_sync` / `tb_pipe_soc` / `tb_soc_full` / `tb_soc_console`（banner 23 B、回显往返、长串、复位重跑、复位释放抖动） | `powershell -File soc/scripts/run_soc_tb.ps1`（默认 3 项：`tb_reset_sync`/`tb_soc_console`/`tb_soc_full`；`-All` 跑满 5 项 SoC + 4 项 UART = **9 项**） |
 
 - **上板实测**：`xc7a100tcsg324-1` 全流程出 bit → JTAG 烧录 → COM 口 115200-8-N-1 验收：banner 23 字节**逐字节精确匹配**、`AB` 回显往返正确、两次独立重跑一致（`== UART CHECK ALL PASS ==`）；余留人工取证：P15 按键复位、示波器 TX 波形、≤5 min 视频 ⬜。
 
@@ -192,7 +192,7 @@ soc_top
 
 #### (5) 联合验证口径
 
-三层回归全绿后再下板：计组 core 21 项 → UART IP 3 项 → SoC 5 项；下板整机一次验收（banner/回显/复位重跑），证据与下板记录归档见 `soc/doc/board_runbook.md`。
+三层回归全绿后再下板：计组 core **23** 项 → UART IP **4** 项 → SoC **5** 项（三条命令：`run_tb.ps1`、`run_soc_tb.ps1 -All`、`run_soc_tb.ps1`；`-All` 合计 9 项）；下板整机一次验收（banner/回显/复位重跑），证据与下板记录归档见 `soc/doc/board_runbook.md`。
 
 ---
 
@@ -233,12 +233,12 @@ soc_top
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| 计组 core 回归最终数字 | ⬜ | `powershell -File pipeline/src/scripts/run_tb.ps1`（提交前跑一次全量，记录 PASS n/21） |
-| UART IP 回归数字 | ⬜ | 目前经 Vivado xsim 直跑（`tb_uart_tx`/`tb_uart_rx`/`tb_uart_ip_top`）；运行器待补 |
-| SoC 回归数字 | ⬜ | 同上（5 项系统 TB）；运行器待补 |
+| 计组 core 回归最终数字 | ⬜ | `powershell -File pipeline/src/scripts/run_tb.ps1`（提交前跑一次全量，记录 PASS n/23） |
+| UART IP 回归数字 | ✅ 已可复现 | `powershell -File soc/scripts/run_soc_tb.ps1 -All`（仓库自带 runner，覆盖 `UART/src/test` 的 `tb_uart_tx`/`tb_uart_rx`/`tb_uart_ip_top`/`tb_wave_868`；判据 `sim.log` 内 `ALL PASS`） |
+| SoC 回归数字 | ✅ 已可复现 | `powershell -File soc/scripts/run_soc_tb.ps1`（默认 3 项：`tb_reset_sync`/`tb_soc_console`/`tb_soc_full`；`-All` 追加 `tb_dbus_decode`/`tb_pipe_soc` 等共 9 项） |
 | 下板记录 | ⬜ | 按 `soc/doc/board_runbook.md` 分层记录（banner/回显/复位重跑/证据） |
 | 仿真时序证据（替代示波器） | ✅ 已具备 | `UART/doc/wave/uart_frame_868.txt`：真实分频 868 下单帧实测——位宽 8680 ns≈8.68 µs、帧长 86800 ns≈86.8 µs、波特率误差 0.0064%、跳变全落整数比特边界；复现命令见 `UART/doc/wave/README.md`（本方案不接示波器，故原"示波器波形"项改为仿真时序证据） |
-| ≤5 min 演示视频 | ⬜ | 上电 banner → 键盘回显 → 按键复位重跑 |
+| ≤5 min 演示视频 | ⬜ | 拍摄脚本见 `soc/doc/board_runbook.md` §6：开发板全景 → banner → 键盘回显 → P15 复位重跑（至少两次），与实验一视频分开归档 |
 | 架构框图/状态机图 | ⬜ | 按 §5.1 文字框图重绘（建议标注 `uart_ip_top` 与 `dbus_decode` 归属） |
 
 ## 附录 C 本稿相对旧稿的主要修改
@@ -251,9 +251,11 @@ soc_top
 6. **复位/时钟**：补充 `reset_sync` 异步置位/同步释放、`RST_ACTIVE_LOW` 极性兜底；
 7. **固件模型**：补充 `sp=0x100`、`PadBytes 512` 校验与 `imem_init.vh` 复制步骤；
 8. **工具链**：汇编器改记自研 `simple_asm.py`（uv + Python 3.13.13），GNU 工具链列为备选；
-9. **验证数字**：改为可复现的三层用例清单（core 21 / IP 3 / SoC 5），并新增上板实测结论；
-10. **26 条指令表**：迁至附录 A。
+9. **验证数字**：改为可复现的三层用例清单（core 23 / UART IP 4 / SoC 5；`-All` 合计 9 项），并新增上板实测结论；三层均由仓库自带 runner 复现（`run_tb.ps1` / `run_soc_tb.ps1 -All` / `run_soc_tb.ps1`）；
+10. **26 条指令表**：迁至附录 A；
+11. **USB-UART 桥口径**：按设备管理器实测写为 FTDI（VID_0403/PID_6010，COM8），并注明手册标 CP2102（§5.7 与附录 B）。
 
 ## 变更记录
 
+- v1.1 2026-09-16：附录 B 的 SoC/UART 回归"运行器待补"改为仓库自带 `soc/scripts/run_soc_tb.ps1`（默认 3 项 / `-All` 9 项），core 回归项数按现状记 23；§5.7 串行侧补实测桥型号口径。
 - v1.0 2026-09-07：新稿（依据重构后单源文档全面修订；新增 §5.8 与附录 A/B/C）。

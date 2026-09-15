@@ -29,7 +29,7 @@ hw_handoff/
 __pycache__/
 *.pyc
 
-# ---- Vivado 工程（本地生成物；重建命令见 README：create_vivado_proj.tcl）----
+# ---- Vivado 工程（本地生成物；重建命令见 README：pipeline/src/scripts/create_vivado_proj.tcl、soc/scripts/create_soc_proj.tcl）----
 vivado/
 
 # ---- 工具链/下载临时（tools 目录在仓库外，此处兜底）----
@@ -47,6 +47,14 @@ tight_setup_hold_pins.txt
 # ---- 本地归档与智能体指南（仅本机使用，不入库）----
 archive/
 AGENTS.md
+
+# ---- 演示视频（体积大：单文件 500 MB+，GitHub 单文件上限 100 MB，一律不入库）----
+#   归档方式：放课程网盘/移动盘，并在 README 或报告里登记链接（见 soc/doc/board_runbook.md §6.6）
+video/
+*.mp4
+*.mov
+*.mkv
+*.avi
 
 # ---- 仿真证据日志（保留，覆盖上面的 *.log 全局忽略）----
 !pipeline/doc/sim_shots/**/*.log

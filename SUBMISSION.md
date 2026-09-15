@@ -23,10 +23,10 @@
 | 提交物 | 对应文件/素材 | 状态 | 备注 |
 |---|---|---|---|
 | 接口控制器设计实验报告 | **设计部分新稿：`UART/doc/report_design.md`（v1.0，含新增 §5.8 与计组交叉章节，可直接替换 docx 前五章相应正文）**；素材：`UART/doc/top_design.md`（IP 顶层设计）、`UART/doc/interface.md`（编址方案 B/位义）、`soc/doc/firmware.md`、`soc/doc/machine_code.md`、`UART/doc/modules/*.md` 与 `soc/doc/modules/*.md`、本仓 `pipeline/doc/isa.md`/`pipeline/doc/top_design.md`（跨课契约）；下板记录章待补 | 🟡 | 套老师模板；含编址方式对比、三层验证（core 21 / IP 3 / SoC 5）与下板记录 |
-| 源代码 | `UART/src/`（**UART IP 交付物**：rtl=uart_ip_top（寄存器层已并入）/uart_tx/uart_rx + test=3 项 TB：tb_uart_tx/tb_uart_rx/tb_uart_ip_top（寄存器层检查并入 IP 级 TB））+ `soc/`（**SoC 集成**：rtl=soc_top/reset_sync/dbus_decode + xdc/board.xdc + test=固件 console.*/系统 TB×5） | ✅ | 回归 TB 齐备（构建脚本保留 `UART/src/scripts/build_fw.ps1`/`synth_check.tcl`/`create_vivado_proj.tcl`，其余已删——2026-09-07 结构调整；仿真在 Vivado GUI/xsim 直跑，下板重建步骤见 `soc/doc/board_runbook.md`） |
+| 源代码 | `UART/src/`（**UART IP 交付物**：rtl=uart_ip_top（寄存器层已并入）/uart_tx/uart_rx + test=3 项 TB：tb_uart_tx/tb_uart_rx/tb_uart_ip_top（寄存器层检查并入 IP 级 TB））+ `soc/`（**SoC 集成**：rtl=soc_top/reset_sync/dbus_decode + xdc/board.xdc + test=固件 console.*/系统 TB×5 + scripts=建工程脚本） | ✅ | 回归 TB 齐备（构建脚本保留 `UART/src/scripts/build_fw.ps1` 与 `synth_check.tcl`；**SoC 建工程已脚本化**：`soc/scripts/create_soc_proj.tcl` 一条命令生成 `soc/vivado/soc.xpr`，口径见 `soc/doc/board_runbook.md` §1）；仿真在 Vivado GUI/xsim 直跑 |
 | 可复用 IP 核（uart_ip_top/uart_tx/uart_rx 打包 + 集成说明） | 建议 `UART/ip_pkg/`：三模块源码副本 + 集成说明 + 例化示例（soc_top 即现成例化） | ⬜ | 报告/PPT 引用项；内容零上板依赖，随时可做 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建 | ⬜ | 汇报人/署名待提供 |
-| ≤5min 接口控制器下板演示视频 | 依赖 U32 下板（终端 banner/回显/复位 + 示波器波形） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；固件与 XDC 均已就绪（soc/） |
+| ≤5min 接口控制器下板演示视频 | `soc/doc/board_runbook.md` §6（10 镜头脚本、验收细节、异常处理与归档） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；须单独拍摄实验二 SoC 的 banner/回显/复位重跑，视频与实验一分开归档；固件与 XDC 均已就绪（soc/） |
 | 汇编实验测试（20 分，现场） | 依课程安排 | 🚫 | 现场测试，需板 |
 | 个人日志（10 分/人） | 待建 | ⬜ | 同计组：课程群模板 |
 
@@ -38,6 +38,15 @@
 
 ## 变更记录
 
+- 2026-09-16：**演示/验证脚本入库 + 使用说明**——把原先只在 gitignore 的 `build/` 里、且已被文档引用的脚本收进仓库：
+  **`soc/scripts/serial_console.ps1`**（实验二视频演示/终端验收用的最小串口控制台：只打印 FPGA 回传字节、天生等价"Local echo 关闭"，`-LocalEcho` 仅排错用）、
+  **`soc/scripts/run_soc_tb.ps1`**（SoC/UART 侧 TB 运行器——这些 TB 不在 `run_tb.ps1` 的 23 项里，默认 3 项 / `-All` 全跑）、
+  **`pipeline/src/scripts/run_trace_bd.ps1`**（逐拍 trace，产出报告/口播引用的动态指令数、前递/停顿/分支/访存计数与拍数恒等式）、
+  **`pipeline/src/scripts/run_mut.ps1`** 与 **`run_mut_alu.ps1`**（指令级变异 23/23、ALU 级故障矩阵 5/5，源码在 `pipeline/src/test/mut/`）。
+  说明：这些 TB 放在 `test/` 的**子目录**（`test/mut/`、`test/trace/`），`run_tb.ps1` 只收 `test` 根目录的 `tb_*.v`，故**不改变 23 项回归计数**。
+  使用说明写入 `soc/doc/board_runbook.md` §10（含拍摄操作卡与排错开关）与 `pipeline/doc/board_runbook.md` §8（证据脚本清单），README 同步。
+- 2026-09-16：**复位释放去抖（两课共同修复）**——`soc/rtl/reset_sync.v` 与 `pipeline/src/rtl/exp1_reset_sync.v` 新增 `STABLE_CYCLES`（默认 0 = 行为同旧版），板级顶层开启：`soc_top.RESET_STABLE_CYCLES` 与 `exp1_board_top.DEBOUNCE_MS` 均取 **20 ms**（按下复位仍立即生效，松开需连续稳定 20 ms 才启动）。根因：机械按键松开抖动（0.1–5 ms）使 core 在抖动窗口内反复置位/释放，正在发送的 UART 帧被截断 + 分频节拍错位 → 现象"按 RESET 后 banner / 数码管前几拍乱"。验证：`soc/test/tb_reset_sync.v` 新增去抖单测（抖动被滤除、仅在最后稳定后释放）、`soc/test/tb_soc_console.v` 新增 **P5**（抖动式松开 → banner 逐字节干净且无多余字节）。**注意：本改动会改变 bit**——2026-09-16 之前烧录的 exp1/exp2 bit 需重建后重烧。回归：pipeline **23/23**（`exp1_board_top` 的去抖路径在其 TB 中按 `CLK_HZ` 缩放）、性能 **8/8**、SoC 侧 **3/3**（`tb_reset_sync`/`tb_soc_console`/`tb_soc_full`）。
+- 2026-09-15：**实验二建工程脚本化 + 器件型号修正**——新增 `soc/scripts/create_soc_proj.tcl`（由 `UART/src/scripts/create_vivado_proj.tcl` 迁移而来，落点由 `UART/vivado/exp2.xpr` 统一为 `soc/vivado/soc.xpr`，固件副本改放工程内 `soc/vivado/soc_build/imem_init.vh`），`soc/doc/board_runbook.md` §1 由"手动 6 步"改为"一条命令"；**修正 §1 与 `soc/doc/top_design.md` 的器件型号为实测 `xc7a100tcsg324-1`**（原文误写 `xc7a35tcsg324-1`/`XC7A35T-1CSG324C`，与实物不符会导致 bit 烧不进板）；`README.md`、`.gitignore`、`soc/doc/top_design.md` 的脚本路径引用同步。
 - 2026-09-14：**实验一独立上板实板验收通过**——EES-338 上烧录 `exp1_board_top.bit`（SHA256 `4C3FAC64…EB97`，11,338 LUT / 3,808 FF / 0 BRAM，post-route WNS −1.239 ns）后四项判据全中：数码管 **`0000000F`**、**LED1–LED6 全亮**、**LED7 灭**、按住 `RESET` 只剩 LED0 心跳且松手立刻恢复（复位可重复）。记录与证据见 `pipeline/doc/board_runbook.md` **§10 实测验收记录**（含 **§10.3 板上按键与 FPGA 引脚实测：丝印 `RESET(P9)` 实际接 P15 用户 IO，`PROG` 才是 P9/`PROGRAM_B`，误按会擦配置**——首测即踩到，已写入 §7 故障定位）；`SUBMISSION.md` 上板行 🟡→✅、演示视频行由"可豁免"改为"待拍"。
 - 2026-09-14：**实验一独立上板（T37）落地**——按 `pipeline/doc/board_runbook.md` 新增板级顶层 `pipeline/src/rtl/exp1_board_top.v`（复位同步 + CPU + 事件监视器 + 8 LED + 8 位数码管扫描）与 `exp1_reset_sync.v`；`pipeline_top` 追加 `dbg_*` 只读观测口（纯连线、零逻辑改动）；上板验收程序 `exp1_board_demo.asm`（自检后写签名 `dmem[0]=0x0F`）与其 `.hex`/`_init.vh`；固化脚本 `hex_to_vh.ps1`；独立工程脚本 `create_exp1_board_proj.tcl`；引脚约束 `pipeline/xdc/board_exp1.xdc`（依 EES-338 手册 §6.3/§6.4）；运行手册 `pipeline/doc/board_runbook.md`。新增回归 `tb_prog_board_demo`(34 项) 与 `tb_exp1_board_top`(22 项) → 回归口径 **21/21 → 23/23**。顺带修复 `run_tb.ps1` 在本机的环境变量大小写重复导致 `Start-Process` 抛异常的问题（现仓库原生 runner 可直接跑全量）。
 - 2026-09-14：**大三单周期基准与性能分析全部落地**——新增 `pipeline/doc/ref_baseline_measured.md`（拍数 11/20/178、资源/Fmax 同条件综合、CPI≡1.00）；`perf_analysis.md` 升级 v2.1，`perf_report.md` 完成最终性能章节；新增冒险审计记录 `pipeline/doc/known_issues.md`，原 L1 线索经复核撤销；RTL 回归 21/21 + 性能 8/8 全绿。**规模档修复并入库**：`loop_heavy_{8,32,128}` 三档，`tb_perf.v`/`run_perf.ps1` 支持三窗口与恒等式 A/B，汇总 CSV 为 `perf_data/2026-09-14_perf_summary.csv`。

@@ -56,7 +56,7 @@ vivado -mode batch -source pipeline/src/scripts/create_exp1_board_proj.tcl
 
 ## 下板（SoC U32：本机已可全流程出 bit+烧录；完整方案见 soc/doc/board_runbook.md）
 
-> 2026-09-07：SoC 上移为项目顶层 `soc/`；UART 侧构建/烧录/取证脚本已随结构调整删减（仅保留 build_fw.ps1/create_vivado_proj.tcl/synth_check.tcl 上游修复版）——无脚本建工程步骤见 `soc/doc/board_runbook.md` §1（工程目录 `soc/vivado/`，bit 产物 `soc/vivado/soc.runs/impl_1/soc_top.bit`），其余脚本可从 git 历史恢复。
+> 2026-09-15：SoC 建工程改为**一条命令**——`vivado -mode batch -source soc/scripts/create_soc_proj.tcl`（工程 `soc/vivado/soc.xpr`，bit 产物 `soc/vivado/soc.runs/impl_1/soc_top.bit`）；固件构建脚本保留 `UART/src/scripts/build_fw.ps1`（综合自检 `UART/src/scripts/synth_check.tcl`）；烧录/取证脚本仍为手动步骤或从 git 历史恢复。完整口径见 `soc/doc/board_runbook.md` §1（**part 必须用实测 `xc7a100tcsg324-1`**，用户手册误标 35T）。
 
 # Vivado GUI（工程已按工程风格分组，可直接打开）
 ```text
@@ -65,12 +65,25 @@ vivado -mode batch -source pipeline/src/scripts/create_exp1_board_proj.tcl
   仿真源 sim_1     : pipeline/src/test/tb_*.v      top = tb_pipeline_top（默认）
   约束  constrs_1  : （实验一为空；SoC XDC 在 soc/xdc/board.xdc）
   include 目录     : pipeline/src/（VerilogDir=$PPRDIR/../src，`include "defines/…" 由此解析）
-UART（UART IP）与 soc（SoC 集成）工程无脚本生成——按 soc/doc/board_runbook.md §1 手动建工程（IP 工程只需读入 UART/src/rtl/*.v，top=uart_ip_top）。
+soc（SoC 集成）工程：`soc/scripts/create_soc_proj.tcl` 一条命令生成（见 soc/doc/board_runbook.md §1）；UART（UART IP）单独建工程时只需读入 UART/src/rtl/*.v，top=uart_ip_top（也可用 UART/src/scripts/synth_check.tcl 做不落盘的综合自检）。
 ```
 重建工程（工程不入 git，本机生成即可）：
 ```powershell
-vivado -mode batch -source pipeline/src/scripts/create_vivado_proj.tcl
+vivado -mode batch -source pipeline/src/scripts/create_vivado_proj.tcl   # 实验一 流水线 CPU → pipeline/vivado/board.xpr
+vivado -mode batch -source soc/scripts/create_soc_proj.tcl              # 实验二 SoC → soc/vivado/soc.xpr
 ```
+
+辅助脚本（演示 / 验证，均在仓库内、产物落 `build/`）：
+```powershell
+# 实验二：串口终端（视频演示用；只打印 FPGA 回传的字节，等价 Local echo 关闭）
+powershell -File soc/scripts/serial_console.ps1 -Log build\uart_soc_terminal_YYYYMMDD.log
+powershell -File soc/scripts/run_soc_tb.ps1               # SoC/UART 侧 TB（3 项；-All 全跑）
+# 实验一：逐拍 trace / 变异与 ALU 故障矩阵（证据脚本）
+powershell -File pipeline/src/scripts/run_trace_bd.ps1
+powershell -File pipeline/src/scripts/run_mut.ps1
+powershell -File pipeline/src/scripts/run_mut_alu.ps1
+```
+用法与操作卡见 `soc/doc/board_runbook.md` §10 与 `pipeline/doc/board_runbook.md` §8。
 
 > 说明：RTL 内 `` `include "defines/*.v"`` 以 **pipeline/src/ 为 include 目录**解析；Vivado
 > 工程中把 include 目录指向 `pipeline/src/` 即可直接读入 `pipeline/src/rtl/` 全部源码。
