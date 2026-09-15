@@ -94,9 +94,9 @@ module tb_reset_sync;
 
         rst_n_d = 1;                                      // 最终稳定释放
         repeat (8) @(posedge clk);
-        #1 c("dbg after final 8 stable: still rst", rst_d===1'b1);
+        #1 c("dbg final-8-stable: still rst", rst_d===1'b1);
         @(posedge clk);                                   // 首个可释放沿
-        #1 c("dbg released only after final settle", rst_d===1'b0);
+        #1 c("dbg released after final settle", rst_d===1'b0);
 
         // ============ C. STAGES=3（释放链 generate 分支）============
         rst_n_3 = 0;
@@ -119,9 +119,9 @@ module tb_reset_sync;
         rst_n_d = 0; #4 rst_n_d = 1;                       // 低 4 ns（< 1 拍）
         #1 c("dbg glitch asserted async", rst_d===1'b1);   // 输出侧必须立刻断言
         repeat (8) @(posedge clk);
-        #1 c("dbg glitch restarts debounce: still rst", rst_d===1'b1);
+        #1 c("dbg glitch: still rst (recount)", rst_d===1'b1);
         @(posedge clk);                                   // 抖动后同样只在首个可释放沿撤
-        #1 c("dbg released at 9th edge after glitch", rst_d===1'b0);
+        #1 c("dbg glitch: released at 9th edge", rst_d===1'b0);
 
         if (err == 0) $display("=== ALL PASS ===");
         else          $display("=== FAIL === (%0d/%0d)", err, n);
