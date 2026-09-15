@@ -1,7 +1,11 @@
 """Render unannotated waveform PNGs for the defense slides.
 
-Reads the sampled CSVs produced by run_wave.ps1 and draws only the waveform
-(signal names, cycle numbers, bus values). No title, notes, cursor or highlight.
+Reads the sampled CSVs in ppt/wave/ and draws only the waveform (signal names,
+cycle numbers, bus values). No title, notes, cursor or highlight.
+
+The CSVs are produced by pipeline/src/scripts/run_wave.ps1 (Vivado xsim) and are
+kept in ppt/wave/ so this step needs no simulator. To refresh them, run
+run_wave.ps1 and copy the files from pipeline/src/scripts/out/wave/.
 
 Run with:
     uv run --no-project --python 3.13.13 --with matplotlib python ppt/make_waves.py
@@ -22,7 +26,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 ASSETS = HERE / "assets"
 ASSETS.mkdir(exist_ok=True)
-WAVE = ROOT / "pipeline" / "src" / "scripts" / "out" / "wave"
+WAVE = HERE / "wave"
 
 plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False

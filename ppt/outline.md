@@ -256,7 +256,9 @@ console 固件是 CPU 与 UART 的集成应用。
 
 测量保留三个时间窗口。C_total 是复位释放到停机的周期数。C_steady 是剔除停机与冲刷尾部开销后的周期数。C_fixed 是固定开销。结构对比使用 C_steady。
 
-每档数据满足恒等式 C_total = IC + (F-1) + L + 2T，其中 L 是 load-use 冻结周期数，T 是跳转成立次数。
+每档数据满足恒等式 C_total = IC + (F-1) + L + 2T。
+
+其中 F 是首个真实 EX 槽的沿号，本次测量为 1。L 是 load-use 冻结周期数，T 是跳转成立次数。
 
 ### 5.3 性能实测
 

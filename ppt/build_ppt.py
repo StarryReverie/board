@@ -118,7 +118,7 @@ def parse_slides(text: str) -> tuple[dict, list[dict]]:
     pattern = re.compile(r"<!--\s*slide(.*?)-->(.*?)(?=<!--\s*slide|$)", re.S)
     for m in pattern.finditer(text):
         meta = parse_meta(m.group(1))
-        body = m.group(2)
+        body = re.sub(r"\n---\s*$", "", m.group(2))
         title_m = re.search(r"^##\s+(.*)$", body, re.M)
         title = title_m.group(1).strip() if title_m else ""
         sections: dict[str, str] = {}
