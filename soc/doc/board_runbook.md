@@ -80,7 +80,7 @@ vivado -mode batch -source soc/scripts/create_soc_proj.tcl
 
 ## 4. 终端验收（分三小步）
 
-串口设置：**115200-8-N-1**；COM 号在设备管理器查 "CP210x USB to UART / USB Serial Port"（本机曾见 COM8，异地以实测为准，注意别选到别的 COM）。
+串口设置：**115200-8-N-1**；COM 号在设备管理器里找 —— 本机实物板载桥为 **FTDI（VID_0403 / PID_6010）**，枚举为 **"USB Serial Port (COM8)"**（手册写 CP2102，**以实测为准**；与本文曾记的"本机曾见 COM8"一致）。注意旁边那几个 **"蓝牙链接上的标准串行 (COM3/4/5/6)" 不是板子**，别选错。
 
 1. **Banner**：上电/复位后终端应收到（精确文本）：
    ```
@@ -133,6 +133,11 @@ vivado -mode batch -source soc/scripts/create_soc_proj.tcl
 | 8 | 20 s | 松开 P15，等待再次启动 | 第二次完整 banner | “释放复位后程序重新运行，banner 再次完整出现。” |
 | 9 | 25 s | 再重复一次复位—启动 | 第三次 banner 或终端日志中的两次记录 | “重复复位结果一致，验证复位同步与固件重启。” |
 | 10 | 10 s | 收尾定格 | 开发板、终端日志、文件名/日期 | “实验二三项验收均通过，视频与日志按方案归档。” |
+
+> **用仓库内脚本当终端时（无需安装 Tera Term）**：镜头 3 改为展示 `soc/scripts/serial_console.ps1`
+> 的启动行 `[OK] COM8 @ 115200 8-N-1 opened`，并展示脚本里"只把串口读回的字节打印到屏幕"
+> 那两段代码（它天生不回显键盘）——口播可改成"屏幕上出现的每个字符都只能来自 FPGA"。
+> 该脚本的用法见本文 **§10 附录**；录制时**不要**加 `-LocalEcho`（那是排错开关）。
 
 ### 6.4 三项验收必须拍到的细节
 
@@ -192,3 +197,45 @@ soc/doc/board_evidence/
 - v1.3 2026-09-15：新增 §6 实验二 SoC 演示视频拍摄方案（拍前准备、10 镜头脚本、三项验收细节、异常处理与证据归档），并明确与实验一视频分开提交。
 - v1.1 2026-09-07：随 SoC 上移 `soc/`（本文件随迁）：全部路径改 `soc/` 与 `../exp2/`；构建/烧录/取证脚本已删——§1 改无脚本手动工程步骤、§2 批处理改 Tcl Console 逐条、§4.4 取证改手动等价。
 - v1.0 2026-09-06：初版（异地设备完整执行方案）。
+
+---
+
+## 10. 附录：仓库内辅助脚本（演示 / 验证）
+
+| 脚本 | 用途 | 用法 |
+|---|---|---|
+| `soc/scripts/create_soc_proj.tcl` | 一条命令建 Vivado 工程（口径见 §1） | `vivado -mode batch -source soc/scripts/create_soc_proj.tcl` |
+| **`soc/scripts/serial_console.ps1`** | **视频演示 / 终端验收用的最小串口控制台**（免装 Tera Term） | `powershell -File soc/scripts/serial_console.ps1 [-Port COM8] [-Baud 115200] [-Log <路径>] [-LocalEcho]` |
+| `soc/scripts/run_soc_tb.ps1` | 跑 SoC/UART 侧 TB（这些**不在** `run_tb.ps1` 的 23 项里） | `powershell -File soc/scripts/run_soc_tb.ps1 [-All]` |
+
+### 10.1 `serial_console.ps1` 操作卡（拍摄用）
+
+1. 打开 PowerShell 窗口，**进入仓库根**后运行（建议显式指定日志名，省去事后改名）：
+
+   ```powershell
+   powershell -File soc/scripts/serial_console.ps1 -Log build\uart_soc_terminal_<日期>.log
+   ```
+
+2. 看到 `[OK] COM8 @ 115200 8-N-1 opened.  Log: ...` 即已连上——**这一行就是镜头 3 的"串口设置"证据**。
+3. 调字号：窗口标题栏右键 → 属性 → 字体（`Consolas` 20）；布局里窗口设 `100×30`、缓冲区高度 `999`（避免滚动条）。
+4. 键入即发送（Enter 发 CR、Backspace 发 BS）。**敲完屏幕上"先什么都不出现"是正常的**——字符要等 FPGA
+   回传才显示，这正是"回显只来自 FPGA"的证据（镜头 5 的观感就在这一前一后）。
+5. 退出：`Ctrl+C` → 打印 `[OK] closed. Log saved: ...`；日志已 `AutoFlush`，直接关窗口也不会丢。
+
+| 开关 | 说明 |
+|---|---|
+| `-Port COM8` / `-Baud 115200` | 端口 / 波特率（默认 COM8、115200、8N1、无流控） |
+| `-Log <路径>` | 日志路径；默认 `<repo>/build/uart_log_<时间戳>.txt`（`build/` 不入库） |
+| `-LocalEcho` | **排错用**：把真正发出的键显示成 `[TX:a]`。看到它 = 按键已进脚本；看不到 = 按键没进窗口（输入法/焦点/窗口选错）。**录制时必须保持关闭** |
+
+> 日志文件就是 §5/§6.6 要的"终端日志"证据；收尾时按规范改名归档（如 `uart_soc_terminal_YYYYMMDD.log`）。
+
+### 10.2 `run_soc_tb.ps1`（SoC 侧回归）
+
+```powershell
+powershell -File soc/scripts/run_soc_tb.ps1          # 默认 3 项：tb_reset_sync / tb_soc_console / tb_soc_full
+powershell -File soc/scripts/run_soc_tb.ps1 -All     # soc/test + UART/src/test 的全部 tb_*.v
+```
+
+产物在 `build/soc_sim_out/<tb>/`（`xvlog/xelab/xsim` 日志，判据是 `sim.log` 里出现 `ALL PASS`）。
+2026-09-16 **复位释放去抖**改动后的实测结果：**3/3 PASS**（含 `tb_soc_console` 新增的 P5 抖动用例）。

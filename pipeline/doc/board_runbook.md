@@ -256,13 +256,13 @@ sw   x8,  0(x0)        # ★ 只有全部核对项正确才写出 0x0F
 
 **灵敏度已两层实测**：
 
-1. **指令级变异**（`build/tb_mut.v`，build 侧临时验证、不入库）：把 23 条与"正确运行
+1. **指令级变异**（`pipeline/src/test/mut/tb_mut.v`，运行 `pipeline/src/scripts/run_mut.ps1`）：把 23 条与"正确运行
    签名"相关的指令逐条改成 NOP（`sltu` 一条改成交换操作数）→ **23/23 全部使签名 ≠ 0x0F、
    0 漏检**。含边界情形：循环计数不递减（死循环）→ 根本不写签名；签名常数/第二条
    机制/写口被改 → 写出非 `0x0F` 的值。
    注：只在"有错"场景才起作用的签名尾指令（如 `add x31,x31,x30`）被改掉时，**正确运行**
    的签名不变，属**等价变异**，故不计入本层；这类"自检机制自身的鲁棒性"由第 2 层覆盖。
-2. **ALU 级故障变异**（`build/alu_fault_<op>.v` + `build/tb_mut_alu.v`）：把 ALU 的单个
+2. **ALU 级故障变异**（`pipeline/src/test/mut/alu_fault_<op>.v` + 同目录 `tb_mut_alu.v`，运行 `pipeline/src/scripts/run_mut_alu.ps1`）：把 ALU 的单个
    opcode 强制返回 0，分别跑旧固件（`or` 累加）与新固件，实测矩阵：
 
    | ALU 单点故障 | 旧固件（`or` 累加） | **新固件（本版）** |
@@ -368,11 +368,21 @@ sw   x8,  0(x0)        # ★ 只有全部核对项正确才写出 0x0F
 ## 8. 仿真自检（上板前必做）
 
 ```powershell
-# 全量功能回归（含上板程序与板级顶层）
+# ① 全量功能回归（23 项：14 模块 TB + tb_perf + 7 程序级 TB + 板级 tb_exp1_board_top）
 powershell -File pipeline/src/scripts/run_tb.ps1
-# 备用（若本机 Start-Process 仍受环境变量大小写重复影响）：
-powershell -File build/run_cases.ps1 -Kind tb
+# ② 性能档 8 档（CPI/IPC/MIPS/CPU 时间 + 恒等式 A/B）
+powershell -File pipeline/src/scripts/run_perf.ps1
+
+# ③ 证据脚本（按需运行；都在 test/ 子目录下，不占 23 项回归计数）
+powershell -File pipeline/src/scripts/run_trace_bd.ps1    # 逐拍 trace：动态指令/前递/停顿/分支/访存 + 拍数恒等式
+powershell -File pipeline/src/scripts/run_mut.ps1         # 指令级变异（23/23 必须全部检出）
+powershell -File pipeline/src/scripts/run_mut_alu.ps1     # ALU 级故障矩阵（5/5 单点故障必须检出）
+powershell -File soc/scripts/run_soc_tb.ps1               # 实验二 SoC/UART 侧 TB（默认 3 项；-All 全跑）
 ```
+
+> `build/run_cases.ps1` 是历史上为规避"本机进程环境变量大小写重复使 `Start-Process` 抛异常"
+> 而写的兼容 runner，**不入库**；如今 `run_tb.ps1` 已可在本机直接跑全量，一般不再需要它。
+> 上列脚本的产物统一落在 `build/`（gitignore），可反复重跑。
 
 当前口径 **23/23 PASS**（14 模块 TB + `tb_perf` + 7 程序级 TB + 板级 `tb_exp1_board_top`）。
 其中与上板判据一一对应的两项：

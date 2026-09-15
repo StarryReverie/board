@@ -73,6 +73,18 @@ vivado -mode batch -source pipeline/src/scripts/create_vivado_proj.tcl   # 实�
 vivado -mode batch -source soc/scripts/create_soc_proj.tcl              # 实验二 SoC → soc/vivado/soc.xpr
 ```
 
+辅助脚本（演示 / 验证，均在仓库内、产物落 `build/`）：
+```powershell
+# 实验二：串口终端（视频演示用；只打印 FPGA 回传的字节，等价 Local echo 关闭）
+powershell -File soc/scripts/serial_console.ps1 -Log build\uart_soc_terminal_YYYYMMDD.log
+powershell -File soc/scripts/run_soc_tb.ps1               # SoC/UART 侧 TB（3 项；-All 全跑）
+# 实验一：逐拍 trace / 变异与 ALU 故障矩阵（证据脚本）
+powershell -File pipeline/src/scripts/run_trace_bd.ps1
+powershell -File pipeline/src/scripts/run_mut.ps1
+powershell -File pipeline/src/scripts/run_mut_alu.ps1
+```
+用法与操作卡见 `soc/doc/board_runbook.md` §10 与 `pipeline/doc/board_runbook.md` §8。
+
 > 说明：RTL 内 `` `include "defines/*.v"`` 以 **pipeline/src/ 为 include 目录**解析；Vivado
 > 工程中把 include 目录指向 `pipeline/src/` 即可直接读入 `pipeline/src/rtl/` 全部源码。
 > 程序级回归 TB（tb_prog_*）经 $readmemh 按文件名读 .hex，GUI 直跑需把

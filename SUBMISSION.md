@@ -38,6 +38,13 @@
 
 ## 变更记录
 
+- 2026-09-16：**演示/验证脚本入库 + 使用说明**——把原先只在 gitignore 的 `build/` 里、且已被文档引用的脚本收进仓库：
+  **`soc/scripts/serial_console.ps1`**（实验二视频演示/终端验收用的最小串口控制台：只打印 FPGA 回传字节、天生等价"Local echo 关闭"，`-LocalEcho` 仅排错用）、
+  **`soc/scripts/run_soc_tb.ps1`**（SoC/UART 侧 TB 运行器——这些 TB 不在 `run_tb.ps1` 的 23 项里，默认 3 项 / `-All` 全跑）、
+  **`pipeline/src/scripts/run_trace_bd.ps1`**（逐拍 trace，产出报告/口播引用的动态指令数、前递/停顿/分支/访存计数与拍数恒等式）、
+  **`pipeline/src/scripts/run_mut.ps1`** 与 **`run_mut_alu.ps1`**（指令级变异 23/23、ALU 级故障矩阵 5/5，源码在 `pipeline/src/test/mut/`）。
+  说明：这些 TB 放在 `test/` 的**子目录**（`test/mut/`、`test/trace/`），`run_tb.ps1` 只收 `test` 根目录的 `tb_*.v`，故**不改变 23 项回归计数**。
+  使用说明写入 `soc/doc/board_runbook.md` §10（含拍摄操作卡与排错开关）与 `pipeline/doc/board_runbook.md` §8（证据脚本清单），README 同步。
 - 2026-09-16：**复位释放去抖（两课共同修复）**——`soc/rtl/reset_sync.v` 与 `pipeline/src/rtl/exp1_reset_sync.v` 新增 `STABLE_CYCLES`（默认 0 = 行为同旧版），板级顶层开启：`soc_top.RESET_STABLE_CYCLES` 与 `exp1_board_top.DEBOUNCE_MS` 均取 **20 ms**（按下复位仍立即生效，松开需连续稳定 20 ms 才启动）。根因：机械按键松开抖动（0.1–5 ms）使 core 在抖动窗口内反复置位/释放，正在发送的 UART 帧被截断 + 分频节拍错位 → 现象"按 RESET 后 banner / 数码管前几拍乱"。验证：`soc/test/tb_reset_sync.v` 新增去抖单测（抖动被滤除、仅在最后稳定后释放）、`soc/test/tb_soc_console.v` 新增 **P5**（抖动式松开 → banner 逐字节干净且无多余字节）。**注意：本改动会改变 bit**——2026-09-16 之前烧录的 exp1/exp2 bit 需重建后重烧。回归：pipeline **23/23**（`exp1_board_top` 的去抖路径在其 TB 中按 `CLK_HZ` 缩放）、性能 **8/8**、SoC 侧 **3/3**（`tb_reset_sync`/`tb_soc_console`/`tb_soc_full`）。
 - 2026-09-15：**实验二建工程脚本化 + 器件型号修正**——新增 `soc/scripts/create_soc_proj.tcl`（由 `UART/src/scripts/create_vivado_proj.tcl` 迁移而来，落点由 `UART/vivado/exp2.xpr` 统一为 `soc/vivado/soc.xpr`，固件副本改放工程内 `soc/vivado/soc_build/imem_init.vh`），`soc/doc/board_runbook.md` §1 由"手动 6 步"改为"一条命令"；**修正 §1 与 `soc/doc/top_design.md` 的器件型号为实测 `xc7a100tcsg324-1`**（原文误写 `xc7a35tcsg324-1`/`XC7A35T-1CSG324C`，与实物不符会导致 bit 烧不进板）；`README.md`、`.gitignore`、`soc/doc/top_design.md` 的脚本路径引用同步。
 - 2026-09-14：**实验一独立上板实板验收通过**——EES-338 上烧录 `exp1_board_top.bit`（SHA256 `4C3FAC64…EB97`，11,338 LUT / 3,808 FF / 0 BRAM，post-route WNS −1.239 ns）后四项判据全中：数码管 **`0000000F`**、**LED1–LED6 全亮**、**LED7 灭**、按住 `RESET` 只剩 LED0 心跳且松手立刻恢复（复位可重复）。记录与证据见 `pipeline/doc/board_runbook.md` **§10 实测验收记录**（含 **§10.3 板上按键与 FPGA 引脚实测：丝印 `RESET(P9)` 实际接 P15 用户 IO，`PROG` 才是 P9/`PROGRAM_B`，误按会擦配置**——首测即踩到，已写入 §7 故障定位）；`SUBMISSION.md` 上板行 🟡→✅、演示视频行由"可豁免"改为"待拍"。
