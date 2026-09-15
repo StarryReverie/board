@@ -29,7 +29,7 @@ hw_handoff/
 __pycache__/
 *.pyc
 
-# ---- Vivado 工程（本地生成物；重建命令见 README：create_vivado_proj.tcl）----
+# ---- Vivado 工程（本地生成物；重建命令见 README：pipeline/src/scripts/create_vivado_proj.tcl、soc/scripts/create_soc_proj.tcl）----
 vivado/
 
 # ---- 工具链/下载临时（tools 目录在仓库外，此处兜底）----

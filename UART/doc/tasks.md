@@ -117,8 +117,8 @@
 
 | 开放项 | 默认假设/缓解 |
 |---|---|
-| 本机 Vivado 2019.2 对大设计器件模型加载空转 | **已解除（2026-09-07）**：病根=4KB×2 组合读寄存器阵列（器件加载阶段 CPU 空转、1KB×2 时 LUT 35.5k>20.8k 超限）；下板 build 缩容 **IMEM 512B/DMEM 256B** 后本机 synth→place→route→bitgen 全流程通过并烧录验收 PASS（仿真/契约仍 4KB，见 const_define.v 头注）；构建脚本随结构调整删减（仅保留 build_fw/synth_check/create_vivado_proj 修复版），无脚本建工程步骤见 `../soc/doc/board_runbook.md` §1 |
-| EES-338 复位键极性（P15） | 以厂家 demo XDC/实测为准；soc_top `RST_ACTIVE_LOW` 参数隔离极性（默认低有效，实测相反置 0） |
+| 本机 Vivado 2019.2 对大设计器件模型加载空转 | **已解除（2026-09-07）**：病根=4KB×2 组合读寄存器阵列（器件加载阶段 CPU 空转、1KB×2 时 LUT 35.5k>20.8k 超限）；下板 build 缩容 **IMEM 512B/DMEM 256B** 后本机 synth→place→route→bitgen 全流程通过并烧录验收 PASS（仿真/契约仍 4KB，见 const_define.v 头注）；构建脚本：固件 `src/scripts/build_fw.ps1`、综合自检 `src/scripts/synth_check.tcl`、**SoC 建工程 `../../soc/scripts/create_soc_proj.tcl`**（一条命令生成 `soc/vivado/soc.xpr`，口径见 `../../soc/doc/board_runbook.md` §1） |
+| EES-338 复位键极性（P15） | **已实测确认低有效（2026-09-14，实验一在同一块板）**，松键=运行；soc_top `RST_ACTIVE_LOW` 参数隔离极性（换板实测相反则置 0）。另实测：丝印 `RESET(P9)` 实际接 **P15**，**`PROG`=P9/`PROGRAM_B` 按下会擦配置** |
 | RX 采样可靠性 | 位中心采样 + 停止位校验；TB 覆盖位边界 ±误差；实测分频误差 0.0064% 余量充足 |
 | 仿真速度 | CLKS_PER_BIT 参数覆盖（系统 TB 用 8–100） |
 | dmem 复位不清 | 固件启动自初始化数据区（方案 §6.1） |
