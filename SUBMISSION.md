@@ -26,7 +26,7 @@
 | 源代码 | `UART/src/`（**UART IP 交付物**：rtl=uart_ip_top（寄存器层已并入）/uart_tx/uart_rx + test=3 项 TB：tb_uart_tx/tb_uart_rx/tb_uart_ip_top（寄存器层检查并入 IP 级 TB））+ `soc/`（**SoC 集成**：rtl=soc_top/reset_sync/dbus_decode + xdc/board.xdc + test=固件 console.*/系统 TB×5 + scripts=建工程脚本） | ✅ | 回归 TB 齐备（构建脚本保留 `UART/src/scripts/build_fw.ps1` 与 `synth_check.tcl`；**SoC 建工程已脚本化**：`soc/scripts/create_soc_proj.tcl` 一条命令生成 `soc/vivado/soc.xpr`，口径见 `soc/doc/board_runbook.md` §1）；仿真在 Vivado GUI/xsim 直跑 |
 | 可复用 IP 核（uart_ip_top/uart_tx/uart_rx 打包 + 集成说明） | 建议 `UART/ip_pkg/`：三模块源码副本 + 集成说明 + 例化示例（soc_top 即现成例化） | ⬜ | 报告/PPT 引用项；内容零上板依赖，随时可做 |
 | 汇报 PPT×2（中期、验收） | 内容骨架待建 | ⬜ | 汇报人/署名待提供 |
-| ≤5min 接口控制器下板演示视频 | 依赖 U32 下板（终端 banner/回显/复位 + 示波器波形） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；固件与 XDC 均已就绪（soc/） |
+| ≤5min 接口控制器下板演示视频 | `soc/doc/board_runbook.md` §6（10 镜头脚本、验收细节、异常处理与归档） | 🚫 | **硬性提交物，缺项 0 分**——需上板机会/板卡资源；须单独拍摄实验二 SoC 的 banner/回显/复位重跑，视频与实验一分开归档；固件与 XDC 均已就绪（soc/） |
 | 汇编实验测试（20 分，现场） | 依课程安排 | 🚫 | 现场测试，需板 |
 | 个人日志（10 分/人） | 待建 | ⬜ | 同计组：课程群模板 |
 
