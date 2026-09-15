@@ -5,11 +5,12 @@
 ```text
 board/
  ├─ pipeline/            计组实验一（本仓主干，统一代码目录）
- │   ├─ src/rtl/          流水线 CPU core RTL（14 模块，含 pipeline_top）
+ │   ├─ src/rtl/          流水线 CPU core RTL（14 模块，含 pipeline_top）+ 上板顶层 exp1_board_top/exp1_reset_sync
  │   ├─ src/defines/      指令/常量宏
- │   ├─ src/test/         TB + 汇编测试程序（.asm/.hex）
- │   ├─ src/scripts/      run_tb.ps1（批量仿真）、run_perf.ps1（性能测量）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）
- │   ├─ doc/              计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis 性能分析方案 v2.1/perf_report 实测数据）
+ │   ├─ src/test/         TB + 汇编测试程序（.asm/.hex + 上板固化镜像 _init.vh）
+ │   ├─ src/scripts/      run_tb.ps1（批量仿真）、run_perf.ps1（性能测量）、build_asm.ps1（汇编→hex）、fix_encoding.ps1（编码校验）、synth_check.tcl（综合自检）、hex_to_vh.ps1（hex→固化镜像）、create_exp1_board_proj.tcl（上板工程）
+ │   ├─ xdc/              实验一独立上板引脚约束（board_exp1.xdc）
+ │   ├─ doc/              计组设计文档（isa/top_design/tasks/modules/future_extensions/perf_analysis 性能分析方案 v2.1/perf_report 实测数据/board_runbook 上板手册）
  │   └─ exp1_vivado.bat   exp1 Vivado 工程入口
  ├─ UART/                汇编与接口课程（交付物：UART 控制器 IP——uart_ip_top + 内部层 + IP 级独立测试）
  ├─ soc/                 整个项目的顶层（SoC 集成，两课共建：soc_top/reset_sync/dbus_decode + 固件/XDC/系统 TB）
@@ -21,7 +22,7 @@ board/
 ## 快速上手（本机 Vivado 2019.2 + xPack RISC-V 工具链）
 
 ```powershell
-# 仿真全部单测/回归（19 项，须在装有 Vivado 的机器）
+# 仿真全部单测/回归（23 项，须在装有 Vivado 的机器）
 powershell -File pipeline/src/scripts/run_tb.ps1          # 全部
 powershell -File pipeline/src/scripts/run_tb.ps1 -Case alu # 按名过滤
 
@@ -37,6 +38,21 @@ vivado -mode batch -source pipeline/src/scripts/synth_check.tcl
 # 文本编码健康校验（全仓 UTF-8；默认仅报告，-Apply 写回）
 powershell -File pipeline/src/scripts/fix_encoding.ps1
 ```
+
+## 实验一独立上板（CPU core 单独上板，不接 UART）
+
+```powershell
+# ① 汇编上板验收程序 → .hex
+uv run --no-project --python 3.13.13 pipeline/src/scripts/simple_asm.py pipeline/src/test/exp1_board_demo.asm
+# ② .hex → 综合固化镜像 <名>_init.vh（含回读逐字节校验）
+powershell -File pipeline/src/scripts/hex_to_vh.ps1 -Hex pipeline/src/test/exp1_board_demo_rom.hex -PadBytes 512
+# ③ 生成独立上板工程（pipeline/vivado/board_exp1.xpr，512B IMEM / 256B DMEM）
+vivado -mode batch -source pipeline/src/scripts/create_exp1_board_proj.tcl
+```
+
+完整步骤（综合/烧录/验收判据/拍摄/故障定位）见 **`pipeline/doc/board_runbook.md`**；
+板级顶层为 `exp1_board_top`（LED 状态灯 + 8 位数码管显示验收签名 `0000000F`），
+引脚约束 `pipeline/xdc/board_exp1.xdc`（依 EES-338 用户手册 §6.3/§6.4）。
 
 ## 下板（SoC U32：本机已可全流程出 bit+烧录；完整方案见 soc/doc/board_runbook.md）
 

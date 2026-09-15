@@ -32,6 +32,22 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root    = Split-Path -Parent $PSScriptRoot          # repo root (src)
+
+# ---- 本机环境修补：进程环境里存在"大小写重复"的变量名（如 NO_PROXY / no_proxy）----
+#   Windows 环境块本身大小写不敏感，但 PowerShell 5.1 的 Start-Process 用区分大小写的
+#   字典复制环境，会抛 "Item has already been added. Key in dictionary: 'NO_PROXY' ..."，
+#   导致本脚本在本机完全无法启动 worker。这里在进程内去掉同名重复项（保留先出现者），
+#   使 Start-Process 可用；不影响任何其它行为。
+$seenEnv = @{}
+foreach ($k in @([Environment]::GetEnvironmentVariables('Process').Keys)) {
+    $lk = $k.ToLowerInvariant()
+    if ($seenEnv.ContainsKey($lk)) {
+        Remove-Item -LiteralPath ("Env:" + $k) -ErrorAction SilentlyContinue
+    } else {
+        $seenEnv[$lk] = $k
+    }
+}
+
 $vivado  = if ($env:XVIVADO_ROOT) { $env:XVIVADO_ROOT } else { 'C:\Xilinx\Vivado\2019.2' }
 $settings = Join-Path $vivado 'settings64.bat'
 if (-not (Test-Path $settings)) { Write-Error "cannot find $settings (set `$env:XVIVADO_ROOT)"; exit 1 }

@@ -27,7 +27,22 @@ module pipeline_top #(
     output wire [1:0]  reg_off,
     output wire        mmio_we,
     output wire [31:0] mmio_wdata,
-    input  wire [31:0] mmio_rdata
+    input  wire [31:0] mmio_rdata,
+    // ---- 板级可综合观测口（实验一独立上板用；纯观测，不参与任何逻辑）----
+    //   为什么需要：本模块对外原本只有 mmio 输出（实验一恒 0），综合器会判定
+    //   "无任何可观测输出" 而把取指/译码/执行/访存整条通路删空。这组端口把已有
+    //   内部信号直接引出，既供板级监视器使用，也使综合结果反映真实设计规模。
+    //   全部为连续赋值、只读内部信号，**不新增/不改变任何逻辑**。
+    output wire [31:0] dbg_pc,           // IF 段 PC
+    output wire        dbg_stall,        // load-use 冻结中
+    output wire        dbg_br_taken,     // 分支/跳转重定向（taken）
+    output wire        dbg_halt,         // 停机自循环：分支目标 == 分支自身（isa §4）
+    output wire        dbg_store_valid,  // MEM 段实际写 dmem（= dmem.we）
+    output wire [31:0] dbg_store_addr,   // 写地址（= exmem_alu_result）
+    output wire [31:0] dbg_store_data,   // 写数据（= exmem_wdata）
+    output wire        dbg_wb_we,        // WB 段写回使能
+    output wire [4:0]  dbg_wb_rd,        // WB 段写回目的寄存器
+    output wire [31:0] dbg_wb_data       // WB 段写回数据
 );
 
     // ================= IF =================
@@ -112,6 +127,28 @@ module pipeline_top #(
             assign mmio_wdata    = 32'b0;
         end
     endgenerate
+
+    // ================= 板级观测口（只读，纯连线） =================
+    assign dbg_pc          = pc;
+    assign dbg_stall       = stall;
+    assign dbg_br_taken    = br_taken;
+    // 停机自循环判据（isa §4：`beq x0,x0,self`）：分支 taken 且**偏移为 0**。
+    //   等价性：branch/jal 的目标加法器 A 操作数就是 idex_pc（见 execute.v
+    //   `adder_a = (jump==2'b11) ? rs1_fwd : idex_pc`），故
+    //       br_target == idex_pc  ⟺  idex_imm == 0        （当 jump != jalr）
+    //   故用"零偏移"判据**完全等价**，但把 32 位加法器+32 位比较器从观测路径上拿掉
+    //   （直接写 br_target==idex_pc 会让 exmem/idex 寄存器 → 加法器 → 比较器 → 观测触发器
+    //    成为全设计最差路径，实测 WNS 因此恶化）。jalr 自环不覆盖——isa §4 的停机约定是
+    //   `beq x0,x0,self`，本判据覆盖 branch 与 jal 的零偏移自环，已足够。
+    //   注意：本流水线为"未采取预测 + taken 冲刷 2 条"，自循环时 **PC 不是常量**，
+    //   而是周期为 3 的 {halt, halt+4, halt+8} 循环；因此"PC 连续不变"不能作为停机判据。
+    assign dbg_halt        = br_taken & (idex_jump != 2'b11) & (idex_imm == 32'b0);
+    assign dbg_store_valid = dmem_we_int;      // 实验一 = exmem_mem_write；实验二再与 cs_dmem 相与
+    assign dbg_store_addr  = exmem_alu_result;
+    assign dbg_store_data  = exmem_wdata;
+    assign dbg_wb_we       = wb_we;
+    assign dbg_wb_rd       = wb_rd;
+    assign dbg_wb_data     = wb_data;
 
     // ================= 例化 =================
     pc_reg u_pc_reg (
