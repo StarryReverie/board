@@ -53,7 +53,7 @@
 |---|---|---|---|
 | U30 | 模块单测 TB（每模块一份，自动断言） | `src/test/tb_uart_tx.v`、`src/test/tb_uart_rx.v`、`src/test/tb_uart_ctrl.v`（寄存器层单测，经 uart_ip_top 例化） | 各 TB `$display` 全 PASS（Vivado 运行） |
 | U31 | 系统级 TB：行为级串口模型（双向）+ 整机跑固定固件 | `../soc/test/tb_soc_*.v` | banner 字节=注释期望；回显往返断言 PASS；复位重跑一致；长串无死锁（CLKS_PER_BIT 参数覆盖加速） |
-| U32 | 下板：综合/实现/时序 + 终端验收 + 演示视频 | `../soc/xdc/board.xdc`、工程、记录（方案 `../soc/doc/board_runbook.md`） | 终端 115200-8-N-1：banner、键盘回显、复位重跑；≤5min 视频；波形/日志留档 |
+| U32 | 下板：综合/实现/时序 + 终端验收 + 演示视频 | `../soc/xdc/board.xdc`、工程、记录（方案 `../soc/doc/board_runbook.md` §1–§8；视频脚本 §6） | 终端 115200-8-N-1：banner、键盘回显、复位重跑；≤5min 视频；波形/日志留档；视频须同时拍到开发板与终端，并与实验一视频分开归档 |
 | U33 | （可选加分）ILA 观测 uart 总线与 TX/RX 波形 | ILA 核 + 工程（soc 集成层） | 答辩加分项；时间不足可放弃，不影响主线 |
 
 ### 3.1 下板验证流程（分层）与证据要求

@@ -1,7 +1,7 @@
 # 接口控制器设计实验报告 · 设计部分（新稿）
 
 > 版本：v1.0（2026-09-07）｜用途：替换 `汇编与接口课程设计报告_前五章.docx` 中需修订的正文（项目简述/组员分工/设计目的/设计环境/第 5 章设计原理及内容），并**新增 §5.8「与计组实验的接口与分工」**。
-> 事实依据（单源）：`pipeline/doc/isa.md` v1.4、`pipeline/doc/top_design.md` v1.7、`pipeline/doc/modules/{pipeline_top,dbus_decode}.md`、`UART/doc/top_design.md` v1.2、`UART/doc/interface.md` v1.3、`UART/doc/modules/*.md`、`soc/doc/{top_design.md v1.1, firmware.md v1.3, machine_code.md, board_runbook.md v1.2}`、`UART/doc/tasks.md`。
+> 事实依据（单源）：`pipeline/doc/isa.md` v1.4、`pipeline/doc/top_design.md` v1.7、`pipeline/doc/modules/{pipeline_top,dbus_decode}.md`、`UART/doc/top_design.md` v1.2、`UART/doc/interface.md` v1.3、`UART/doc/modules/*.md`、`soc/doc/{top_design.md v1.1, firmware.md v1.3, machine_code.md, board_runbook.md v1.3}`、`UART/doc/tasks.md`。
 > 待人工补充项统一以 ⬜ 标注（姓名、下板记录、波形/视频、最终回归数字）。
 
 ---
@@ -238,7 +238,7 @@ soc_top
 | SoC 回归数字 | ⬜ | 同上（5 项系统 TB）；运行器待补 |
 | 下板记录 | ⬜ | 按 `soc/doc/board_runbook.md` 分层记录（banner/回显/复位重跑/证据） |
 | 仿真时序证据（替代示波器） | ✅ 已具备 | `UART/doc/wave/uart_frame_868.txt`：真实分频 868 下单帧实测——位宽 8680 ns≈8.68 µs、帧长 86800 ns≈86.8 µs、波特率误差 0.0064%、跳变全落整数比特边界；复现命令见 `UART/doc/wave/README.md`（本方案不接示波器，故原"示波器波形"项改为仿真时序证据） |
-| ≤5 min 演示视频 | ⬜ | 上电 banner → 键盘回显 → 按键复位重跑 |
+| ≤5 min 演示视频 | ⬜ | 拍摄脚本见 `soc/doc/board_runbook.md` §6：开发板全景 → banner → 键盘回显 → P15 复位重跑（至少两次），与实验一视频分开归档 |
 | 架构框图/状态机图 | ⬜ | 按 §5.1 文字框图重绘（建议标注 `uart_ip_top` 与 `dbus_decode` 归属） |
 
 ## 附录 C 本稿相对旧稿的主要修改
