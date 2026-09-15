@@ -9,6 +9,8 @@
 #         -OldCommit 指向"or 累加版固件"所在提交（默认 PR #11 的 f88bff6；
 #         该提交不可达时跳过"旧固件"列并提示）
 #   产物：<repo>/build/mut_alu_out/<op>/（日志）——build/ 不入库
+#   退出码：每个 op 都要求新版固件"检出"（判据行 NEWFAULT_DETECTED）；
+#        任一 op 出现 NEWFAULT_UNDETECTED（假 PASS / X-Z）或仿真非零退出 → exit 1
 #=============================================================================
 param([string]$OldCommit = 'f88bff6')
 
@@ -25,6 +27,7 @@ $rtl = @(Get-ChildItem (Join-Path $root 'pipeline\src\rtl') -Filter '*.v' -File 
          Where-Object { $_.Name -ne 'alu.v' } | ForEach-Object { $_.FullName })
 $tb  = Join-Path $root 'pipeline\src\test\mut\tb_mut_alu.v'
 $curHex = Join-Path $root 'pipeline\src\test\exp1_board_demo_rom.hex'
+$failed = $false
 
 foreach ($op in $ops) {
     $wDir = Join-Path $outRoot $op
@@ -51,6 +54,7 @@ foreach ($op in $ops) {
         'call xelab tb_mut_alu -s tb_mut_alu',
         'if errorlevel 1 ( echo [XELAB_FAIL] & exit /b 3 )',
         'call xsim tb_mut_alu -runall',
+        'if errorlevel 1 ( echo [XSIM_FAIL] & exit /b 4 )',
         'exit /b 0'
     )
     $batFile = Join-Path $wDir 'run.bat'
@@ -60,14 +64,35 @@ foreach ($op in $ops) {
     $psi.FileName = 'cmd.exe'; $psi.Arguments = '/c "' + $batFile + '"'
     $psi.WorkingDirectory = $wDir; $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+    # 并发排空两路管道（只读一路会在另一路写满时死锁）
     $proc = [System.Diagnostics.Process]::Start($psi)
-    $o = $proc.StandardOutput.ReadToEnd(); $null = $proc.StandardError.ReadToEnd()
+    $soTask = $proc.StandardOutput.ReadToEndAsync()
+    $seTask = $proc.StandardError.ReadToEndAsync()
     $proc.WaitForExit()
-    $o | Set-Content -Path (Join-Path $wDir 'sim.log') -Encoding ASCII
+    $o   = $soTask.GetAwaiter().GetResult()
+    $e   = $seTask.GetAwaiter().GetResult()
+    ($o + "`r`n[stderr]`r`n" + $e) | Set-Content -Path (Join-Path $wDir 'sim.log') -Encoding ASCII
     Write-Host ("--- ALU_{0} 强制 0 ---" -f $op.ToUpper())
+    # 先看有没有真跑起来：xvlog/xelab/xsim 失败时不会打印 ALUFAULT 行，
+    # 不检查退出码就会把"没跑成"当成"没有假 PASS"（证据反了）。
+    if ($proc.ExitCode -ne 0) {
+        Write-Host ("  [ERR] 仿真未运行（退出码 {0}），见 {1}" -f $proc.ExitCode, (Join-Path $wDir 'sim.log'))
+        $failed = $true
+        continue
+    }
+    $newOk = $false
     foreach ($ln in ($o -split "`r?`n")) {
-        if ($ln -match 'ALUFAULT') { Write-Host ('  ' + $ln.Trim()) }
+        if ($ln -match 'ALUFAULT')             { Write-Host ('  ' + $ln.Trim()) }
+        if ($ln -match 'NEWFAULT_DETECTED')   { $newOk = $true }
+        if ($ln -match 'NEWFAULT_UNDETECTED') { Write-Host ('  ' + $ln.Trim()); $failed = $true }
+    }
+    if (-not $newOk) {
+        Write-Host ("  [ERR] 未见到 NEWFAULT_DETECTED 判据行（新固件是否检出无法判定），见 {0}" -f (Join-Path $wDir 'sim.log'))
+        $failed = $true
     }
 }
 Write-Host ''
 Write-Host ("  日志根目录: {0}" -f $outRoot)
+if ($failed) { Write-Host '== ALU fault matrix: FAIL =='; exit 1 }
+Write-Host '== ALU fault matrix: 5/5 新固件均检出 =='
+exit 0

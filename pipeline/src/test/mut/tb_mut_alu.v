@@ -8,6 +8,9 @@
 //     读出 dmem[0] 签名。判据：
 //       · 旧固件 + ALU_OR 故障 → 期望复现"仍写 0x0F"（假 PASS）
 //       · 新固件 + ALU_OR 故障 → 期望签名 ≠ 0x0F（已被检出）
+//   机器可读判据：每种 opcode 都会打印 `NEWFAULT_DETECTED`（新固件已检出）或
+//     `NEWFAULT_UNDETECTED sig=…`（假 PASS / X-Z）；run_mut_alu.ps1 只看这两行，
+//     出现 UNDETECTED 或仿真非零退出即整体失败退出（避免"没跑成"被当成"全检出"）。
 //   运行：powershell -File pipeline/src/scripts/run_mut_alu.ps1
 //   （旧固件 hex 由 runner 从历史提交提取；取不到时该列无效）
 //=============================================================================
@@ -27,6 +30,7 @@ module tb_mut_alu;
     reg [8*40:1] fname [0:3];
     reg [8*40:1] label [0:3];
     reg [31:0]  sig;
+    reg         detected;   // 新固件是否"检出"（签名非 0x0F 且无 X/Z）
 
     always #5 clk = ~clk;
 
@@ -59,6 +63,13 @@ module tb_mut_alu;
             $display("ALUFAULT: %s  sig=%h  -> %s", label[k], sig,
                      (sig === 32'h0000_000F) ? "0x0F written (PASS would light)" :
                                                "detected (no PASS)");
+            // 机器可读判据（runner 只认这两行）：k=1 是新固件，必须"检出"。
+            // 0x0F = 假 PASS；含 X/Z = 仿真异常，同样算未检出。
+            if (k == 1) begin
+                detected = !((^sig === 1'bx) || (sig === 32'h0000_000F));
+                if (detected) $display("NEWFAULT_DETECTED");
+                else          $display("NEWFAULT_UNDETECTED sig=%h", sig);
+            end
         end
         $finish;
     end

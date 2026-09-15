@@ -1,6 +1,6 @@
 # 下板实验方案（其他设备执行）—— EES-338 + UART SoC console
 
-- 版本：v1.4（2026-09-15：§1 改为**一条命令建工程**——新增 `soc/scripts/create_soc_proj.tcl`（由 UART 侧旧脚本迁移统一，落点 `soc/vivado/soc.xpr`）；**修正 §1 的器件型号**为实测 `xc7a100tcsg324-1`（原文误写 `xc7a35tcsg324-1`，与实物不符会导致 bit 烧不进板）；固件构建脚本保留 `UART/src/scripts/build_fw.ps1`，烧录/取证脚本仍为手动步骤或从 git 历史恢复）。
+- 版本：v1.6（2026-09-16：§9 见变更记录——PR #13 review 加固：`reset_sync` 释放路径全同步化、脚本防死锁/退出码、`serial_console.ps1` 回车换行改由 FPGA 回显 CR 触发、USB-UART 桥描述统一）。v1.4 起 §1 为**一条命令建工程**（`soc/scripts/create_soc_proj.tcl`，落点 `soc/vivado/soc.xpr`）、器件型号为实测 `xc7a100tcsg324-1`；固件构建脚本保留 `UART/src/scripts/build_fw.ps1`，烧录/取证脚本为手动步骤或从 git 历史恢复。
 - 目标：在**任意一台装好 Vivado 的机器**上独立完成 U32 下板：出 bit → 烧录 → 终端验收（banner/回显/复位重跑）→ 证据采集。
 - 验收判据与分层流程以 `../../UART/doc/tasks.md` §3（U32/U30）为准；本文只讲"怎么在别的设备跑通"，假设仓库完整（固件 .vh 已生成，无需 RISC-V 工具链）。
 
@@ -11,7 +11,7 @@
 | 项 | 要求 |
 |---|---|
 | Vivado 主机 | 任意 Windows/Linux + **Vivado 2019.2 或更新**（Artix-7 WebPACK 免费版即可）；若在"本机"执行请先读已知限制（下 §7） |
-| EES-338 | 一块；USB 线 ×2：**Type-C USB-UART**（CP2102，兼供电）与 **Type-C/方口 USB-JTAG**（依板型，两接口功能不同） |
+| EES-338 | 一块；USB 线 ×2：**Type-C USB-UART**（兼供电；本机实物板载桥实测为 **FTDI VID_0403/PID_6010**，手册标 CP2102——**以设备管理器实测为准**，见 §4）与 **Type-C/方口 USB-JTAG**（依板型，两接口功能不同） |
 | 串口终端 | Tera Term / SSCOM（演示视频用）；自动化取证脚本已删（§4.4） |
 | 示波器 | （证据可选）测 FPGA uart_tx 引脚（T4）波形 |
 
@@ -97,7 +97,7 @@ vivado -mode batch -source soc/scripts/create_soc_proj.tcl
 |---|---|---|
 | 终端日志 | Tera Term/SSCOM 存档：banner + 回显 + 复位重跑全过程 | 存 `soc/doc/board_evidence/` 建议 |
 | 下板记录 | 按 `../../UART/doc/tasks.md` §3.1 分层记录（裸 UART 先行→SoC 整机） | 模板字段：日期/机器/COM/现象/结论 |
-| 示波器波形（可选但加分） | TX 帧：空闲高、起始低、位宽 ≈8.68 µs、10 位帧 ≈86.8 µs | 测 T4 或 CP2102 侧 |
+| 示波器波形（可选但加分） | TX 帧：空闲高、起始低、位宽 ≈8.68 µs、10 位帧 ≈86.8 µs | 测 T4（FPGA uart_tx）；桥侧同理，本机为 FTDI（手册标 CP2102） |
 | ≤5 min 演示视频 | 全程：上电 banner→键盘回显→复位重跑 | 需真实板卡画面 |
 
 ## 6. 演示视频拍摄方案（≤5 分钟）
@@ -174,7 +174,7 @@ soc/doc/board_evidence/
 
 | 现象 | 处理 |
 |---|---|
-| `get_hw_devices` 为空 / Hardware Manager 找不到板 | USB-JTAG 线未接或驱动（CP210x/FTDI）未装；换口重插；检查 D18 电源灯 |
+| `get_hw_devices` 为空 / Hardware Manager 找不到板 | USB-JTAG 线未接或驱动未装（本机 USB-UART 为 FTDI VCP；CP2102 板型则是 CP210x）；换口重插；检查 D18 电源灯 |
 | 终端无输出 | COM 号错 / 波特率错 / 未复位极性错误（§3 fallback） |
 | 输出乱码 | 波特率不一致（必须 115200）或 USB-UART 与 JTAG 两线插反 |
 | 发几个字符后停 | 终端开启了本地回显造成"双写"观感≠故障；确认 CPU 回显为唯一来源（关终端本地回显再验） |
@@ -191,6 +191,7 @@ soc/doc/board_evidence/
 
 ## 9. 变更记录
 
+- v1.6 2026-09-16（PR #13 review 加固）：`reset_sync` **释放路径全部移入同步域**——异步级只剩 1 个 `meta_q`，去抖计数与释放链改为纯同步（不再把异步释放沿直接接进计数器复位脚，消除 recovery/removal 亚稳可能"提前满足 stable_ok"、吃掉去抖时长的风险）；**释放时序逐拍不变**（`STABLE_CYCLES=0` 仍 2 拍释放、去抖仍 8+1 拍），`tb_reset_sync` 原断言不改仍 PASS。同时：四个仿真 runner（`run_mut`/`run_mut_alu`/`run_trace_bd`/`run_soc_tb`）改为**并发排空 stdout/stderr**（防管道写满死锁）+ **传播 xvlog/xelab/xsim 非零退出**（"没跑成"不再看起来像"全检出"）；`serial_console.ps1` 的 Enter **不再本地画换行**（换行改由 FPGA 回显的 CR 触发，显示层做 CR→CRLF 归一，新增 `-RawDisplay` 严格模式）；§0/§5/§7 的 USB-UART 桥描述统一为"本机实测 FTDI（手册标 CP2102）"；§10.2 记录 `run_soc_tb.ps1` 实测结果。
 - v1.5 2026-09-16：**复位释放去抖**——`rtl/reset_sync.v` 新增 `STABLE_CYCLES` 参数（默认 0=不去抖，行为同旧版），`soc_top` 经 `RESET_STABLE_CYCLES`（默认 **20 ms @100 MHz**）开启；按下仍立即生效。修复现象："按 RESET 后 banner 前面出现乱码/多余字符"（根因＝按键松开抖动使 core 在抖动窗口内反复置位/释放，正在发的 UART 帧被截断 + 位节拍错位）。验证：`tb_reset_sync` 新增去抖单测（抖动被滤除）、`tb_soc_console` 新增 **P5**（抖动式松开 → banner 逐字节干净、无多余字节）。**注意：本改动会改变 bit**——2026-09-16 之前烧录的 bit 不含去抖，需按 §1 重建后重新烧录。
 - v1.4 2026-09-15：§1 改为**一条命令建工程**——新增 `soc/scripts/create_soc_proj.tcl`（由 `UART/src/scripts/create_vivado_proj.tcl` 迁移而来；落点统一 `soc/vivado/soc.xpr`，固件副本改放工程内 `soc/vivado/soc_build/imem_init.vh`）；**修正 §1 器件型号**为实测 `xc7a100tcsg324-1`（原写 `xc7a35tcsg324-1`，与实物不符会导致 bit 烧不进板）。
 - v1.2 2026-09-07：固件构建脚本保留口径（`UART/src/scripts/build_fw.ps1`）；§1.4 补脚本调用与 .vh 补零（`-PadBytes 512`）→ `imem_init.vh` 复制步骤。
@@ -205,7 +206,7 @@ soc/doc/board_evidence/
 | 脚本 | 用途 | 用法 |
 |---|---|---|
 | `soc/scripts/create_soc_proj.tcl` | 一条命令建 Vivado 工程（口径见 §1） | `vivado -mode batch -source soc/scripts/create_soc_proj.tcl` |
-| **`soc/scripts/serial_console.ps1`** | **视频演示 / 终端验收用的最小串口控制台**（免装 Tera Term） | `powershell -File soc/scripts/serial_console.ps1 [-Port COM8] [-Baud 115200] [-Log <路径>] [-LocalEcho]` |
+| **`soc/scripts/serial_console.ps1`** | **视频演示 / 终端验收用的最小串口控制台**（免装 Tera Term） | `powershell -File soc/scripts/serial_console.ps1 [-Port COM8] [-Baud 115200] [-Log <路径>] [-LocalEcho] [-RawDisplay]` |
 | `soc/scripts/run_soc_tb.ps1` | 跑 SoC/UART 侧 TB（这些**不在** `run_tb.ps1` 的 23 项里） | `powershell -File soc/scripts/run_soc_tb.ps1 [-All]` |
 
 ### 10.1 `serial_console.ps1` 操作卡（拍摄用）
@@ -218,15 +219,17 @@ soc/doc/board_evidence/
 
 2. 看到 `[OK] COM8 @ 115200 8-N-1 opened.  Log: ...` 即已连上——**这一行就是镜头 3 的"串口设置"证据**。
 3. 调字号：窗口标题栏右键 → 属性 → 字体（`Consolas` 20）；布局里窗口设 `100×30`、缓冲区高度 `999`（避免滚动条）。
-4. 键入即发送（Enter 发 CR、Backspace 发 BS）。**敲完屏幕上"先什么都不出现"是正常的**——字符要等 FPGA
-   回传才显示，这正是"回显只来自 FPGA"的证据（镜头 5 的观感就在这一前一后）。
+4. 键入即发送（Enter 只发 CR、Backspace 发 BS，**都不本地画字符**）。**敲完屏幕上"先什么都不出现"是正常的**——字符要等 FPGA
+   回传才显示，这正是"回显只来自 FPGA"的证据（镜头 5 的观感就在这一前一后）。回车后的换行来自 **FPGA 回显的那个 CR**：
+   显示层把裸 CR 归一成 CRLF（等价 PuTTY/Tera Term 的 "Implicit LF in every CR"），日志里仍是原始字节。
 5. 退出：`Ctrl+C` → 打印 `[OK] closed. Log saved: ...`；日志已 `AutoFlush`，直接关窗口也不会丢。
 
 | 开关 | 说明 |
 |---|---|
 | `-Port COM8` / `-Baud 115200` | 端口 / 波特率（默认 COM8、115200、8N1、无流控） |
-| `-Log <路径>` | 日志路径；默认 `<repo>/build/uart_log_<时间戳>.txt`（`build/` 不入库） |
+| `-Log <路径>` | 日志路径；默认 `<repo>/build/uart_log_<时间戳>.txt`（`build/` 不入库）；**日志始终是 FPGA 原始字节** |
 | `-LocalEcho` | **排错用**：把真正发出的键显示成 `[TX:a]`。看到它 = 按键已进脚本；看不到 = 按键没进窗口（输入法/焦点/窗口选错）。**录制时必须保持关闭** |
+| `-RawDisplay` | 严格逐字节显示（不做 CR→CRLF 归一）。屏幕上每个字节都等于 FPGA 发出的字节，适合当"逐字节一致"的证据截图 |
 
 > 日志文件就是 §5/§6.6 要的"终端日志"证据；收尾时按规范改名归档（如 `uart_soc_terminal_YYYYMMDD.log`）。
 

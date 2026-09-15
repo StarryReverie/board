@@ -57,6 +57,7 @@ foreach ($tb in $tbs) {
         ('call xelab ' + $tb + ' -s ' + $tb),
         'if errorlevel 1 ( echo [XELAB_FAIL] & exit /b 3 )',
         ('call xsim ' + $tb + ' -runall -log sim.log'),
+        'if errorlevel 1 ( echo [XSIM_FAIL] & exit /b 4 )',
         'exit /b 0'
     )
     $bat = Join-Path $wDir 'run.bat'
@@ -66,16 +67,27 @@ foreach ($tb in $tbs) {
     $psi.FileName = 'cmd.exe'; $psi.Arguments = '/c "' + $bat + '"'
     $psi.WorkingDirectory = $wDir; $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+    # 并发排空 stdout/stderr：只读一路会在另一路写满时死锁（xvlog/xelab/xsim 的 stderr 都可能很长）
     $proc = [System.Diagnostics.Process]::Start($psi)
-    $null = $proc.StandardOutput.ReadToEnd(); $null = $proc.StandardError.ReadToEnd()
+    $soTask = $proc.StandardOutput.ReadToEndAsync()
+    $seTask = $proc.StandardError.ReadToEndAsync()
     $proc.WaitForExit()
+    $stdout = $soTask.GetAwaiter().GetResult()
+    $stderr = $seTask.GetAwaiter().GetResult()
 
     $log = Join-Path $wDir 'sim.log'
     $txt = if (Test-Path $log) { Get-Content $log -Raw } else { '' }
     $allpass = $txt -match 'ALL PASS'
     $fails   = ([regex]::Matches($txt, 'FAIL:')).Count
     if ($allpass) { $pass++ }
-    Write-Host ("  {0,-20} {1}{2}" -f $tb, $(if ($allpass) { 'PASS' } else { 'FAIL' }), $(if ($fails) { "  (FAIL 行数=$fails)" } else { '' }))
+    $rcTag = if ($proc.ExitCode -ne 0) { "  (退出码=$($proc.ExitCode))" } else { '' }
+    Write-Host ("  {0,-20} {1}{2}{3}" -f $tb, $(if ($allpass) { 'PASS' } else { 'FAIL' }), $(if ($fails) { "  (FAIL 行数=$fails)" } else { '' }), $rcTag)
+    if (-not $allpass) {
+        # 编译/精化失败时 sim.log 可能不存在：把 batch 的失败标记与 stderr 也报出来
+        foreach ($ln in (($stdout + "`n" + $stderr) -split "`r?`n")) {
+            if ($ln -match '\[XVLOG_FAIL\]|\[XELAB_FAIL\]|\[XSIM_FAIL\]|ERROR:') { Write-Host ('      ' + $ln.Trim()) }
+        }
+    }
     if (-not $allpass -and $txt) {
         ($txt -split "`n" | Select-String -Pattern 'FAIL:|ERROR|error' | Select-Object -First 8) | ForEach-Object { '      ' + $_.Line.Trim() }
     }

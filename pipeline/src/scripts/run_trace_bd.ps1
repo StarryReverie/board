@@ -47,6 +47,7 @@ $bat = @(
     'call xelab tb_boarddemo_trace -s tb_boarddemo_trace',
     'if errorlevel 1 ( echo [XELAB_FAIL] & exit /b 3 )',
     'call xsim tb_boarddemo_trace -runall',
+    'if errorlevel 1 ( echo [XSIM_FAIL] & exit /b 4 )',
     'exit /b 0'
 )
 $batFile = Join-Path $wDir 'run_trace.bat'
@@ -56,10 +57,14 @@ $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = 'cmd.exe'; $psi.Arguments = '/c "' + $batFile + '"'
 $psi.WorkingDirectory = $wDir; $psi.UseShellExecute = $false
 $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+# 并发排空 stdout/stderr（只读一路会在另一路写满时死锁）
 $proc = [System.Diagnostics.Process]::Start($psi)
-$out  = $proc.StandardOutput.ReadToEnd(); $null = $proc.StandardError.ReadToEnd()
+$soTask = $proc.StandardOutput.ReadToEndAsync()
+$seTask = $proc.StandardError.ReadToEndAsync()
 $proc.WaitForExit()
-$out | Set-Content -Path (Join-Path $wDir 'trace_bd.txt') -Encoding ASCII
+$out = $soTask.GetAwaiter().GetResult()
+$err = $seTask.GetAwaiter().GetResult()
+($out + "`r`n[stderr]`r`n" + $err) | Set-Content -Path (Join-Path $wDir 'trace_bd.txt') -Encoding ASCII
 
 # ---- 汇总 ----
 $rows = @()
@@ -72,11 +77,17 @@ foreach ($l in ($out -split "`r?`n")) {
         }
     }
 }
-if ($rows.Count -eq 0) { Write-Host '[ERR] 没有 TRC 行，请查看 trace_bd.txt'; exit 1 }
+if ($rows.Count -eq 0) { Write-Host ("[ERR] 没有 TRC 行（仿真退出码 {0}），请查看 trace_bd.txt" -f $proc.ExitCode); exit 1 }
 
-$haltTag = $HaltPc -replace '^0x', ''
-$firstHalt = ($rows | Where-Object { $_.pc -eq $haltTag } | Select-Object -First 1).e
-$body = if ($firstHalt) { $rows | Where-Object { $_.e -le $firstHalt } } else { $rows }
+# 停机拍：trace 打印的是 %02h（小写、零填充），这里按数值比较，
+# 免得 -HaltPc 0xA 这类输入比不过 0a；比不到就直接报错，不能退化成"整段都算程序本体"。
+$haltVal   = [Convert]::ToInt64(($HaltPc -replace '^0x', ''), 16)
+$firstHalt = ($rows | Where-Object { [Convert]::ToInt64($_.pc, 16) -eq $haltVal } | Select-Object -First 1).e
+if ($null -eq $firstHalt) {
+    Write-Host ("[ERR] trace 里没有 pc={0} 的拍，无法界定程序本体窗口，请检查 -HaltPc（固件停机地址）" -f $HaltPc)
+    exit 1
+}
+$body = $rows | Where-Object { $_.e -le $firstHalt }
 
 # 机制计数（依据见 board_runbook §5.1/§6.2）：
 #   程序本体窗口内 taken 分支数 = 程序自身 taken（不含停机自环那一次）；

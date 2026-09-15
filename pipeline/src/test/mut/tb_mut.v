@@ -101,6 +101,11 @@ module tb_mut;
             if (k == 0) begin
                 if (sig === 32'h0000_000F) $display("BASE OK   %s  sig=0F", mut_name[k]);
                 else begin $display("BASE FAIL %s  sig=%h", mut_name[k], sig); nmiss = nmiss + 1; end
+            end else if (^sig === 1'bx) begin
+                // sig 含 X/Z（仿真出错/未跑完）：'!==' 对它返回真，会被误记成"检出"，
+                // 必须先按"未检出"归类，否则 X 也能凑出 MUTATION ALL PASS。
+                nmiss = nmiss + 1;
+                $display("INVALID!! %s  sig=%h (含 X/Z，判为未检出)", mut_name[k], sig);
             end else if (sig !== 32'h0000_000F) begin
                 ndet = ndet + 1;
                 $display("DETECTED  %s  sig=%h", mut_name[k], sig);

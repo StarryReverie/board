@@ -30,6 +30,7 @@ $bat = @(
     'call xelab tb_mut -s tb_mut',
     'if errorlevel 1 ( echo [XELAB_FAIL] & exit /b 3 )',
     'call xsim tb_mut -runall',
+    'if errorlevel 1 ( echo [XSIM_FAIL] & exit /b 4 )',
     'exit /b 0'
 )
 $batFile = Join-Path $wDir 'run.bat'
@@ -39,11 +40,19 @@ $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = 'cmd.exe'; $psi.Arguments = '/c "' + $batFile + '"'
 $psi.WorkingDirectory = $wDir; $psi.UseShellExecute = $false
 $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+# 并发排空 stdout/stderr：只读一路会在子进程写满另一路管道时死锁（Vivado 的 stderr 量不小）
 $proc = [System.Diagnostics.Process]::Start($psi)
-$out  = $proc.StandardOutput.ReadToEnd(); $null = $proc.StandardError.ReadToEnd()
+$soTask = $proc.StandardOutput.ReadToEndAsync()
+$seTask = $proc.StandardError.ReadToEndAsync()
 $proc.WaitForExit()
-$out | Set-Content -Path (Join-Path $wDir 'tb_mut.log') -Encoding ASCII
+$out = $soTask.GetAwaiter().GetResult()
+$err = $seTask.GetAwaiter().GetResult()
+($out + "`r`n[stderr]`r`n" + $err) | Set-Content -Path (Join-Path $wDir 'tb_mut.log') -Encoding ASCII
 foreach ($ln in ($out -split "`r?`n")) {
     if ($ln -match 'BASE|DETECTED|MISSED|mutation') { Write-Host ('  ' + $ln.Trim()) }
+}
+if ($proc.ExitCode -ne 0) {
+    Write-Host ("[FAIL] 仿真未正常跑完（退出码 {0}；xvlog/xelab/xsim 失败），见 tb_mut.log" -f $proc.ExitCode)
+    exit 1
 }
 if ($out -match 'MUTATION ALL PASS') { exit 0 } else { Write-Host '[FAIL] 见 tb_mut.log'; exit 1 }

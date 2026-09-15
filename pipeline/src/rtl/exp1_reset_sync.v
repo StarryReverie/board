@@ -15,7 +15,10 @@
 //   行为：
 //     按下（rst_n=0）→ 立即 rst=1（异步，与 clk 无关）→ core 全程保持复位；
 //     松开（rst_n=1）→ 连续稳定 STABLE_CYCLES 拍后，再经 STAGES 拍同步 → rst=0。
-//   STABLE_CYCLES = 0：不去抖，行为与旧版逐拍一致（仿真/单测可用）。
+//   STABLE_CYCLES = 0：不去抖，释放时序与旧版逐拍一致（仿真/单测可用）。
+//   结构（2026-09-16 review 加固，与 soc/rtl/reset_sync.v 保持同构）：
+//     异步级只有 meta_q 一个寄存器；去抖计数与释放链**纯同步**，
+//     不再让异步释放沿直入计数器的复位脚（recovery/removal 风险 → 可能提前释放）。
 //=============================================================================
 
 module exp1_reset_sync #(
@@ -27,27 +30,51 @@ module exp1_reset_sync #(
     output wire rst       // core 复位：异步高有效
 );
 
-    // ---- 释放去抖计数（任何拉低立即异步清零）----
+    // ---- 第 1 级：唯一直接接触异步 rst_n 的触发器（异步置位 / 释放）----
+    reg meta_q;
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) meta_q <= 1'b0;      // 按下 → 立即进入"未稳定"
+        else        meta_q <= 1'b1;      // 释放沿可能亚稳，但只被下面的同步逻辑采样
+    end
+
+    // ---- 释放去抖计数：纯同步清零/递增 ----
     localparam integer CW = (STABLE_CYCLES > 1) ? $clog2(STABLE_CYCLES) : 1;
     reg  [CW-1:0] stable_cnt;
     wire          stable_ok = (STABLE_CYCLES <= 0) || (stable_cnt >= STABLE_CYCLES - 1);
 
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)          stable_cnt <= {CW{1'b0}};
+    always @(posedge clk) begin
+        if (!meta_q)         stable_cnt <= {CW{1'b0}};
         else if (!stable_ok) stable_cnt <= stable_cnt + 1'b1;
     end
 
-    // ---- 同步链：稳定足够久才移入 0 ----
-    reg [STAGES-1:0] sync_q;
+    // ---- 释放同步链：meta_q 之后再 STAGES-1 级（纯同步，无异步复位脚）----
+    wire release_ready = stable_ok;
+    wire release_ok;
 
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            sync_q <= {STAGES{1'b1}};                    // 按键按下 → 立即全 1（异步置位）
-        end else begin
-            sync_q <= {sync_q[STAGES-2:0], ~stable_ok};   // 稳定后逐拍移入 0（同步释放）
+    generate
+        if (STAGES > 2) begin : g_release_chain
+            reg [STAGES-2:0] rel_q;
+
+            always @(posedge clk) begin
+                if (!meta_q) rel_q <= {(STAGES-1){1'b0}};
+                else         rel_q <= {rel_q[STAGES-3:0], release_ready};
+            end
+
+            assign release_ok = rel_q[STAGES-2];
+        end else begin : g_release_single
+            reg rel_q;
+
+            always @(posedge clk) begin
+                if (!meta_q) rel_q <= 1'b0;
+                else         rel_q <= release_ready;
+            end
+
+            assign release_ok = rel_q;
         end
-    end
+    endgenerate
 
-    assign rst = sync_q[STAGES-1];
+    // ---- 输出：异步置位 + 同步释放 ----
+    assign rst = ~(rst_n & meta_q & release_ok);
 
 endmodule
