@@ -66,6 +66,12 @@ $out = $soTask.GetAwaiter().GetResult()
 $err = $seTask.GetAwaiter().GetResult()
 ($out + "`r`n[stderr]`r`n" + $err) | Set-Content -Path (Join-Path $wDir 'trace_bd.txt') -Encoding ASCII
 
+# 仿真非零退出（xvlog/xelab/xsim 失败）时不能拿半截 trace 算指标：先判退出码再解析
+if ($proc.ExitCode -ne 0) {
+    Write-Host ("[ERR] 仿真未正常跑完（退出码 {0}），请查看 trace_bd.txt" -f $proc.ExitCode)
+    exit 1
+}
+
 # ---- 汇总 ----
 $rows = @()
 foreach ($l in ($out -split "`r?`n")) {

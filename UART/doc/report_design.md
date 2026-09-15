@@ -145,9 +145,9 @@ soc_top
 
 | 层 | 测试用例 | 运行方式 |
 |---|---|---|
-| 计组 core | 21 项（模块单测 + 程序级回归 + 性能 TB） | `powershell -File pipeline/src/scripts/run_tb.ps1`（并行，全量约 20–30 s；实际 23 项） |
-| UART IP | 3 项：`tb_uart_tx` / `tb_uart_rx` / `tb_uart_ip_top`（IP 级：帧逐位、STAT 位义含挂起、忙写丢弃、读清位、溢出丢弃、全双工同现） | `powershell -File soc/scripts/run_soc_tb.ps1 -All`（仓库自带 runner，覆盖 `UART/src/test` 全部 `tb_*.v`，判据 `ALL PASS`） |
-| SoC 集成 | 5 项：`tb_dbus_decode` / `tb_reset_sync` / `tb_pipe_soc` / `tb_soc_full` / `tb_soc_console`（banner 23 B、回显往返、长串、复位重跑、复位释放抖动） | `powershell -File soc/scripts/run_soc_tb.ps1`（默认 3 项：`tb_reset_sync`/`tb_soc_console`/`tb_soc_full`；`-All` 跑满 5 项 SoC + 4 项 UART = 9 项） |
+| 计组 core | 23 项（模块单测 + 程序级回归 + 性能 TB） | `powershell -File pipeline/src/scripts/run_tb.ps1`（并行，全量约 20–30 s） |
+| UART IP | 4 项：`tb_uart_tx` / `tb_uart_rx` / `tb_uart_ip_top`（IP 级：帧逐位、STAT 位义含挂起、忙写丢弃、读清位、溢出丢弃、全双工同现）+ `tb_wave_868`（868 分频波形取证） | `powershell -File soc/scripts/run_soc_tb.ps1 -All`（仓库自带 runner，覆盖 `UART/src/test` 全部 `tb_*.v`，判据 `sim.log` 内 `ALL PASS` 且退出码 0） |
+| SoC 集成 | 5 项：`tb_dbus_decode` / `tb_reset_sync` / `tb_pipe_soc` / `tb_soc_full` / `tb_soc_console`（banner 23 B、回显往返、长串、复位重跑、复位释放抖动） | `powershell -File soc/scripts/run_soc_tb.ps1`（默认 3 项：`tb_reset_sync`/`tb_soc_console`/`tb_soc_full`；`-All` 跑满 5 项 SoC + 4 项 UART = **9 项**） |
 
 - **上板实测**：`xc7a100tcsg324-1` 全流程出 bit → JTAG 烧录 → COM 口 115200-8-N-1 验收：banner 23 字节**逐字节精确匹配**、`AB` 回显往返正确、两次独立重跑一致（`== UART CHECK ALL PASS ==`）；余留人工取证：P15 按键复位、示波器 TX 波形、≤5 min 视频 ⬜。
 
@@ -192,7 +192,7 @@ soc_top
 
 #### (5) 联合验证口径
 
-三层回归全绿后再下板：计组 core 21 项 → UART IP 3 项 → SoC 5 项；下板整机一次验收（banner/回显/复位重跑），证据与下板记录归档见 `soc/doc/board_runbook.md`。
+三层回归全绿后再下板：计组 core **23** 项 → UART IP **4** 项 → SoC **5** 项（三条命令：`run_tb.ps1`、`run_soc_tb.ps1 -All`、`run_soc_tb.ps1`；`-All` 合计 9 项）；下板整机一次验收（banner/回显/复位重跑），证据与下板记录归档见 `soc/doc/board_runbook.md`。
 
 ---
 
@@ -251,7 +251,7 @@ soc_top
 6. **复位/时钟**：补充 `reset_sync` 异步置位/同步释放、`RST_ACTIVE_LOW` 极性兜底；
 7. **固件模型**：补充 `sp=0x100`、`PadBytes 512` 校验与 `imem_init.vh` 复制步骤；
 8. **工具链**：汇编器改记自研 `simple_asm.py`（uv + Python 3.13.13），GNU 工具链列为备选；
-9. **验证数字**：改为可复现的三层用例清单（core 23 / IP 3 / SoC 5），并新增上板实测结论；三层均由仓库自带 runner 复现（`run_tb.ps1` / `run_soc_tb.ps1 -All` / `run_soc_tb.ps1`）；
+9. **验证数字**：改为可复现的三层用例清单（core 23 / UART IP 4 / SoC 5；`-All` 合计 9 项），并新增上板实测结论；三层均由仓库自带 runner 复现（`run_tb.ps1` / `run_soc_tb.ps1 -All` / `run_soc_tb.ps1`）；
 10. **26 条指令表**：迁至附录 A；
 11. **USB-UART 桥口径**：按设备管理器实测写为 FTDI（VID_0403/PID_6010，COM8），并注明手册标 CP2102（§5.7 与附录 B）。
 

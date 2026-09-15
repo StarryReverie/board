@@ -74,8 +74,8 @@ module tb_reset_sync;
         rst_n_d = 1;
         repeat (8) @(posedge clk);
         #1 c("dbg hold after 8 stable cycles", rst_d===1'b1);
-        repeat (2) @(posedge clk);
-        #1 c("dbg released after 8+2 cycles", rst_d===1'b0);
+        @(posedge clk);                                   // 第 9 拍 = 首个可释放沿（必须正好在此撤）
+        #1 c("dbg released at 9th edge (8+2)", rst_d===1'b0);
 
         // B2. 抖动释放：高 3 → 低 2 → 高 5 → 低 1 → 高（稳定）
         //     中间任何一次拉低都要把去抖计数清零；抖动期内 rst 必须保持 1
@@ -95,7 +95,7 @@ module tb_reset_sync;
         rst_n_d = 1;                                      // 最终稳定释放
         repeat (8) @(posedge clk);
         #1 c("dbg after final 8 stable: still rst", rst_d===1'b1);
-        repeat (2) @(posedge clk);
+        @(posedge clk);                                   // 首个可释放沿
         #1 c("dbg released only after final settle", rst_d===1'b0);
 
         // ============ C. STAGES=3（释放链 generate 分支）============
@@ -120,8 +120,8 @@ module tb_reset_sync;
         #1 c("dbg glitch asserted async", rst_d===1'b1);   // 输出侧必须立刻断言
         repeat (8) @(posedge clk);
         #1 c("dbg glitch restarts debounce: still rst", rst_d===1'b1);
-        repeat (2) @(posedge clk);
-        #1 c("dbg released after glitch + 8 + 2", rst_d===1'b0);
+        @(posedge clk);                                   // 抖动后同样只在首个可释放沿撤
+        #1 c("dbg released at 9th edge after glitch", rst_d===1'b0);
 
         if (err == 0) $display("=== ALL PASS ===");
         else          $display("=== FAIL === (%0d/%0d)", err, n);

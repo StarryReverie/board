@@ -79,16 +79,19 @@ foreach ($tb in $tbs) {
     $txt = if (Test-Path $log) { Get-Content $log -Raw } else { '' }
     $allpass = $txt -match 'ALL PASS'
     $fails   = ([regex]::Matches($txt, 'FAIL:')).Count
-    if ($allpass) { $pass++ }
+    # 判据 = 日志 ALL PASS + 无 FAIL 行 + batch 退出码 0（xvlog/xelab/xsim 失败返回 2/3/4；
+    # 若只在 ALL PASS 之后才失败，以前会被误记成 PASS）
+    $passed  = $allpass -and ($fails -eq 0) -and ($proc.ExitCode -eq 0)
+    if ($passed) { $pass++ }
     $rcTag = if ($proc.ExitCode -ne 0) { "  (退出码=$($proc.ExitCode))" } else { '' }
-    Write-Host ("  {0,-20} {1}{2}{3}" -f $tb, $(if ($allpass) { 'PASS' } else { 'FAIL' }), $(if ($fails) { "  (FAIL 行数=$fails)" } else { '' }), $rcTag)
-    if (-not $allpass) {
+    Write-Host ("  {0,-20} {1}{2}{3}" -f $tb, $(if ($passed) { 'PASS' } else { 'FAIL' }), $(if ($fails) { "  (FAIL 行数=$fails)" } else { '' }), $rcTag)
+    if (-not $passed) {
         # 编译/精化失败时 sim.log 可能不存在：把 batch 的失败标记与 stderr 也报出来
         foreach ($ln in (($stdout + "`n" + $stderr) -split "`r?`n")) {
             if ($ln -match '\[XVLOG_FAIL\]|\[XELAB_FAIL\]|\[XSIM_FAIL\]|ERROR:') { Write-Host ('      ' + $ln.Trim()) }
         }
     }
-    if (-not $allpass -and $txt) {
+    if (-not $passed -and $txt) {
         ($txt -split "`n" | Select-String -Pattern 'FAIL:|ERROR|error' | Select-Object -First 8) | ForEach-Object { '      ' + $_.Line.Trim() }
     }
 }
