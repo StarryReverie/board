@@ -32,6 +32,53 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root    = Split-Path -Parent $PSScriptRoot          # repo root (src)
+
+# ---- 本机环境修补：进程环境里存在"大小写重复"的变量名（如 NO_PROXY / no_proxy）----
+#   Windows 环境块本身大小写不敏感，但 PowerShell 5.1 的 Start-Process 用区分大小写的
+#   字典复制环境，会抛 "Item has already been added. Key in dictionary: 'NO_PROXY' ..."，
+#   导致本脚本在本机无法启动 worker；Env: 提供程序读到同名项时同样会抛该异常（实测）。
+#   这里把每组同名项**归一为唯一一项**。归一规则（确定性，不依赖枚举顺序）：
+#     ① 取值以"大小写不敏感查找"的结果为准（= OS 实际会用的那个值），保证语义不变；
+#     ② 规范名：优先全大写变体，否则按名称序数升序取第一个；
+#     ③ 各变体自身取值互相冲突时打印警告并说明采用了哪一个，不静默丢弃。
+#   归一后同名项只剩一项，$env:XVIVADO_ROOT 这类大小写不敏感查找的结果唯一且确定。
+$envDict   = [Environment]::GetEnvironmentVariables('Process')
+$envGroups = @{}
+foreach ($k in @($envDict.Keys)) {
+    $lk = $k.ToLowerInvariant()
+    if (-not $envGroups.ContainsKey($lk)) { $envGroups[$lk] = @() }
+    $envGroups[$lk] += ,([pscustomobject]@{ Name = $k; Value = [string]$envDict[$k] })
+}
+foreach ($lk in @($envGroups.Keys)) {
+    $grp = @($envGroups[$lk])
+    if ($grp.Count -lt 2) { continue }
+
+    $eff    = [string][Environment]::GetEnvironmentVariable($lk, 'Process')      # ①
+    $uppers = @($grp | Where-Object { $_.Name -ceq $_.Name.ToUpperInvariant() }) # ②
+    $canon  = $null
+    if ($uppers.Count -gt 0) { $canon = @($uppers | Sort-Object -Property Name -CaseSensitive)[0].Name }
+    else                     { $canon = @($grp    | Sort-Object -Property Name -CaseSensitive)[0].Name }
+
+    $ownValues = @($grp | Select-Object -ExpandProperty Value -Unique)
+    if ($ownValues.Count -gt 1) {                                                # ③
+        $namesTxt = ($grp | Select-Object -ExpandProperty Name) -join '/'
+        $pairsTxt = ($grp | ForEach-Object { '{0}="{1}"' -f $_.Name, $_.Value }) -join ', '
+        Write-Warning ('环境变量大小写重复且取值不一致：' + $namesTxt + ' → 归一为 ' +
+                       $canon + '="' + $eff + '"（原 ' + $pairsTxt + '）')
+    }
+
+    # Env: 提供程序按大小写不敏感解析（实测：删 no_proxy 会删掉 NO_PROXY），
+    # 故先按组内数量逐个删除，再把有效取值写回规范名 → 组内最终恰好剩一项。
+    for ($i = 0; $i -lt $grp.Count; $i++) {
+        Remove-Item -LiteralPath ('Env:' + $lk) -ErrorAction SilentlyContinue
+    }
+    Set-Item -LiteralPath ('Env:' + $canon) -Value $eff -ErrorAction SilentlyContinue
+    $envNow = [string][Environment]::GetEnvironmentVariable($lk, 'Process')
+    if ($envNow -ne $eff) {
+        Write-Warning ('环境变量归一失败：' + $canon + ' 期望 "' + $eff + '"（实际 "' + $envNow + '"）')
+    }
+}
+
 $vivado  = if ($env:XVIVADO_ROOT) { $env:XVIVADO_ROOT } else { 'C:\Xilinx\Vivado\2019.2' }
 $settings = Join-Path $vivado 'settings64.bat'
 if (-not (Test-Path $settings)) { Write-Error "cannot find $settings (set `$env:XVIVADO_ROOT)"; exit 1 }

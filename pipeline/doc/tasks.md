@@ -79,12 +79,24 @@
 | T34 | 单周期基线：① 单周期**拍数实测**（`ref/CPU` 只读副本，TB 数 PC 变化次数）；② 资源/Fmax 两阶段综合（副本入 `build/`，ref 零改动；依赖 T33） | `pipeline/doc/ref_baseline_measured.md` + 报告表 4/5 | ✅ 拍数 11/20/178；单周期/流水线资源、WNS、Fmax 均已按同器件同约束出数 |
 | T35 | 报告性能章节：三窗口、停顿分解、规模收敛、单周期对比、资源/Fmax 与系统层结论（依赖 T34） | `pipeline/doc/perf_report.md` | ✅ `perf_report.md` v2.1 完成；数字均可回溯至 CSV/综合报告，结论注明不可实现的 LUT 约束与规模档功能证据范围 |
 | T36 | 关键仿真波形（4 项）：五级运行总览 / 数据前递与前递优先级 / load-use 冻结 1 拍 / 分支预测不跳+冲刷 2 拍；说明见 `pipeline/doc/sim_experiments.md` | `test/wave/wave_pipe.v` + `test/fwd_priority.asm` + `scripts/{run_wave,wave_png,report_png}.ps1` + `doc/sim_shots/auto/` | 4 图 + 同名日志 + 汇总表；TB 内嵌验收断言全 PASS；回归口径不变 **21/21** |
+| T37 | 实验一**独立上板**（不接 UART）：板级顶层 + 复位同步 + 验收程序 + 固化脚本 + 独立工程 + 引脚约束 + 运行手册（见 `doc/board_runbook.md`） | `rtl/exp1_board_top.v`、`rtl/exp1_reset_sync.v`、`test/exp1_board_demo.asm(+_rom.hex/_init.vh)`、`scripts/hex_to_vh.ps1`、`scripts/create_exp1_board_proj.tcl`、`xdc/board_exp1.xdc`、`doc/board_runbook.md` | 板级顶层回归 `tb_exp1_board_top`（22 项断言）+ 上板程序回归 `tb_prog_board_demo`（34 项断言）全 PASS；回归口径 **23/23**；综合 **0 error / 0 critical warning**，post-route **11,338 LUT（17.88%）/ 3,808 FF / 0 BRAM / 34 IOB**；**实板验收通过（2026-09-14）**：数码管 `0000000F` + LED1–LED6 全亮 + LED7 灭 + 复位可重复，见 `doc/board_runbook.md` §10。**时序如实记录：post-route WNS −1.239 ns（Fmax≈89 MHz），100 MHz 未收敛——违例端点全部在核心组合读存储链（ID/EX），板级包装零贡献**，且实测未妨碍功能运行（§3.3/§10.2） |
 
 > 状态（2026-09-14）：**T32/T33 已按 v2.1 升级并重出数据**——`tb_perf.v` 支持 8 档（5 主档 + 3 规模档 `loop_heavy_{8,32,128}`，含 `PERF_MAXCYC` 看门狗），`run_perf.ps1` 同步支持 8 档，**8/8 全 PASS 且恒等式全过**；汇总数据 `pipeline/doc/perf_data/2026-09-14_perf_summary.csv`（含 `C_total`/`C_steady`/`C_fixed` 与恒等式残差）。
 > **T34 拍数部分已完成**：`pipeline/doc/ref_baseline_measured.md` —— 单周期实测 11/20/178 拍，与流水线 `IC` 精确满足 `C_单周期 = IC + 1`，**CPI ≡ 1.00 得证**；资源/Fmax 走两阶段综合（`build/run_both_synth.ps1`）。
 > **冒险审计记录** `pipeline/doc/known_issues.md`：原 L1 线索已复核并撤销，`accwitness.asm` 保留为真实指令流审计样例；RTL 功能回归维持 21/21。
 > **T35 已完成**：最终性能章节见 `pipeline/doc/perf_report.md`；旧版 `perf_report_skeleton.md` 已删除。
 > **T36 已完成**：关键波形 4 项、自动图表与日志均已归档；回归口径维持 21/21。
+> **T37 已完成并在实板验收通过（2026-09-14）**：实验一独立上板全套落地，回归 **23/23**（新增 `tb_exp1_board_top`、`tb_prog_board_demo`）。
+>   `pipeline_top` 追加 `dbg_*` **只读观测口**（纯连线、零逻辑改动，21 项既有回归与 8 档性能逐值不变）；
+>   停机判据用 `dbg_halt = br_taken & (idex_jump != jalr) & (idex_imm == 0)`（"零偏移跳到自身"）——
+>   **不能用"PC 连续不变"**：本流水线未采取预测 + taken 冲刷 2 条，自循环时 PC 呈周期 3 的
+>   `{halt, halt+4, halt+8}` 循环。
+>   **实板结果**：数码管 `0000000F`、LED1–LED6 全亮、LED7 灭、按住 `RESET` 只剩 LED0 心跳且松手立刻恢复
+>   → 四项判据全中，**post-route WNS −1.239 ns 未妨碍功能运行**（实测证据）。
+>   另记板级坑：**按键丝印与 FPGA 引脚不一致**——丝印 `RESET(P9)` 实际接 **P15**（用户 IO，我们的 `rst_n`），
+>   而 `PROG` 才是 **P9/`PROGRAM_B`**（误按会擦配置、板子会从 Flash 加载别的设计）。
+>   完整记录（bit SHA256 / 资源时序 / 现象 / 引脚实测依据）见 `pipeline/doc/board_runbook.md` **§10**；
+>   烧录/验收/拍摄步骤见同文件 §4–§6，故障定位见 §7。
 
 汇编镜像脚本（本机可跑，T31 已落地，属工具而非仿真器）：
 - `pipeline/src/scripts/build_asm.ps1`：`riscv-none-elf-as -march=rv32i -mabi=ilp32` → `objcopy -O verilog` → 字节式 `pipeline/src/test/<名>_rom.hex`；产物与参考工程（musl 工具链）逐字节一致；
@@ -99,7 +111,8 @@
 | M1 | 文档定稿(T0–T4) | isa.md 与 top_design.md 评审通过；模块文档齐全 |
 | M2 | 模块编码(T10–T20) | 每模块代码通过静态核对；pipeline_top 无悬空/无多重驱动 |
 | M3 | 测试(T30–T31) | 整机回归程序全部 PASS（下板侧跑） |
-| M4 | 性能测量(T32–T35) | 恒等式 **8/8 PASS**；功能回归 **21/21** 全绿；`perf_data/2026-09-14_perf_summary.csv` 齐；对比数据注明来源（单周期基准 = `ref_baseline_measured.md` 本轮实测） |
+| M4 | 性能测量(T32–T35) | 恒等式 **8/8 PASS**；功能回归全绿；`perf_data/2026-09-14_perf_summary.csv` 齐；对比数据注明来源（单周期基准 = `ref_baseline_measured.md` 本轮实测） |
+| M5 | 实验一独立上板(T37) | ✅ **已达成**：板级/程序回归 **23/23** 全绿；`hex_to_vh` 回读校验一致；独立工程综合 0 error、资源在器件内（11,338 LUT / 3,808 FF / 0 BRAM）；**实板四项判据全中**（数码管 `0000000F` + LED1–LED6 全亮 + LED7 灭 + 复位可重复）；**时序如实记录**（post-route WNS −1.239 ns，违例全在核心存储链，实测未妨碍运行），见 runbook §3.3/§10 |
 
 > M2/M3 的实际 PASS 依赖 Vivado 侧运行；本机完成源码、TB、期望值与镜像后，交付下板侧验证。
 
@@ -136,6 +149,12 @@
 
 ## 8. 变更记录
 
+- 2026-09-15：**PR #11 review 整改**——① **上板自检加固**：`test/exp1_board_demo.asm` 阶段5 由"只核对 x18/x7 两个里程碑"改为**逐项累积 24 项核对**的失配标志（覆盖 ALU 全类、`lui`+`srli`、sw→lw 往返与两处 load-use 前递、循环计数与累加和、三种移位、有/无符号比较；大立即数用移位折成小常数比较），任一核对项错则签名 ≠ 0x0F；配 **变异测试**（`build/tb_mut.v` + `build/run_mut.bat`，build 侧不入库）把 22 条覆盖指令逐条改坏 → **22/22 全部检出、0 漏检**；② 修正 `doc/board_runbook.md` §3.3 的 post-route 资源口径（**11,338 LUT / 3,808 FF**，与 §10.1 指纹所指 bit 一致；原 11,356/3,812 属旧构建数字）；③ §8 上方 2026-09-14 条目中的停机判据写法改为**已实现口径** `br_taken & (idex_jump != 2'b11) & (idex_imm == 0)`；④ `scripts/run_tb.ps1` 环境大小写重复项改为**确定性归一**（规范名 = 全大写变体，取值 = 大小写不敏感查找的 OS 有效值，冲突时告警）——实测本机 `NO_PROXY`/`no_proxy` 取值确实不一致，旧实现"保留先出现者"不确定；⑤ `SUBMISSION.md` 交付版本行改为"下板成功版本"（依 `doc/require`）；⑥ 加固固件重建出的新 bit 指纹/资源/时序见 runbook §10.4。回归仍 **23/23**、性能 8/8（A/B=1/1）。
+  **第二轮（CodeRabbit 复审 05:53Z，3 条）**——⑦ 自检链改为**独立累积机制**：`xor`/`sub` 交替比较 + `sltu` 归一 + **`add` 累加**（不再用 `or`：`ALU_OR` 故障会把失配全部吞掉造成假 PASS），并新增 **ALU 级故障变异**（`build/alu_fault_<op>.v` + `build/tb_mut_alu.v`）——实测旧固件有 **3 个 opcode 单点故障可假 PASS**（`ALU_OR`/`ALU_SUB`/`ALU_SLTU`），新固件 **5/5 全部检出**；其中 `ALU_SUB`、`ALU_SLTU` 两个洞是**修第一个洞的过程中被该矩阵当场暴露**并一并修掉的（签名尾并联与 sltu/sub/xor 无关的 `srl x8,15,x31`；`sltu` 产生的 x9/x26 两项走独立 OR 路径；合并用 `add` 而非 `or`——用 `or` 的反例也被矩阵复现）；⑧ 指令级变异扩到 **23/23 全部检出、0 漏检**（并说明签名尾"仅在出错场景起作用"的指令属等价变异、由 ALU 级矩阵覆盖）；⑨ 修正固件口径：`exp1_board_demo` 现为 **123 条 / 492 B**（§3.3/§10.4 原写的 468 B 是上一版 117 条的数字，CodeRabbit 指正为 472 B 后按最新版更正为 492 B）；⑩ §10.2 收敛构建 A 的结论口径——只声明"两个里程碑 + 依赖链 + 监视器判据"能证明的范围，删去"足以判定全链条正确"的过度声明；⑪ 残留边界如实登记：单 opcode 故障模型下 5/5 检出，**两个及以上 opcode 同时故障**仍可能漏检，要全覆盖需每项双路径（512 B imem 放不下）。
+- 2026-09-14：**T37 实验一独立上板落地**（见 `doc/board_runbook.md`）——新增板级顶层 `rtl/exp1_board_top.v`（复位同步 + CPU + 事件监视器 + 8 LED 状态 + 8 位数码管扫描）、`rtl/exp1_reset_sync.v`、上板验收程序 `test/exp1_board_demo.asm(+_rom.hex)`（自检后写签名 `dmem[0]=0x0F`）、固化脚本 `scripts/hex_to_vh.ps1`（含回读逐字节校验）、独立工程脚本 `scripts/create_exp1_board_proj.tcl`（`pipeline/vivado/board_exp1.xpr`，`IMEM_INIT_VH IMEM_BYTES=512 DMEM_BYTES=256`）、引脚约束 `xdc/board_exp1.xdc`（依 EES-338 手册 §6.3/§6.4：LED K2/J2/J3/H4/J4/G3/G4/F6、段选两组、位选 LED_BIT1..8）、运行手册 `doc/board_runbook.md`。
+  `pipeline_top` 追加 `dbg_*` **只读观测口**（纯连线，零逻辑改动）；新增回归 `tb_prog_board_demo`（34 项）+ `tb_exp1_board_top`（22 项）→ 回归口径 **21/21 → 23/23**。
+  **两处关键结论**（写入 runbook §2.2/§2.3）：① 停机判据必须用 `br_taken & (idex_jump != 2'b11) & (idex_imm == 0)`（与 `br_target==idex_pc` 语义等价，但把 32 位加法器/比较器移出观测路径，避免恶化时序），**不能用"PC 连续不变"**（未采取预测 + taken 冲刷 2 条 ⇒ 自循环 PC 呈周期 3 的 `{halt,halt+4,halt+8}` 循环）；② XDC 不支持 `foreach`（Vivado `Designutils 20-1307`），IOSTANDARD 必须逐条显式书写。
+  另修：`scripts/run_tb.ps1` 增加进程环境大小写重复项去重（本机 `NO_PROXY`/`no_proxy` 会让 `Start-Process` 抛异常，历史上一律绕用 `build/run_cases.ps1`），现仓库原生 runner 可直接跑全量回归。
 - 2026-09-13：新增关键波形仿真（4 项：五级总览/前递优先级/load-use 冻结/分支冲刷）——`test/wave/wave_pipe.v`（逐拍采样出 CSV+VCD）+ `scripts/run_wave.ps1`（仿真）+ `scripts/wave_png.ps1`（System.Drawing 渲染 PNG）+ `scripts/report_png.ps1`（回归/性能汇总表）；产物归档 `doc/sim_shots/`；回归仍 **21/21**（新增 `fwd_priority.asm` 独立场景不入回归）。T34 表 D 本机综合收尾/报告空转，已回滚，留待综合侧。
 - 2026-09-07：实验二交付物收敛为独立 UART IP（uart_ip_top，exp2/）——SoC 上移为项目顶层 `soc/`（soc_top/reset_sync/dbus_decode 随迁）；§3 布局说明、§6 T41/T43 行同步（core 侧 RTL 零改动）。
 - 2026-09-13：**性能分析方案重写为 `doc/perf_analysis.md` v2.0**（取代 v1.0 并删除旧文）——指标选择依据、三窗口口径 + 恒等式 A/B 自检、负载收敛为 4 主档 + 1 规模档、**对比基线改为组内成员大三阶段单周期实验数据**（不再复测 `ref/CPU` 副本）、报告新增"大三单周期 CPU 结构与工作原理简介"；§1 追溯表行与上一条状态同步。
