@@ -23,7 +23,7 @@
 # ---- 时钟：100 MHz（T5）----
 #   时序现状（2026-09-15 实测，**保留约束、不放宽**）：
 #     create_clock 10.000 ns 下 post-route WNS = −1.239 ns（构建 A，2026-09-14）
-#     / −1.468 ns（构建 B，2026-09-15，自检加固固件），Fmax ≈ 89 / 87 MHz；
+#     / −1.430 ns（构建 C，2026-09-15，自检加固固件），Fmax ≈ 89 / 87.5 MHz；
 #     实现状态均为 "route_design Complete, Failed Timing!"（不阻塞 write_bitstream）。
 #     违例端点**全部位于核心内部**：实测最差 200 条路径终点均为 u_cpu/u_id_ex、
 #     u_cpu/u_pc_reg、u_cpu/u_if_id，本文件的板级逻辑（LED/数码管/复位同步）零贡献。
