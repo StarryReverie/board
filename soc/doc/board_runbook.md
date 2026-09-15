@@ -72,6 +72,8 @@ vivado -mode batch -source soc/scripts/create_soc_proj.tcl
 加载别的设计，现象是全灭/异常图案）——**切勿按 PROG**。
 
 - 上电松键：应见 banner（若极性相反则 CPU 一直处于复位，无输出）。
+- **松开后 core 不会立刻启动**：`reset_sync` 要求 `rst_n` **连续稳定 20 ms** 才释放（释放去抖，防按键抖动；
+  见 §9 v1.5）→ banner 在**松手后约 20 ms** 才出现，属正常，不必以为"没反应"。
 - **fallback（一般不再需要）**：若在别的板子上实测为"按下才运行/上电卡死"，把 `soc/rtl/soc_top.v`
   顶部参数 `RST_ACTIVE_LOW` 默认值 1 改 0 → 重跑 §1 步骤 → 重烧。（或经工程 `generic` 属性
   `RST_ACTIVE_LOW=0` 覆盖，等价。）
@@ -172,6 +174,7 @@ soc/doc/board_evidence/
 | 输出乱码 | 波特率不一致（必须 115200）或 USB-UART 与 JTAG 两线插反 |
 | 发几个字符后停 | 终端开启了本地回显造成"双写"观感≠故障；确认 CPU 回显为唯一来源（关终端本地回显再验） |
 | 首字符丢 | 上电瞬间 PC 复位释放即发 banner，属正常时序；重跑验证一致性即可 |
+| **按 RESET 后 banner 前面出现乱码/多余字符** | **按键松开抖动**（0.1–5 ms）落在"设计刚开始发 banner"的窗口内，使 core 被反复置位/释放、UART 帧被截断且位节拍错位。**2026-09-16 起已默认开启 20 ms 释放去抖**（`soc_top` 参数 `RESET_STABLE_CYCLES`，见 §9 v1.5）——若仍出现，说明烧的是**去抖前的 bit**，重建后重烧即可；判据是"每次复位后 banner 都逐字节干净"（仿真用例 `tb_soc_console` P5） |
 | 本机（原开发机）Vivado 2019.2 综合后器件加载空转 | 已知限制：换本方案任一步骤到健康主机执行即可（工程已全打包） |
 
 ## 8. 回传物与收尾
@@ -183,6 +186,7 @@ soc/doc/board_evidence/
 
 ## 9. 变更记录
 
+- v1.5 2026-09-16：**复位释放去抖**——`rtl/reset_sync.v` 新增 `STABLE_CYCLES` 参数（默认 0=不去抖，行为同旧版），`soc_top` 经 `RESET_STABLE_CYCLES`（默认 **20 ms @100 MHz**）开启；按下仍立即生效。修复现象："按 RESET 后 banner 前面出现乱码/多余字符"（根因＝按键松开抖动使 core 在抖动窗口内反复置位/释放，正在发的 UART 帧被截断 + 位节拍错位）。验证：`tb_reset_sync` 新增去抖单测（抖动被滤除）、`tb_soc_console` 新增 **P5**（抖动式松开 → banner 逐字节干净、无多余字节）。**注意：本改动会改变 bit**——2026-09-16 之前烧录的 bit 不含去抖，需按 §1 重建后重新烧录。
 - v1.4 2026-09-15：§1 改为**一条命令建工程**——新增 `soc/scripts/create_soc_proj.tcl`（由 `UART/src/scripts/create_vivado_proj.tcl` 迁移而来；落点统一 `soc/vivado/soc.xpr`，固件副本改放工程内 `soc/vivado/soc_build/imem_init.vh`）；**修正 §1 器件型号**为实测 `xc7a100tcsg324-1`（原写 `xc7a35tcsg324-1`，与实物不符会导致 bit 烧不进板）。
 - v1.2 2026-09-07：固件构建脚本保留口径（`UART/src/scripts/build_fw.ps1`）；§1.4 补脚本调用与 .vh 补零（`-PadBytes 512`）→ `imem_init.vh` 复制步骤。
 - v1.3 2026-09-15：新增 §6 实验二 SoC 演示视频拍摄方案（拍前准备、10 镜头脚本、三项验收细节、异常处理与证据归档），并明确与实验一视频分开提交。

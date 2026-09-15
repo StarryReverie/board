@@ -20,7 +20,10 @@ module exp1_board_top #(
     parameter integer HEART_MS    = 500,          // LED0 心跳半周期（ms）
     parameter integer TIMEOUT_MS  = 1500,         // 未出现 PASS 的超时窗口（ms）
     parameter integer SEG_EN      = 1,            // 1=启用数码管扫描；0=仅 LED
-    parameter integer SCAN_DIV_BITS = 14          // 每位扫描分频位宽（2^N 拍/位）；仿真可调小
+    parameter integer SCAN_DIV_BITS = 14,         // 每位扫描分频位宽（2^N 拍/位）；仿真可调小
+    parameter integer DEBOUNCE_MS = 20            // 复位**释放**去抖窗口（ms）；0=不去抖（旧行为）
+                                                  //   滤掉按键松开抖动：否则抖动期内 core 被反复
+                                                  //   置位/释放，程序会从中间重跑、数码管出现乱跳
 ) (
     input  wire        clk,       // T5：100 MHz 晶振
     input  wire        rst_n,     // P15：FPGA_RESET 按键，低有效
@@ -35,10 +38,14 @@ module exp1_board_top #(
     localparam [31:0] HEART_LAST = HEART_END - 32'd1;
     localparam [31:0] TO_END     = (CLK_HZ / 1000) * TIMEOUT_MS;    // 超时拍数
     localparam [31:0] TO_LAST    = TO_END - 32'd1;
+    localparam [31:0] RST_STABLE = (CLK_HZ / 1000) * DEBOUNCE_MS;   // 复位释放去抖拍数
 
     // ================= 复位 =================
     wire rst;
-    exp1_reset_sync #(.STAGES(2)) u_rst_sync (
+    exp1_reset_sync #(
+        .STAGES        (2),
+        .STABLE_CYCLES (RST_STABLE)
+    ) u_rst_sync (
         .clk   (clk),
         .rst_n (rst_n),
         .rst   (rst)

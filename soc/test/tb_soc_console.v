@@ -6,6 +6,9 @@
 //     P2 回显往返：注入 0x55 → CPU 回发（cap[23]）
 //     P3 长串无死锁：连续 8 字符逐字回显（cap[24..31]）
 //     P4 复位重跑一致：rst_n 重启 → banner 再现（cap[32..54]）+ 回显 0x5A
+//     P5 去抖（2026-09-16 新增）：**抖动式松开**复位键（多个短高脉冲，每个 < 8 拍）
+//        → 去抖后 core 只释放一次 → banner 再现（cap[56..78]）**逐字节干净、无多余字节**
+//        （不开启去抖时这里会捕获到乱码/多余字节，正是实板"乱码前缀"现象）
 //   串口模型复用 UART IP：监视器 uart_rx（采 CPU TX 输出）、注入器 uart_tx
 //=============================================================================
 `timescale 1ns/1ps
@@ -27,7 +30,7 @@ module tb_soc_console;
     // ---- 期望 banner（console.S 注释同源）----
     reg [7:0] expb [0:22];
 
-    soc_top #(.CLKS_PER_BIT(CPB)) u_soc (
+    soc_top #(.CLKS_PER_BIT(CPB), .RESET_STABLE_CYCLES(8)) u_soc (
         .clk(clk), .rst_n(rst_n),
         .uart_tx_pin(uart_tx_pin), .uart_rx_pin(uart_rx_pin)
     );
@@ -163,6 +166,27 @@ module tb_soc_console;
         inj_byte(8'h5A);                               // 'Z'
         wait_cap(BANNER_LEN*2+10, 32'd20000, k);
         c("P4 echo after reset = 0x5A", k===1 && capb[BANNER_LEN*2+9]===8'h5A);
+
+        // ============ P5: 抖动式松开 → 去抖应保证 banner 干净 ============
+        //   抖动脉冲每个都 < RESET_STABLE_CYCLES(8) 拍，因此 core 不应提前释放；
+        //   若去抖失效，抖动期内 core 被反复复位，会产生乱码/多余字节，
+        //   下面的 "capc 精确" 与逐字节比较就会失败。
+        rst_n = 0;                                     // 按下
+        repeat (6) @(posedge clk);
+        rst_n = 1;  repeat (3) @(posedge clk);         // 抖动高 3 拍
+        rst_n = 0;  repeat (2) @(posedge clk);         // 掉回低 2 拍（应清零去抖计数）
+        rst_n = 1;  repeat (5) @(posedge clk);         // 抖动高 5 拍
+        rst_n = 0;  @(posedge clk);                    // 再抖 1 拍
+        rst_n = 1;                                     // 最终稳定释放
+        wait_cap(BANNER_LEN*3+10, 32'd40000, k);       // 期望第 3 个 banner 收齐（56+23）
+        c("P5 banner3 captured after bounce", k===1);
+        for (j = 0; j < BANNER_LEN; j = j + 1)
+            c("P5 banner3 byte clean", capb[BANNER_LEN*2+10+j]===expb[j]);
+        c("P5 no garbage byte (capc exact)", capc===BANNER_LEN*3+10);
+        repeat (20) @(posedge clk);
+        inj_byte(8'h41);                               // 'A'
+        wait_cap(BANNER_LEN*3+11, 32'd20000, k);
+        c("P5 echo after bounce = 0x41", k===1 && capb[BANNER_LEN*3+10]===8'h41);
 
         if (err == 0) $display("=== ALL PASS ===");
         else          $display("=== FAIL === (%0d/%0d)", err, n);

@@ -13,7 +13,14 @@
 | out | led（可选） | 1..n | 运行/状态指示（按 demo XDC） |
 
 ## reset_sync（内部实例）
-- 两级同步器：`rst_n`（低有效）→ 异步置位、同步释放 → `rst`（**异步高有效**，对齐 core/uart_ip_top 语义）；
+- 参数：`STAGES`（同步链级数，默认 2）、`STABLE_CYCLES`（**释放去抖**拍数，默认 0 = 不去抖）；
+  `soc_top` 经 `RESET_STABLE_CYCLES` 传入 **20 ms @100 MHz**（= 2,000,000 拍）；
+- 两级同步器：`rst_n`（低有效）→ **异步置位、同步释放** → `rst`（**异步高有效**，对齐 core/uart_ip_top 语义）；
+- **释放去抖（2026-09-16 新增）**：机械按键松开瞬间抖动（0.1–5 ms）会让 core 在抖动窗口内反复置位/释放
+  → 正在发送的 UART 帧被中途截断（`uart_tx` 的 `tx` 为组合输出）+ 分频节拍被清零错位
+  → 终端出现"按 RESET 后 banner 前面一段乱码"。去抖要求 `rst_n` **连续稳定 20 ms** 才允许释放，
+  **按下始终立即生效**；任何一次拉低都异步清零去抖计数。
+  验证：`tb_reset_sync`（去抖单测：抖动被滤除）+ `tb_soc_console` **P5**（抖动式松开 → banner 逐字节干净）；
 - 复位=程序从头重跑：imem 内容不变（.vh 固化）；dmem 不清 → 固件自初始化数据区。
 
 ## 内部例化
@@ -32,6 +39,7 @@ uart_ip_top ── uart_tx_pin / ◄── uart_rx_pin
 - 例化/互联与 top_design.md §1/§2 一致；无悬空/多重驱动；Vivado 综合/实现/时序通过；上板：终端见 banner、键盘回显、复位重跑。
 
 ## 变更记录
+- v1.3 2026-09-16：`reset_sync` 增加**释放去抖**（`STABLE_CYCLES`，soc_top 默认 20 ms）；修复"按 RESET 后 banner 乱码前缀"；配套 `tb_reset_sync` 去抖单测与 `tb_soc_console` P5。
 - v1.2 2026-09-07：uart_ctrl 寄存器层并入 uart_ip_top（复位/分频称谓同步；例化接口不变）。
 - v1.1 2026-09-07：随 SoC 上移 `soc/`（本文件随迁）：位置改 `rtl/`；从机改 `uart_ip_top`（addr 适配）；XDC 位置 `xdc/`。
 - v1.0 2026-09-04：初版。

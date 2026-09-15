@@ -23,7 +23,7 @@ module tb_soc_full;
     integer n   = 0;
     integer i;
 
-    soc_top #(.CLKS_PER_BIT(CPB)) u_soc (
+    soc_top #(.CLKS_PER_BIT(CPB), .RESET_STABLE_CYCLES(8)) u_soc (
         .clk(clk), .rst_n(rst_n),
         .uart_tx_pin(uart_tx_pin), .uart_rx_pin(uart_rx_pin)
     );

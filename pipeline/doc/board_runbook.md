@@ -12,7 +12,7 @@
 | 文件 | 职责 |
 |---|---|
 | `pipeline/src/rtl/exp1_board_top.v` | 板级顶层：复位同步 + CPU + 事件监视器 + LED/数码管显示 |
-| `pipeline/src/rtl/exp1_reset_sync.v` | 板上按键（低有效）→ core 复位（异步高有效、同步释放） |
+| `pipeline/src/rtl/exp1_reset_sync.v` | 板上按键（低有效）→ core 复位（异步高有效、同步释放 + **释放去抖 `STABLE_CYCLES`**，板顶默认 20 ms） |
 | `pipeline/src/rtl/pipeline_top.v` | CPU core（`SOC_BUILD=0`）；新增 `dbg_*` **只读观测口**供板级使用 |
 | `pipeline/src/test/exp1_board_demo.asm` | 上板验收程序（自检 + 写验收签名 `dmem[0]=0x0F` + HALT） |
 | `pipeline/src/test/exp1_board_demo_rom.hex` | 上述程序的仿真镜像（`simple_asm.py` 产出） |
@@ -29,7 +29,7 @@
 
 ```
 exp1_board_top
- ├─ exp1_reset_sync #(STAGES=2)      rst_n(P15,低有效) → rst(异步高有效/同步释放)
+ ├─ exp1_reset_sync #(STAGES=2, STABLE_CYCLES=20ms)  rst_n(P15,低有效) → rst(异步高有效/同步释放 + 释放去抖)
  ├─ pipeline_top #(SOC_BUILD=0)      程序经 imem 的 `include "imem_init.vh"` 综合固化
  ├─ 事件与结果监视器                  dbg_pc / dbg_stall / dbg_br_taken / dbg_halt /
  │                                    dbg_store_valid/addr/data → 锁存板级状态
@@ -359,6 +359,7 @@ sw   x8,  0(x0)        # ★ 只有全部核对项正确才写出 0x0F
 | 数码管乱码/错位 | 段序 `{DP,G,F,E,D,C,B,A}` 与实物是否一致（改 `exp1_board_top` 的 `seg_act` 位序）；另：本设计只保证"**一个 `F` + 七个 `0`**"，F 在最左或最右取决于模块排列 |
 | 结果不是 `0000000F` | CPU 逻辑问题：看仿真回归（`tb_prog_board_demo` / `tb_exp1_board_top`）是否全绿 |
 | 复位后不能重复运行 | 监视器是否被 `rst` 清零（本设计已清）；dmem 无复位初值，靠程序自初始化 |
+| **松开 `RESET` 后前几拍出现一次"乱跳/错值"** | **按键松开抖动**（0.1–5 ms）使 core 在抖动窗口内反复置位/释放（程序会从中间重跑、数码管可能瞬时错值）。2026-09-16 起 `exp1_reset_sync` 增加**释放去抖**（板顶参数 `DEBOUNCE_MS` 默认 20 ms：按下仍立即生效，松开需连续稳定 20 ms 才启动）→ 按 §3.1 重建 bit 后消失 |
 | LED7 亮（超时） | 程序未进入 HALT 或签名未写入 → 先跑仿真回归定位 |
 | 综合资源超限 | 确认 `IMEM_BYTES=512`/`DMEM_BYTES=256` 生效，勿回落到默认 4 KB |
 
@@ -500,3 +501,8 @@ ALU 级故障变异 **5/5 单 opcode 故障全部检出**（加固前有 3 个 o
 > load-use 前递、`lui`、三种移位与有/无符号比较），且**单 opcode 故障不会假 PASS**，
 > 比构建 A 的结论强得多；报告里应同时给出"指令级变异 23/23 + ALU 级故障 5/5"作为
 > 该判据的灵敏度证据。
+
+> ⚠️ **2026-09-16 起 RTL 增加"复位释放去抖"**：`exp1_reset_sync` 新增 `STABLE_CYCLES` 参数、
+> 板顶 `exp1_board_top` 经 `DEBOUNCE_MS`（默认 20 ms）开启——按下复位仍立即生效，松开需
+> **连续稳定 20 ms** 才启动（滤掉按键松开抖动导致的"前几拍乱跳"）。**上表 bit 是去抖前
+> 的构建**；需要去抖效果时按 §3.1 重建，并把新 bit 指纹/资源另记一节（建议 §10.5，构建 D）。
