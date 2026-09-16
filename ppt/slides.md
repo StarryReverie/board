@@ -694,6 +694,8 @@ diagram: verify-3level
 
 <!-- slide
 layout: content
+figure_pos: dual-bottom
+素材: pipeline/doc/sim_shots/exp1/回归测试_运行_20260916.png; pipeline/doc/sim_shots/exp1/回归测试_汇总_20260916.png
 -->
 
 ## 验证机制
@@ -704,11 +706,13 @@ layout: content
 
 指令覆盖程序对 26 条指令逐条执行并检查结果。
 
+处理器核心的回归测试共 23 项，覆盖模块级、程序级、性能与顶层用例，一次运行全部通过，无缺失或超时。
+
 三类测试均已通过。
 
 ### 备注
 
-时间：约 0.3 分钟。
+时间：约 0.5 分钟。图：回归测试的运行输出与汇总结果。
 
 ---
 
