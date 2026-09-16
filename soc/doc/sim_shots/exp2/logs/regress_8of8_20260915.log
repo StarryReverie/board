@@ -1,0 +1,31 @@
+﻿================================================================================
+ exp2 regression evidence - 8/8 (UART IP 3 + SoC 5)
+ date        : 2026-09-15 12:41:57
+ host        : DESKTOPPOWER  (Windows PowerShell 5.1)
+ vivado      : D:\Vivado2019\Vivado\2019.2  (xsim 2019.2)
+ repo        : D:\board-dev
+ command     : powershell -NoProfile -ExecutionPolicy Bypass -File D:\board-dev\UART\src\scripts\run_tb.ps1 -TimeoutSec 300 -Jobs 4
+ runner      : UART\src\scripts\run_tb.ps1  (fixed 8-case set, not auto-discovery)
+ artifacts   : UART\src\scripts\out\  (per-TB *.log + run_w*.bat + worker_w*.out)
+ note        : tb_wave_868 / tb_rx_sampling / tb_ip_duplex / tb_wave_soc are
+               waveform benches and are NOT part of this 8/8 accounting.
+================================================================================
+
+[run] 8 testbench(es) over 4 worker(s), 300s/TB watchdog
+
+case                 layer  asserts  expect  result
+-------------------- ------ -------- ------- ------
+tb_uart_tx           UART         18      18   PASS
+tb_uart_rx           UART         13      13   PASS
+tb_uart_ip_top       UART         35      35   PASS
+tb_dbus_decode       SoC          13      13   PASS
+tb_reset_sync        SoC           6       6   PASS
+tb_pipe_soc          SoC           6       6   PASS
+tb_soc_console       SoC          68      10   PASS *
+tb_soc_full          SoC           5       5   PASS
+-------------------- ------ -------- ------- ------
+TOTAL                            164        
+  (* = assertion count differs from the checklist static estimate)
+elapsed 33 s   logs: D:\board-dev\UART\src\scripts\out
+
+PASS 8/8

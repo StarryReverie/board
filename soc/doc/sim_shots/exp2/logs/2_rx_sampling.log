@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:45:39 2026
+# Process ID: 24108
+# Current directory: D:/board-dev/build/wave_shot/2_rx_sampling
+# Command line: xsim.exe -log 2_rx_sampling.log -mode tcl -source {xsim.dir/tb_rx_sampling/xsim_script.tcl}
+# Log file: D:/board-dev/build/wave_shot/2_rx_sampling/2_rx_sampling.log
+# Journal file: D:/board-dev/build/wave_shot/2_rx_sampling\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_rx_sampling/xsim_script.tcl
+# xsim {tb_rx_sampling} -wdb {2_rx_sampling.wdb} -autoloadwcfg -tclbatch {logwave.tcl}
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+source logwave.tcl
+## log_wave -r /
+## run all
+PASS: 1 S1 glitch rejected
+PASS: 2 S2 868 valid
+PASS: 3 S2 868 data 0x5A
+PASS: 4 S3 860 valid
+PASS: 5 S3 860 data 0x3C
+PASS: 6 S4 876 valid
+PASS: 7 S4 876 data 0xA5
+PASS: 8 S5 bad-stop discarded
+[S6] -30% offset: valid=1 data=0xfe (expect mismatch / discard)
+PASS: 9 S6 -30% out-of-range
+=== RX SAMPLING DONE ALL PASS ===
+$finish called at time : 613725 ns : File "D:/board-dev/UART/src/test/tb_rx_sampling.v" Line 169
+xsim% INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:45:44 2026...

@@ -1,0 +1,29 @@
+#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:35:59 2026
+# Process ID: 9688
+# Current directory: D:/board-dev/build/wave_shot/1_frame868
+# Command line: xsim.exe -log 1_frame868.log -mode tcl -source {xsim.dir/tb_wave_868/xsim_script.tcl}
+# Log file: D:/board-dev/build/wave_shot/1_frame868/1_frame868.log
+# Journal file: D:/board-dev/build/wave_shot/1_frame868\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_wave_868/xsim_script.tcl
+# xsim {tb_wave_868} -wdb {1_frame868.wdb} -autoloadwcfg -tclbatch {logwave.tcl}
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+source logwave.tcl
+## log_wave -r /tb_wave_868/dut
+## log_wave /tb_wave_868/clk /tb_wave_868/rst /tb_wave_868/cap
+## log_wave /tb_wave_868/uart_tx_pin /tb_wave_868/uart_rx_pin
+## log_wave /tb_wave_868/cs /tb_wave_868/we /tb_wave_868/addr /tb_wave_868/wdata /tb_wave_868/rdata
+## run all
+[W1] TX frame: start=0 data=0x5a stop=1
+[W1] bit width = 8680.00 ns (= 868 clk), frame = 86800.00 ns
+[W2] RX slot = 0x3c (rx_valid=1)
+[W2] after read: rx_valid=0
+[W3] 23-byte banner: all frames start=0/data-ok/stop=1
+=== WAVE DUMP DONE (166 pin transitions) ALL PASS ===
+$finish called at time : 2365375 ns : File "D:/board-dev/UART/src/test/tb_wave_868.v" Line 197
+xsim% INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:36:04 2026...

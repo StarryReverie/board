@@ -1,0 +1,25 @@
+#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:36:37 2026
+# Process ID: 13836
+# Current directory: D:/board-dev/build/wave_shot/4_wave_soc
+# Command line: xsim.exe -log 4_wave_soc.log -mode tcl -source {xsim.dir/tb_wave_soc/xsim_script.tcl}
+# Log file: D:/board-dev/build/wave_shot/4_wave_soc/4_wave_soc.log
+# Journal file: D:/board-dev/build/wave_shot/4_wave_soc\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_wave_soc/xsim_script.tcl
+# xsim {tb_wave_soc} -wdb {4_wave_soc.wdb} -autoloadwcfg -tclbatch {logwave.tcl}
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+source logwave.tcl
+## log_wave -r /
+## run all
+PASS: 1 char A captured
+PASS: 2 char A = 0x41
+PASS: 3 echo char captured
+PASS: 4 echo = 0x42
+=== WAVE SOC DONE ALL PASS ===
+$finish called at time : 1966 ns : File "D:/board-dev/soc/test/tb_wave_soc.v" Line 179
+xsim% INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:36:42 2026...

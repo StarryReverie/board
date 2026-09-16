@@ -1,0 +1,38 @@
+﻿#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:41:29 2026
+# Process ID: 19248
+# Current directory: D:/board-dev/UART/src/scripts/out/w0
+# Command line: xsim.exe -log tb_uart_tx.log -mode tcl -source {xsim.dir/tb_uart_tx/xsim_script.tcl}
+# Log file: D:/board-dev/UART/src/scripts/out/w0/tb_uart_tx.log
+# Journal file: D:/board-dev/UART/src/scripts/out/w0\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_uart_tx/xsim_script.tcl
+# xsim {tb_uart_tx} -autoloadwcfg -runall
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+run -all
+PASS: 1 reset idle
+PASS: 2 frame done & idle
+PASS: 3 done seen
+PASS: 4 start=0
+PASS: 5 d0=1
+PASS: 6 d1=1
+PASS: 7 d2=0
+PASS: 8 d3=0
+PASS: 9 d4=1
+PASS: 10 d5=0
+PASS: 11 d6=1
+PASS: 12 d7=0
+PASS: 13 stop=1
+PASS: 14 busy-ignore ok (idle)
+PASS: 15 done seen 2nd
+PASS: 16 2nd char ok
+PASS: 17 stream2 d0=0
+PASS: 18 stream2 d1=1
+=== ALL PASS ===
+$finish called at time : 2696 ns : File "D:/board-dev/UART/src/test/tb_uart_tx.v" Line 123
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:41:35 2026...

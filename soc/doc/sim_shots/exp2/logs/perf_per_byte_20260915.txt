@@ -1,0 +1,79 @@
+exp2 section 7 - UART per-byte timing (theoretical, 100 MHz / 868 clk-per-bit / 8N1)
+date    : 2026-09-15
+repo    : D:\board-dev
+source  : UART/doc/interface.md, UART/doc/top_design.md, soc/rtl/soc_top.v
+          (soc_top parameter CLKS_PER_BIT default = 16'd868; comment: 115200 @ 100MHz)
+          UART/src/rtl/uart_tx.v / uart_rx.v - raw 8N1 frame (no parity), bit count = 10
+no new simulation was run for this section: all values below are exact arithmetic
+from the RTL constants.
+
+--------------------------------------------------------------------------------
+1. given values
+--------------------------------------------------------------------------------
+  f_clk      = 100 MHz           = 100 000 000 Hz        (T_clk = 10 ns)
+  CPB        = 868 clocks/bit    (CLKS_PER_BIT, soc_top.v default)
+  frame      = 8N1              = 1 start + 8 data + 1 stop = 10 bits (no parity)
+
+--------------------------------------------------------------------------------
+2. clocks per bit  (the divider value)
+--------------------------------------------------------------------------------
+  clocks_per_bit = CPB = 868            <- the counter counts 0..867, bit = 868 clk
+
+--------------------------------------------------------------------------------
+3. clocks per byte frame  (10 bits)
+--------------------------------------------------------------------------------
+  clocks_per_frame = CPB * 10 = 868 * 10 = 8 680 clocks
+
+--------------------------------------------------------------------------------
+4. time per bit and per byte frame
+--------------------------------------------------------------------------------
+  t_bit   = CPB / f_clk = 868 / 100 000 000 s = 8.68e-6 s
+          = 8.68 us = 8 680 ns
+  t_frame = t_bit * 10 = 8.68 us * 10 = 86.8 us = 86 800 ns
+          = 8 680 clk * 10 ns/clk = 86 800 ns                   (check: agrees)
+
+  byte rate (theoretical, back-to-back frames, zero CPU/polling overhead):
+  bytes_per_sec = 1 / t_frame = 1 / 86.8e-6 s = 11 520.74 B/s
+  bit   rate    = 10 / t_frame = 115 207.4 bit/s
+
+--------------------------------------------------------------------------------
+5. effective baud vs the 115200 target
+--------------------------------------------------------------------------------
+  baud_eff = f_clk / CPB = 100 000 000 / 868 = 115 207.373 271 889... bit/s
+
+  baud_error = (baud_eff - 115200) / 115200
+             = (115 207.373271889 - 115 200) / 115 200
+             = 7.373271889 / 115 200
+             = 6.3994e-5
+             = 0.0063994 %  ~= 0.0064 %
+
+  (same number either way: the error is a pure divider-rounding error, so the
+   relative error is identical at bit level and at frame level)
+
+  UART tolerance for reference: an 8N1 receiver re-syncs on every start bit, so
+  the accumulated phase error over one frame (at most 9.5 bit times from the
+  start-bit edge to the middle of the stop bit) must stay < 0.5 bit, i.e. the
+  per-bit clock error must be < about 5%. 0.0064% is ~780x inside that budget.
+
+--------------------------------------------------------------------------------
+6. paste-ready numbers for the report (section 7, performance)
+--------------------------------------------------------------------------------
+  clocks per bit            : 868 clk
+  clocks per byte (8N1)     : 8 680 clk
+  time per bit              : 8 680 ns = 8.68 us
+  time per byte frame       : 86 800 ns = 86.8 us
+  effective baud            : 115 207.37 bit/s  (100 MHz / 868)
+  baud error vs 115200      : 0.0064 %  (6.3994e-5 relative)
+  max byte throughput       : 11 520.74 byte/s  (1 / 86.8 us)
+
+  one-line version:
+    100 MHz / 868 = 115207.37 baud (error 0.0064%); 8N1 = 10 bit = 8680 clk =
+    86.8 us per byte; back-to-back throughput = 11520.7 byte/s.
+
+--------------------------------------------------------------------------------
+7. caveat for the report
+--------------------------------------------------------------------------------
+  86.8 us/byte is the FRAME (wire) time. The polling firmware adds CPU overhead
+  (read STAT, test bit0, loop) before the next byte can be written, so the
+  measured end-to-end byte rate is lower. If the report quotes a measured
+  end-to-end figure, decompose it as: frame time (86.8 us) + polling overhead.

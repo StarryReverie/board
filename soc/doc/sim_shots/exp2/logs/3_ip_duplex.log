@@ -1,0 +1,34 @@
+#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:37:37 2026
+# Process ID: 14424
+# Current directory: D:/board-dev/build/wave_shot/3_ip_duplex
+# Command line: xsim.exe -log 3_ip_duplex.log -mode tcl -source {xsim.dir/tb_ip_duplex/xsim_script.tcl}
+# Log file: D:/board-dev/build/wave_shot/3_ip_duplex/3_ip_duplex.log
+# Journal file: D:/board-dev/build/wave_shot/3_ip_duplex\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_ip_duplex/xsim_script.tcl
+# xsim {tb_ip_duplex} -wdb {3_ip_duplex.wdb} -autoloadwcfg -tclbatch {logwave.tcl}
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+source logwave.tcl
+## log_wave -r /
+## run all
+PASS: 1 P7 frame capture done
+PASS: 2 P7 tx frame=0x5A
+PASS: 3 P7 RX_VALID held
+PASS: 4 P7 STAT shows RX_VALID
+PASS: 5  overlap ever seen (full-duplex)
+PASS: 6 P7 RX byte=0x3C
+PASS: 7 P7 rx_valid cleared
+PASS: 8 P3 busy seen
+PASS: 9 P3 cleared
+PASS: 10 P3 no second frame (drop ok)
+PASS: 11 putc frame ok
+PASS: 12 putc frame ok
+PASS: 13 putc frame ok
+=== IP DUPLEX DONE ALL PASS ===
+$finish called at time : 620655 ns : File "D:/board-dev/UART/src/test/tb_ip_duplex.v" Line 239
+xsim% INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:37:41 2026...

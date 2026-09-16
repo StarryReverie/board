@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/board-dev/soc/doc/sim_shots/exp2/wdb/4_wave_soc.wdb" id="1">
+         <top_modules>
+            <top_module name="tb_wave_soc" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="130000000"></ZoomStartTime>
+      <ZoomEndTime time="601000000"></ZoomEndTime>
+      <Cursor1Time time="365000000"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="260"></NameColumnWidth>
+      <ValueColumnWidth column_width="170"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="8" />
+   <wave_markers>
+      <marker time="145000000" label="sw TX = 0x41" />
+      <marker time="185000000" label="start bit" />
+      <marker time="365000000" label="d3/d4 bit centres (0x41 = 0100_0001, LSB first)" />
+      <marker time="565000000" label="stop bit centre = 1" />
+      <marker time="585000000" label="frame end (10 bits = 400 ns @ CPB=4)" />
+   </wave_markers>
+   <wvobject fp_name="/tb_wave_soc/clk" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+      <obj_property name="label">clk 100MHz</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/uart_tx_pin" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">uart_tx_pin</obj_property>
+      <obj_property name="ObjectShortName">uart_tx_pin</obj_property>
+      <obj_property name="label">uart_tx_pin (8N1 frame 0x41)</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/u_uart/u_tx/state" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">state[1:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      <obj_property name="label">u_tx/state (0 IDLE 1 START 2 DATA 3 STOP)</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/u_uart/u_tx/bit_idx" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">bit_idx[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bit_idx[2:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      <obj_property name="label">u_tx/bit_idx</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/u_uart/u_tx/shift" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">shift[7:0]</obj_property>
+      <obj_property name="ObjectShortName">shift[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="label">u_tx/shift</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/u_uart/tx_buf" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">tx_buf[7:0]</obj_property>
+      <obj_property name="ObjectShortName">tx_buf[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="label">tx_buf = 0x41</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/mmio_we" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">mmio_we</obj_property>
+      <obj_property name="ObjectShortName">mmio_we</obj_property>
+      <obj_property name="label">mmio_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wave_soc/u_soc/mmio_wdata" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">mmio_wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mmio_wdata[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="label">mmio_wdata</obj_property>
+   </wvobject>
+</wave_config>

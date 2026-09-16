@@ -1,0 +1,25 @@
+﻿#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:41:44 2026
+# Process ID: 20700
+# Current directory: D:/board-dev/UART/src/scripts/out/w3
+# Command line: xsim.exe -log tb_soc_full.log -mode tcl -source {xsim.dir/tb_soc_full/xsim_script.tcl}
+# Log file: D:/board-dev/UART/src/scripts/out/w3/tb_soc_full.log
+# Journal file: D:/board-dev/UART/src/scripts/out/w3\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_soc_full/xsim_script.tcl
+# xsim {tb_soc_full} -autoloadwcfg -runall
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+run -all
+PASS: 1 char A captured
+PASS: 2 char A = 0x41
+PASS: 3 tx idle after A
+PASS: 4 echo char captured
+PASS: 5 echo = 0x42
+=== ALL PASS ===
+$finish called at time : 1966 ns : File "D:/board-dev/soc/test/tb_soc_full.v" Line 155
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:41:51 2026...

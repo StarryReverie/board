@@ -1,0 +1,38 @@
+exp2 regression summary - 8/8 (UART IP 3 + SoC 5)
+date    : 2026-09-15 12:41:00
+vivado  : D:\Vivado2019\Vivado\2019.2  (xsim 2019.2)
+repo    : D:\board-dev
+
+reproduce (exact command):
+  powershell -NoProfile -ExecutionPolicy Bypass -File D:\board-dev\UART\src\scripts\run_tb.ps1 -TimeoutSec 300 -Jobs 4
+
+assertion counting: grep -c "^PASS:" on each per-TB log under UART\src\scripts\out\
+
+testbench            layer    asserts  expect  result
+-------------------- -------- -------- ------- ------
+tb_uart_tx           UART IP        18      18   PASS
+tb_uart_rx           UART IP        13      13   PASS
+tb_uart_ip_top       UART IP        35      35   PASS
+tb_dbus_decode       SoC            13      13   PASS
+tb_reset_sync        SoC             6       6   PASS
+tb_pipe_soc          SoC             6       6   PASS
+tb_soc_console       SoC            68      10   PASS *
+tb_soc_full          SoC             5       5   PASS
+-------------------- -------- -------- ------- ------
+TOTAL                              164
+
+* = runtime assertion count differs from the static checklist estimate:
+    the checklist lists tb_soc_console(10); the TB actually executes 68
+    assertions (P1 25 + P2 2 + P3 8x2 + P4 24 + 1). No TB was modified.
+
+PASS 8/8
+
+excluded (waveform benches, not part of the 8/8 accounting):
+  tb_wave_868  tb_rx_sampling  tb_ip_duplex  tb_wave_soc
+
+archived files in this directory:
+  regress_8of8_20260915.log   full runner console output (with command line + date)
+  regress_8of8_20260915.txt   this summary
+  perf_per_byte_20260915.txt  section 7 UART per-byte timing arithmetic
+  tb_uart_tx.log tb_uart_rx.log tb_uart_ip_top.log tb_dbus_decode.log
+  tb_reset_sync.log tb_pipe_soc.log tb_soc_console.log tb_soc_full.log
