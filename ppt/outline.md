@@ -56,15 +56,19 @@ SoC 集成代码位于 soc 目录，包含顶层装配、复位同步、数据�
 
 ### 1.3 分工
 
-表格：组员、负责模块、交付内容。
+两个实验的分工列在同一页的两张表中。
 
-柯宁皓（组长）负责验证回归、性能分析与上板测试，统一整理测试证据、性能数据与板级结果。
+实验一（处理器核心）：柯宁皓负责验证回归、性能分析与上板测试；陈霆钧负责
+IF/ID 前端（pc_reg、imem、if_id、decode、regfile、id_ex）及模块单测；
+伍奕涛负责 EX/MEM 执行与访存（execute、alu、ex_mem、dmem、mem_wb）及
+溢出判断；陈乔负责 WB、冒险处理与 pipeline_top 顶层装配（回写、前递、冻结、
+冲刷）。
 
-陈霆钧负责 IF/ID 前端，包括 pc_reg、imem、if_id、decode、regfile、id_ex 及对应模块单测。
-
-伍奕涛负责 EX/MEM 执行与访存，包括 execute、alu、ex_mem、dmem、mem_wb 及溢出判断。
-
-陈乔负责 WB、冒险处理与 pipeline_top 顶层装配，覆盖回写、前递、冻结与冲刷逻辑。
+实验二（UART 与 SoC）：柯宁皓负责 SoC 装配、复位同步、性能分析与上板测试，
+维护系统级回归与板级验证记录；陈霆钧负责 UART 协议与收发引擎（uart_tx、
+uart_rx）及帧级协议单测；伍奕涛负责寄存器层与 uart_ip_top（槽译码、读写
+时序、TX_BUSY 与 RX_VALID 语义）；陈乔负责 console 固件与程序固化
+（.S → .hex → .vh 流程、banner 与回显程序）。
 
 ## 第二章 处理器核心设计
 
