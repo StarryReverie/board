@@ -15,6 +15,7 @@ function Invoke-Step {
 
 Invoke-Step 'make_figs.py'
 Invoke-Step 'make_waves.py'
+Invoke-Step 'make_waves_exp2.py'
 Invoke-Step 'make_diagrams.py'
 Invoke-Step 'build_ppt.py'
 

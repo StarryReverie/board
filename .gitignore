@@ -58,3 +58,7 @@ video/
 
 # ---- 仿真证据日志（保留，覆盖上面的 *.log 全局忽略）----
 !pipeline/doc/sim_shots/**/*.log
+
+# ---- 实验二仿真截图归档（保留，覆盖上面的 *.log / *.wcfg 全局忽略；*.wdb 仍忽略）----
+!soc/doc/sim_shots/exp2/logs/*.log
+!soc/doc/sim_shots/exp2/wcfg/*.wcfg

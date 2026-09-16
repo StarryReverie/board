@@ -2,7 +2,7 @@
 =============================================================================
   wave_png.ps1 — 由 wave_pipe 采样 CSV 渲染四项波形 PNG（System.Drawing）
     * 输入 : scripts/out/wave/wave_{cover,hazard,priority}.csv + wave_marks.csv
-    * 输出 : pipeline/doc/sim_shots/{1..4}_*_<日期>.png（+ 同名 .log）
+    * 输出 : pipeline/doc/sim_shots/exp1/auto/{1..4}_*_<日期>.png（+ 同名 .log）
     * 说明 : xsim 2019.2 $dumpvars 只写初值，故波形由 TB 逐拍采样、离线绘制。
     * 用法 : powershell -File pipeline/src/scripts/wave_png.ps1
 =============================================================================
@@ -14,7 +14,7 @@ $scripts  = $PSScriptRoot
 $src      = Split-Path -Parent $scripts                      # pipeline/src
 $pipeline = Split-Path -Parent $src                          # pipeline
 $waveDir  = Join-Path $scripts 'out\wave'
-$outDir   = Join-Path $pipeline 'doc\sim_shots\auto'
+$outDir   = Join-Path $pipeline 'doc\sim_shots\exp1\auto'
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 $date    = Get-Date -Format 'yyyyMMdd'
 $stamp   = Get-Date -Format 'yyyy-MM-dd HH:mm'

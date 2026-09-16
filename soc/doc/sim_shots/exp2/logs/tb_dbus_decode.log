@@ -1,0 +1,33 @@
+﻿#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:41:29 2026
+# Process ID: 16644
+# Current directory: D:/board-dev/UART/src/scripts/out/w3
+# Command line: xsim.exe -log tb_dbus_decode.log -mode tcl -source {xsim.dir/tb_dbus_decode/xsim_script.tcl}
+# Log file: D:/board-dev/UART/src/scripts/out/w3/tb_dbus_decode.log
+# Journal file: D:/board-dev/UART/src/scripts/out/w3\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_dbus_decode/xsim_script.tcl
+# xsim {tb_dbus_decode} -autoloadwcfg -runall
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+run -all
+PASS: 1 dmem 0x0
+PASS: 2 dmem 0xFFC
+PASS: 3 0x1000 unmapped
+PASS: 4 0x3FFF unmapped
+PASS: 5 mmio TX
+PASS: 6 mmio STAT
+PASS: 7 mmio RX
+PASS: 8 mmio rsv
+PASS: 9 window end
+PASS: 10 above window
+PASS: 11 high addr 0
+PASS: 12 we irrelevant
+PASS: 13 dmem we path
+=== ALL PASS ===
+$finish called at time : 13 ns : File "D:/board-dev/soc/test/tb_dbus_decode.v" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:41:35 2026...

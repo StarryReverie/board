@@ -3,7 +3,7 @@
   report_png.ps1 — 生成 §7 报告素材（回归汇总 + 性能表）
     * 回归汇总：读 out/w*/tb_*.log 统计实际断言数 → PNG + MD
     * 性能表  ：读 out/perf_summary.csv → PNG + MD
-    * 输出：pipeline/doc/sim_shots/{reg_summary,perf_table}_<日期>.png/.md
+    * 输出：pipeline/doc/sim_shots/exp1/{reg_summary,perf_table}_<日期>.png/.md
     * 用法：powershell -File pipeline/src/scripts/report_png.ps1
 =============================================================================
 #>
@@ -14,7 +14,7 @@ $scripts  = $PSScriptRoot
 $src      = Split-Path -Parent $scripts
 $pipeline = Split-Path -Parent $src
 $outRoot  = Join-Path $scripts 'out'
-$outDir   = Join-Path $pipeline 'doc\sim_shots\auto'
+$outDir   = Join-Path $pipeline 'doc\sim_shots\exp1\auto'
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 $date  = Get-Date -Format 'yyyyMMdd'
 $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm'

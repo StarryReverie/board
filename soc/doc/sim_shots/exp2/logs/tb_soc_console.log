@@ -1,0 +1,88 @@
+﻿#-----------------------------------------------------------
+# xsim v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Sep 15 12:41:45 2026
+# Process ID: 18124
+# Current directory: D:/board-dev/UART/src/scripts/out/w2
+# Command line: xsim.exe -log tb_soc_console.log -mode tcl -source {xsim.dir/tb_soc_console/xsim_script.tcl}
+# Log file: D:/board-dev/UART/src/scripts/out/w2/tb_soc_console.log
+# Journal file: D:/board-dev/UART/src/scripts/out/w2\xsim.jou
+#-----------------------------------------------------------
+source xsim.dir/tb_soc_console/xsim_script.tcl
+# xsim {tb_soc_console} -autoloadwcfg -runall
+Vivado Simulator 2019.2
+Time resolution is 1 ps
+run -all
+PASS: 1 P1 banner 23B captured
+PASS: 2 P1 banner byte
+PASS: 3 P1 banner byte
+PASS: 4 P1 banner byte
+PASS: 5 P1 banner byte
+PASS: 6 P1 banner byte
+PASS: 7 P1 banner byte
+PASS: 8 P1 banner byte
+PASS: 9 P1 banner byte
+PASS: 10 P1 banner byte
+PASS: 11 P1 banner byte
+PASS: 12 P1 banner byte
+PASS: 13 P1 banner byte
+PASS: 14 P1 banner byte
+PASS: 15 P1 banner byte
+PASS: 16 P1 banner byte
+PASS: 17 P1 banner byte
+PASS: 18 P1 banner byte
+PASS: 19 P1 banner byte
+PASS: 20 P1 banner byte
+PASS: 21 P1 banner byte
+PASS: 22 P1 banner byte
+PASS: 23 P1 banner byte
+PASS: 24 P1 banner byte
+PASS: 25 P1 cap exact (no extra byte yet)
+PASS: 26 P2 echo captured
+PASS: 27 P2 echo = 0x55
+PASS: 28 P3 echo captured
+PASS: 29 P3 echo = 0x30+j
+PASS: 30 P3 echo captured
+PASS: 31 P3 echo = 0x30+j
+PASS: 32 P3 echo captured
+PASS: 33 P3 echo = 0x30+j
+PASS: 34 P3 echo captured
+PASS: 35 P3 echo = 0x30+j
+PASS: 36 P3 echo captured
+PASS: 37 P3 echo = 0x30+j
+PASS: 38 P3 echo captured
+PASS: 39 P3 echo = 0x30+j
+PASS: 40 P3 echo captured
+PASS: 41 P3 echo = 0x30+j
+PASS: 42 P3 echo captured
+PASS: 43 P3 echo = 0x30+j
+PASS: 44 P4 banner2 captured
+PASS: 45 P4 banner byte same
+PASS: 46 P4 banner byte same
+PASS: 47 P4 banner byte same
+PASS: 48 P4 banner byte same
+PASS: 49 P4 banner byte same
+PASS: 50 P4 banner byte same
+PASS: 51 P4 banner byte same
+PASS: 52 P4 banner byte same
+PASS: 53 P4 banner byte same
+PASS: 54 P4 banner byte same
+PASS: 55 P4 banner byte same
+PASS: 56 P4 banner byte same
+PASS: 57 P4 banner byte same
+PASS: 58 P4 banner byte same
+PASS: 59 P4 banner byte same
+PASS: 60 P4 banner byte same
+PASS: 61 P4 banner byte same
+PASS: 62 P4 banner byte same
+PASS: 63 P4 banner byte same
+PASS: 64 P4 banner byte same
+PASS: 65 P4 banner byte same
+PASS: 66 P4 banner byte same
+PASS: 67 P4 banner byte same
+PASS: 68 P4 echo after reset = 0x5A
+=== ALL PASS ===
+$finish called at time : 34696 ns : File "D:/board-dev/soc/test/tb_soc_console.v" Line 169
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Sep 15 12:41:51 2026...

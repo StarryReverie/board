@@ -34,7 +34,9 @@ RV32I 五级流水线处理器与全双工 UART 接口的 SoC 设计与实现
 
 计算机组成原理与接口课程设计
 
-组员：待补充
+组员：柯宁皓、陈霆钧、伍奕涛、陈乔
+
+2026 年 9 月 18 日
 
 ### 备注
 
@@ -136,13 +138,16 @@ layout: content
 
 组内分工如下表所示，每位成员负责的模块与交付物列在表中。
 
-| 组员 | 负责内容 | 交付物 |
+| 组员 | 负责模块 | 交付内容 |
 |---|---|---|
-| 待补充 | 待补充 | 待补充 |
+| 柯宁皓（组长） | 验证回归、性能分析与上板测试 | 测试证据、性能数据与板级结果 |
+| 陈霆钧 | IF/ID 前端：pc_reg、imem、if_id、decode、regfile、id_ex | 各模块 RTL 与模块单测 |
+| 伍奕涛 | EX/MEM 执行与访存：execute、alu、ex_mem、dmem、mem_wb | 执行访存 RTL、溢出判断与模块单测 |
+| 陈乔 | WB、冒险处理与 pipeline_top 顶层装配 | 回写、前递、冻结、冲刷与顶层装配 |
 
 ### 备注
 
-时间：约 0.3 分钟。姓名与分工待补充。
+时间：约 0.3 分钟。
 
 ---
 
@@ -250,7 +255,7 @@ load-use 相关采用冻结处理。当加载指令之后紧接使用其结果�
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/前递优先级.png; ppt/assets/wave-priority.png
+素材: pipeline/doc/sim_shots/exp1/前递优先级.png; ppt/assets/wave-priority.png
 -->
 
 ## 前递优先级
@@ -274,7 +279,7 @@ figure_pos: right-bottom
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/load-use.png; ppt/assets/wave-loaduse.png
+素材: pipeline/doc/sim_shots/exp1/load-use.png; ppt/assets/wave-loaduse.png
 -->
 
 ## load-use 冻结
@@ -302,7 +307,7 @@ load-use 相关是指加载指令的读出数据在访存级结束才可用，�
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/分支预测.png; ppt/assets/wave-branch.png
+素材: pipeline/doc/sim_shots/exp1/分支预测.png; ppt/assets/wave-branch.png
 -->
 
 ## 分支处理
@@ -328,7 +333,7 @@ figure_pos: right-bottom
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/五级流水线运行总览.png; ppt/assets/wave-overview.png
+素材: pipeline/doc/sim_shots/exp1/五级流水线运行总览.png; ppt/assets/wave-overview.png
 -->
 
 ## 五级运行总览
@@ -365,8 +370,8 @@ layout: section
 
 <!-- slide
 layout: content
-figure_pos: bottom
-素材: ppt/assets/uart-frame.png
+figure_pos: right-bottom
+素材: soc/doc/sim_shots/exp2/1_frame868_20260915.png; ppt/assets/uart-frame.png
 -->
 
 ## 帧格式与波特率
@@ -383,9 +388,11 @@ UART 采用 8N1 帧格式，即一个低电平起始位、八个数据位、一�
 
 位节拍由 clk_en 分频脉冲产生，整机使用单一时钟，没有第二个时钟域。
 
+波形中一帧由起始位、八位数据与停止位组成，帧内跳变落在整数比特边界。
+
 ### 备注
 
-时间：约 0.5 分钟。图：8N1 帧时序图。
+时间：约 0.5 分钟。图：8N1 帧时序图与实测波形。
 
 ---
 
@@ -441,8 +448,8 @@ uart_ip_top 是 UART IP 的顶层模块，内部包含寄存器层，并实例�
 
 <!-- slide
 layout: content
-figure_pos: right
-diagram: addr-map
+figure_pos: right-bottom
+素材: soc/doc/sim_shots/exp2/4e_full_chain_overview_20260915.png; ppt/assets/exp2-mmio.png
 -->
 
 ## 统一编址
@@ -461,16 +468,18 @@ UART 窗口的基地址为 0x4000，TX 位于偏移 0，STAT 位于偏移 4，RX
 
 外设访问与数据存储器访问在同一拍完成，不插入等待周期。
 
+波形中写发送与读接收在同一窗口完成，回显帧与注入字节一致。
+
 ### 备注
 
-时间：约 0.7 分钟。图：地址空间映射图。
+时间：约 0.7 分钟。图：统一编址访问波形。
 
 ---
 
 <!-- slide
 layout: content
-figure_pos: bottom
-diagram: txbusy-timing
+figure_pos: right-bottom
+素材: soc/doc/sim_shots/exp2/3b_busy_write_dropped_20260915.png; ppt/assets/exp2-duplex.png
 -->
 
 ## 发送忙碌状态
@@ -487,9 +496,11 @@ STAT 寄存器的第 0 位表示发送忙碌。
 
 软件在发送前轮询该状态位，可以连续发送多个字节而不丢字。
 
+波形中第一次写入发生在空闲时而被接受，第二次写入发生在移位期间而被丢弃。
+
 ### 备注
 
-时间：约 0.5 分钟。图：发送忙碌状态时序图。
+时间：约 0.5 分钟。图：忙写丢弃波形。
 
 ---
 
@@ -810,7 +821,7 @@ layout: section
 <!-- slide
 layout: demo
 figure_pos: right
-素材: ppt/assets/下板终端日志.png
+素材: ppt/assets/下板终端日志.jpg
 -->
 
 ## 下板与现场演示
@@ -833,7 +844,7 @@ figure_pos: right
 
 ### 备注
 
-时间：约 0.8 分钟。图：终端日志截图（待补充）。演示前确认串口与板卡连接。
+时间：约 0.8 分钟。图：下板演示实拍（终端 banner 与回显）。演示前确认串口与板卡连接。
 
 ---
 

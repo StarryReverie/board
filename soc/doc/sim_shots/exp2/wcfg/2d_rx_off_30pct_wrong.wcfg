@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/board-dev/soc/doc/sim_shots/exp2/wdb/2_rx_sampling.wdb" id="1">
+         <top_modules>
+            <top_module name="tb_rx_sampling" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="528220000000"></ZoomStartTime>
+      <ZoomEndTime time="614515000000"></ZoomEndTime>
+      <Cursor1Time time="613715000000"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="260"></NameColumnWidth>
+      <ValueColumnWidth column_width="170"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="8" />
+   <wave_markers>
+      <marker time="531255000000" label="inject 607 clk/bit (-30%): far out of tolerance" />
+      <marker time="561605000000" label="sampling instant drifts off bit centre" />
+      <marker time="613715000000" label="valid=1 but data=0xFE (wrong byte, NOT detected)" />
+   </wave_markers>
+   <wvobject fp_name="/tb_rx_sampling/clk" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+      <obj_property name="label">clk 100MHz</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/rx" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">rx</obj_property>
+      <obj_property name="ObjectShortName">rx</obj_property>
+      <obj_property name="label">uart_rx_pin (607 clk/bit, -30%)</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/dut/state" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">state[1:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      <obj_property name="label">u_rx/state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/dut/cnt" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">cnt[15:0]</obj_property>
+      <obj_property name="ObjectShortName">cnt[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      <obj_property name="label">u_rx/cnt (DUT always 0..867)</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/dut/shift" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">shift[7:0]</obj_property>
+      <obj_property name="ObjectShortName">shift[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="label">u_rx/shift (sampled wrong)</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/sample_hit" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">sample_hit</obj_property>
+      <obj_property name="ObjectShortName">sample_hit</obj_property>
+      <obj_property name="label">bit-centre sample strobe</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/valid" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">valid</obj_property>
+      <obj_property name="ObjectShortName">valid</obj_property>
+      <obj_property name="label">valid (unexpectedly 1)</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_rx_sampling/data" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="label">data[7:0] = 0xFE != 0x5A</obj_property>
+   </wvobject>
+</wave_config>
