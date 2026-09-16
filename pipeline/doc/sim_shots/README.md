@@ -13,6 +13,8 @@
 ## 人工截图（`exp1/`）
 
 - `前递优先级.png`、`数据前递.png`、`load-use.png`、`分支预测.png`、`五级流水线运行总览.png`
+- `回归测试_运行_20260916.png`、`回归测试_汇总_20260916.png`：`pipeline/src/scripts/run_tb.ps1`
+  一次运行 23 项回归测试的终端输出（运行列表与 `PASS 23/23 (missing/timeout 0)` 汇总）
 
 ## 自动图表（`exp1/auto/`）
 
