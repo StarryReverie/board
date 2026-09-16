@@ -1,7 +1,7 @@
 # 实验一关键仿真实验说明（写入报告版）
 
 > 配套文档：`pipeline/doc/top_design.md` §1/§4/§5（五级划分、哈佛、前递/冻结/冲刷口径）、`pipeline/doc/perf_report.md`（性能实测）、`pipeline/doc/modules/*.md`（模块契约）。
-> 产物目录：脚本自动生成 → `pipeline/doc/sim_shots/auto/`（PNG + 同名日志 + 汇总表，供展示/核对）；`pipeline/doc/sim_shots/` 预留给**人工截图**归档。
+> 产物目录：脚本自动生成 → `pipeline/doc/sim_shots/exp1/auto/`（PNG + 同名日志 + 汇总表，供展示/核对）；`pipeline/doc/sim_shots/exp1/` 预留给**人工截图**归档。
 > **口径（重要）**：**回归测试不计入仿真实验**。全量回归（21/21）只在报告 §7 用"一行 + 一张汇总表"交代正确性总账，不占仿真条目。
 > 下面 4 项**每项验证一个明确的设计决策**，仿真要能证明"这个设计是对的"。
 > **证据要求**：① 仿真 PASS 输出（可复现命令）② PNG（按"📸 截图要点"）③ 完整日志同前缀归档。
@@ -65,14 +65,14 @@
 
 | 位置 | 写法 |
 |---|---|
-| §7 仿真测试用例、结果及分析 | 开头一句话 + 一张表：**21/21（14 模块单测 + 6 程序级 + 1 性能）**，表内只列**用例名与断言数**，不展开；附运行命令 `powershell -File pipeline/src/scripts/run_tb.ps1` 与日期。汇总表：`pipeline/doc/sim_shots/auto/reg_summary_<日期>.png/.md`（断言数自动统计：本次 21 项运行 **250**，其中 `tb_perf` 单档 10；性能 5 档合计 74，按 5 档计则 **314**） |
+| §7 仿真测试用例、结果及分析 | 开头一句话 + 一张表：**21/21（14 模块单测 + 6 程序级 + 1 性能）**，表内只列**用例名与断言数**，不展开；附运行命令 `powershell -File pipeline/src/scripts/run_tb.ps1` 与日期。汇总表：`pipeline/doc/sim_shots/exp1/auto/reg_summary_<日期>.png/.md`（断言数自动统计：本次 21 项运行 **250**，其中 `tb_perf` 单档 10；性能 5 档合计 74，按 5 档计则 **314**） |
 | §7 功能性测试 | 指向上面的汇总表 + 本文 4 项关键仿真 |
 | §7 性能测试 | CPI/IPC/MIPS/CPU time 5 档 + 恒等式 `C = IC + (F−1) + L + 2T`（5/5，见 `perf_report.md` 表 A/C）+ **单周期资源/Fmax 对比**（`pipeline/doc/perf_report.md` 表 D 待补） |
 | §7 下板测试 | 如实写"未下板" + 准备清单（工程/脚本/固件/XDC 就绪）+ 兜底路径（课程允许仿真验收） |
 
-性能汇总表：`pipeline/doc/sim_shots/auto/perf_table_<日期>.png/.md`（5 档实测，恒等式 5/5）。
+性能汇总表：`pipeline/doc/sim_shots/exp1/auto/perf_table_<日期>.png/.md`（5 档实测，恒等式 5/5）。
 
-> 人工截图：报告正文所用波形截图请存 `pipeline/doc/sim_shots/`（脚本生成的 `auto/` 版可作**展示/取景参照**，不作为最终截图）。
+> 人工截图：报告正文所用波形截图请存 `pipeline/doc/sim_shots/exp1/`（脚本生成的 `auto/` 版可作**展示/取景参照**，不作为最终截图）。
 
 ---
 
@@ -89,10 +89,10 @@
 
 | 步骤 | 命令 | 产物 |
 |---|---|---|
-| 回归 21/21 | `powershell -File pipeline/src/scripts/run_tb.ps1` | `sim_shots/auto/reg_summary_<日期>.log` |
-| 性能 5 档 | `powershell -File pipeline/src/scripts/run_perf.ps1` | `sim_shots/auto/perf_run_<日期>.log` |
-| 波形（仿真+渲染） | `powershell -File pipeline/src/scripts/run_wave.ps1` | `sim_shots/auto/1..4_*.png/.log`；`out/wave/*.csv/.vcd` |
-| 报告素材 | `powershell -File pipeline/src/scripts/report_png.ps1` | `sim_shots/auto/{reg_summary,perf_table}_*.png/.md` |
+| 回归 21/21 | `powershell -File pipeline/src/scripts/run_tb.ps1` | `sim_shots/exp1/auto/reg_summary_<日期>.log` |
+| 性能 5 档 | `powershell -File pipeline/src/scripts/run_perf.ps1` | `sim_shots/exp1/auto/perf_run_<日期>.log` |
+| 波形（仿真+渲染） | `powershell -File pipeline/src/scripts/run_wave.ps1` | `sim_shots/exp1/auto/1..4_*.png/.log`；`out/wave/*.csv/.vcd` |
+| 报告素材 | `powershell -File pipeline/src/scripts/report_png.ps1` | `sim_shots/exp1/auto/{reg_summary,perf_table}_*.png/.md` |
 
 新增文件：`pipeline/src/test/wave/wave_pipe.v`、`pipeline/src/test/fwd_priority.asm`(+`_rom.hex`)、`pipeline/src/scripts/{run_wave,wave_png,report_png}.ps1`。
 

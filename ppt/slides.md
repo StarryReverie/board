@@ -250,7 +250,7 @@ load-use 相关采用冻结处理。当加载指令之后紧接使用其结果�
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/前递优先级.png; ppt/assets/wave-priority.png
+素材: pipeline/doc/sim_shots/exp1/前递优先级.png; ppt/assets/wave-priority.png
 -->
 
 ## 前递优先级
@@ -274,7 +274,7 @@ figure_pos: right-bottom
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/load-use.png; ppt/assets/wave-loaduse.png
+素材: pipeline/doc/sim_shots/exp1/load-use.png; ppt/assets/wave-loaduse.png
 -->
 
 ## load-use 冻结
@@ -302,7 +302,7 @@ load-use 相关是指加载指令的读出数据在访存级结束才可用，�
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/分支预测.png; ppt/assets/wave-branch.png
+素材: pipeline/doc/sim_shots/exp1/分支预测.png; ppt/assets/wave-branch.png
 -->
 
 ## 分支处理
@@ -328,7 +328,7 @@ figure_pos: right-bottom
 <!-- slide
 layout: content
 figure_pos: right-bottom
-素材: pipeline/doc/sim_shots/五级流水线运行总览.png; ppt/assets/wave-overview.png
+素材: pipeline/doc/sim_shots/exp1/五级流水线运行总览.png; ppt/assets/wave-overview.png
 -->
 
 ## 五级运行总览
