@@ -79,6 +79,18 @@ set_property include_dirs [list [string map {\\ /} $src] [string map {\\ /} $bdD
 # imem 固化程序 + 下板存储缩容（const_define.v 的 ifndef 守卫保证此处生效）
 set_property verilog_define {IMEM_INIT_VH IMEM_WORDS=128 DMEM_WORDS=64 IMEM_BYTES=512 DMEM_BYTES=256} $fs_syn
 
+# ---- 实现时序优化 ----
+# 显式保存实现策略，避免 GUI/重建工程时退回默认 phys_opt 配置。
+set impl_run [get_runs impl_1]
+set_property STRATEGY Performance_Explore $impl_run
+set_property STEPS.PHYS_OPT_DESIGN.IS_ENABLED true $impl_run
+set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore $impl_run
+set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.IS_ENABLED true $impl_run
+set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore $impl_run
+puts "IMPL_STRATEGY: [get_property STRATEGY $impl_run]"
+puts "PHYS_OPT: enabled=[get_property STEPS.PHYS_OPT_DESIGN.IS_ENABLED $impl_run] directive=[get_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE $impl_run]"
+puts "POST_ROUTE_PHYS_OPT: enabled=[get_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.IS_ENABLED $impl_run] directive=[get_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE $impl_run]"
+
 catch { update_compile_order -fileset sources_1 }
 
 close_project

@@ -1,8 +1,11 @@
-# 实验一性能分析报告（完成版 v2.1）
+# 实验一性能分析报告（完成版 v2.2）
 
-> 测量日期：2026-09-14 ｜ DUT：`pipeline_top`（`SOC_BUILD=0`）｜ 仿真器：Vivado 2019.2 xsim
+> 测量日期：2026-09-14（结构层首次）／**2026-09-17 复测**（实现策略优化后）｜ DUT：`pipeline_top`（`SOC_BUILD=0`）｜ 仿真器：Vivado 2019.2 xsim
 > 器件与时序：`xc7a100tcsg324-1`，100 MHz 名义时钟（`Tclk=10 ns`）
-> 原始数据：`pipeline/doc/perf_data/2026-09-14_perf_summary.csv`
+> 原始数据：`pipeline/doc/perf_data/2026-09-14_perf_summary.csv`、**`pipeline/doc/perf_data/2026-09-17_perf_summary.csv`（逐行一致）**
+> 时序资源层：§4 的综合口径（post-synthesis、4 KB）+ **2026-09-17 下板构建口径（post-route、512 B/256 B）**，见 `pipeline/doc/perf_data/2026-09-17_buildD_postroute.md`
+> **口径提示**：本轮的"优化"是**实现策略优化**（`Performance_Explore` + 前置/布线后 `phys_opt AggressiveExplore`），**未改动 RTL**，因此结构层（CPI/IPC/MIPS/CPU time）数字与 2026-09-14 完全一致；变化只发生在时序资源层。
+> **注意区分两件事**：①"策略优化未改 RTL"指本轮优化本身；②下板构建 D 与历史构建 C 之间**存在 RTL 版本差异**（C 为去抖前、D 含复位释放去抖），故二者的 WNS 差属跨版本观测值，归因限定见 §4.1。
 
 ## 1. 评价指标与测量口径
 
@@ -167,6 +170,23 @@ residual = C_steady - (IC + L + 2T - C_fixed) = 0
 
 上述口径是基于综合结果的换算，不另做多次综合。若缺少某一设计的 Fmax，应只报告结构层结论，不对缺失数据进行推算。
 
+### 4.1 下板构建口径（2026-09-17，实现策略优化后）
+
+上表是 **post-synthesis、4 KB/1 KB×2** 口径（两者均超器件容量）。另有一份**可上板口径**的实测：**当前 RTL（含复位释放去抖）**、同一固件（123 条 / 492 B）、存储缩容 **IMEM 512 B / DMEM 256 B**、实现策略 `Performance_Explore` + 前置与布线后 `phys_opt AggressiveExplore`：
+
+| 指标 | 值 |
+|---|---|
+| WNS / TNS | **−1.347 ns** / −273.660 ns（`Timing constraints are not met`） |
+| 违例端点（setup） | 268 / 8948（保持 0、脉宽 0） |
+| 等价 Fmax | `1000/(10+1.347)` ≈ **88.13 MHz** |
+| 资源（post-route） | **12,171 LUT（19.20%）/ 3,864 FF（3.05%）/ 0 BRAM / 34 IOB** |
+| 布线前后 | routed WNS −1.646 ns → 布线后物理优化 −1.347 ns（该阶段自身改善 **0.299 ns**） |
+| 最差路径 | `u_ex_mem/exmem_mem_read_reg` → `u_id_ex/idex_rs2_reg[0]`，10.978 ns（logic 3.439 / **route 7.539**），18 级（`CARRY4=7`） |
+
+**归因限定（必读）**：与历史构建 C（WNS −1.430 ns）的对比**跨 RTL 版本**——C 为去抖前 RTL，本构建含复位释放去抖，故 `−1.430 → −1.347 ns` 属**观测结果**，**不能单独归因于实现策略**；只体现物理优化增益的是**同一构建内**的 `routed −1.646 → post-route phys_opt −1.347 ns = 0.299 ns`。要单独定量策略效果需要同 RTL 的对照构建（本轮未做）。
+
+**可比性声明（必读）**：该行是 **post-route + 缩容** 口径，**不能与上表单周期的 77.22 MHz（post-synthesis、4 KB）直接相比**——流程阶段与存储容量都不同。因此 **§5 的频率加速比与时间加速比维持综合口径（78.24/77.22 = 1.0132）不变**；若要用下板口径重算时间加速比，需对单周期基线做**同器件/同工具/同约束/同流程/同容量**的实现运行（本轮未做，文档已按"不可直接比较"登记）。
+
 ## 5. 系统层结论
 
 频率加速比为 `S_freq = 78.24/77.22 = 1.0132`。将其与结构加速比相乘，得到基于有效指令窗口的时间加速比：
@@ -184,14 +204,15 @@ residual = C_steady - (IC + L + 2T - C_fixed) = 0
 1. 流水线稳态 CPI 在同源主负载上为 1.000、1.167、1.386，在规模档收敛到约 1.40；主要额外开销来自 taken 分支/跳转冲刷，其次是 load-use 冻结。
 2. 停机固定开销占比随程序规模迅速摊薄：`test0` 为 25.0%，`loop128` 仅 0.17%。
 3. 同频下单周期 `CPI=1`，流水线结构加速比为 0.721–1.000；流水线必须依靠显著提频才可能获益。
-4. 当前 post-synthesis Fmax 只提高 1.32%，不足以抵消 `sort` 等负载的 CPI 损失。优化优先级应为减少分支冲刷、完善 load-use 前递，并将 ROM/RAM 改为可推断 BRAM 后重新综合。
+4. 综合口径下 Fmax 只提高 1.32%（78.24/77.22），不足以抵消 `sort` 等负载的 CPI 损失。**2026-09-17 的实现策略优化**后，下板口径（post-route、缩容 512 B/256 B）实测 WNS **−1.347 ns**（等价 Fmax **88.13 MHz**），但仍**未在 100 MHz 收敛**、且与基线不同口径不能直接换算收益。**归因限定**：与构建 C（−1.430 ns）的差值**跨 RTL 版本**（C 为去抖前 RTL），属观测结果，不能单独归因于实现策略；同一构建内的物理优化增益为 `routed −1.646 → phys_opt −1.347 ns = 0.299 ns`。优化优先级应为：把 imem/dmem 改为可推断 BRAM（同步读，同时缓解资源与关键路径）、减少分支冲刷、改进 load-use 前递。
 
 ## 7. 可复现性与证据
 
 - 性能运行器：`pipeline/src/scripts/run_perf.ps1`
 - 测量 TB：`pipeline/src/test/tb_perf.v`
-- 原始 CSV：`pipeline/doc/perf_data/2026-09-14_perf_summary.csv`
+- 原始 CSV：`pipeline/doc/perf_data/2026-09-14_perf_summary.csv`、**`pipeline/doc/perf_data/2026-09-17_perf_summary.csv`**
 - 单周期基线：`pipeline/doc/ref_baseline_measured.md`
+- 下板构建口径证据（构建 D）：`pipeline/doc/perf_data/2026-09-17_buildD_postroute.md`、`pipeline/doc/board_runbook.md` §3.3/§10.5（bit SHA256 `D866924E…0AD93F`）
 - 流水线综合：`build/pipe_synth/run/util.rpt`、`build/pipe_synth/run/timing.rpt`
 - 单周期综合：`build/ref_synth/run/util.rpt`、`build/ref_synth/run/timing.rpt`
 
@@ -200,5 +221,9 @@ residual = C_steady - (IC + L + 2T - C_fixed) = 0
 ```powershell
 powershell -File pipeline/src/scripts/run_perf.ps1
 ```
+
+**2026-09-17 复测结果（实现策略优化后）**：`run_perf.ps1` 8/8 档通过、恒等式 A/B 全 1、`residual=0`、5 个主档功能门禁通过、3 个规模档按口径排除完整功能证据；生成的 `perf_summary.csv` 与 2026-09-14 版**逐行完全一致**（优化不改 RTL ⇒ 结构层指标不变）。同日重跑 `run_tb.ps1` **23/23 PASS**（24 s）作为功能回归门禁。
+
+> 注意：`run_perf.ps1` 与 `run_tb.ps1` **共用 `pipeline/src/scripts/out/` 输出目录**，两者不可并行执行（后者启动时会清空该目录），必须串行，否则会互相破坏产物。
 
 2026-09-14 复测结果：8/8 性能档通过；每档恒等式 A/B=1，`residual=0`，5 个主档功能门禁通过，3 个规模档控制流检查通过且明确排除完整功能证据。报告中的每个统计数字均可回溯至 CSV 或 `ref_baseline_measured.md` 的对应章节。
