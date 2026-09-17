@@ -15,6 +15,7 @@
 | 存储口径 | `IMEM_BYTES=512` / `DMEM_BYTES=256`（`verilog_define`，与下板一致） |
 | 实现策略 | `STRATEGY Performance_Explore`；`PHYS_OPT_DESIGN = AggressiveExplore`；`POST_ROUTE_PHYS_OPT_DESIGN = AggressiveExplore` |
 | 优化性质 | **仅实现策略**（综合/布局布线/物理优化），不涉及 RTL 或约束改动 |
+| 与构建 C 的可比性 | 构建 C 用**去抖前 RTL**，本构建用**含复位释放去抖的 RTL**（见 `board_runbook.md` §3.3/§10.5）→ C→D 的 WNS 差是**跨 RTL 版本的观测结果**，不能单独归因于实现策略 |
 
 ## 2. 结果
 
@@ -61,6 +62,7 @@ vivado -mode batch -nojournal -nolog -source build/perfD_reports.tcl
 
 ## 4. 结论与使用限制
 
-1. 实现策略优化把下板口径的 WNS 从构建 C 的 −1.430 ns 改善到 **−1.347 ns**（等价 Fmax 87.5 → **88.13 MHz**），但 **100 MHz 仍未收敛**，不能宣称时序满足。
+1. 实现策略优化后的下板口径实测为 WNS **−1.347 ns**（等价 Fmax **88.13 MHz**），但 **100 MHz 仍未收敛**，不能宣称时序满足。
+   ⚠️ **归因限定（必读）**：构建 C（−1.430 ns）用的是**去抖前 RTL**，本构建用的是**含复位释放去抖的 RTL**，因此"C→D 改善 0.083 ns"是**跨 RTL 版本的观测结果**，**不能单独归因于 `Performance_Explore` / `AggressiveExplore`**（`board_runbook.md` §3.3/§10.5 已作同样声明）。同一构建内、只体现物理优化增益的是 **routed（−1.646 ns）→ 布线后物理优化（−1.347 ns）= 0.299 ns**；若要单独给出策略的定量增益，需要**同 RTL 的对照构建**（本轮未做）。
 2. 本构建资源足以放进器件（LUT 19.20%、Block RAM 0），因此这是**布局布线质量**的改善，而非结构改动。
 3. **不可与单周期基线的 77.22 MHz（post-synthesis，4 KB）直接比较**：流程阶段与存储容量口径都不同。若要据此更新"时间加速比"，需要对单周期基线做**同器件/同工具/同约束/同流程/同容量**的实现运行，本轮未做。
