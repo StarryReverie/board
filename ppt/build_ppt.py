@@ -238,19 +238,36 @@ def est_height(text: str, width, size: float) -> int:
 # block rendering
 # --------------------------------------------------------------------------
 
-def render_table(slide, rows, left, top, width, size=12):
+def shared_table_widths(table_blocks, width):
+    if len(table_blocks) < 2:
+        return None
+    ncols = max(max(len(r) for r in tb["rows"]) for tb in table_blocks)
+    maxlens = []
+    for c in range(ncols):
+        maxlens.append(max(
+            max(display_len(r[c]) if c < len(r) else 0 for r in tb["rows"])
+            for tb in table_blocks))
+    total = sum(maxlens) or 1
+    return [width * m / total for m in maxlens]
+
+
+def render_table(slide, rows, left, top, width, size=12, widths=None):
     nrows = len(rows)
     ncols = max(len(r) for r in rows)
     row_h = In(0.34)
     table_h = int(row_h * nrows)
     gf = slide.shapes.add_table(nrows, ncols, int(left), int(top), int(width), table_h)
     table = gf.table
-    maxlens = []
-    for c in range(ncols):
-        maxlens.append(max(display_len(r[c]) if c < len(r) else 0 for r in rows))
-    total = sum(maxlens) or 1
-    for c in range(ncols):
-        table.columns[c].width = int(width * maxlens[c] / total)
+    if widths:
+        for c in range(ncols):
+            table.columns[c].width = int(widths[c])
+    else:
+        maxlens = []
+        for c in range(ncols):
+            maxlens.append(max(display_len(r[c]) if c < len(r) else 0 for r in rows))
+        total = sum(maxlens) or 1
+        for c in range(ncols):
+            table.columns[c].width = int(width * maxlens[c] / total)
     for r in range(nrows):
         table.rows[r].height = int(row_h)
         for c in range(ncols):
@@ -325,8 +342,9 @@ def render_blocks(slide, blocks, left, top, width, bottom, size=15, table_size=1
     if text_blocks:
         h = render_text(slide, text_blocks, left, top, width, size)
         y = top + h + In(0.12)
+    widths = shared_table_widths(table_blocks, width)
     for tb in table_blocks:
-        h = render_table(slide, tb["rows"], left, y, width, size=table_size)
+        h = render_table(slide, tb["rows"], left, y, width, size=table_size, widths=widths)
         y += h + In(0.12)
     return y
 
@@ -438,9 +456,27 @@ def build_section(slide, title, blocks):
 
 
 def build_end(slide, title, blocks):
-    add_label(slide, MARGIN, In(1.0), SLIDE_W - 2 * MARGIN, In(0.9),
-              title, 30, True, PRIMARY, PP_ALIGN.LEFT, MSO_ANCHOR.MIDDLE)
-    render_blocks(slide, blocks, MARGIN, In(2.1), SLIDE_W - 2 * MARGIN, In(6.4), size=17)
+    bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, int(SLIDE_W), int(SLIDE_H))
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = PRIMARY
+    bg.line.fill.background()
+    bg.shadow.inherit = False
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                 int(SLIDE_W / 2 - In(0.9)), int(In(3.15)),
+                                 int(In(1.8)), int(In(0.08)))
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = ACCENT
+    bar.line.fill.background()
+    bar.shadow.inherit = False
+    add_label(slide, MARGIN, In(1.95), SLIDE_W - 2 * MARGIN, In(1.1),
+              title, 50, True, WHITE, PP_ALIGN.CENTER, MSO_ANCHOR.MIDDLE)
+    y = In(3.75)
+    for b in blocks:
+        if b["type"] != "p":
+            continue
+        add_label(slide, MARGIN, y, SLIDE_W - 2 * MARGIN, In(0.9),
+                  b["text"], 28, False, LIGHT, PP_ALIGN.CENTER, MSO_ANCHOR.MIDDLE)
+        y += In(1.0)
 
 
 def build_content(slide, title, blocks, meta, page, deck):
