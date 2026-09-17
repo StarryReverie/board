@@ -141,18 +141,27 @@ include_dirs  : pipeline/src, pipeline/vivado/board_exp1_build（内含 imem_ini
 
 ### 3.3 实测资源与时序（本机 Vivado 2019.2，`xc7a100tcsg324-1`）
 
-同一 RTL、同一约束、同一器件，**两个固件版本各构建一次**。固件内容不同会改变 imem 的
+同一 RTL、同一约束、同一器件，历史记录中对**两个固件版本各构建一次**。固件内容不同会改变 imem 的
 LUT 初值，进而影响 LUT 打包与布线，因此 LUT/FF 与 WNS **都随固件而变**——引用这些数字时
-必须连同 bit 指纹一起引用（分别见 §10.1 与 §10.4）：
+必须连同 bit 指纹一起引用（分别见 §10.1、§10.4 与 §10.5）：
 
 | 构建 | 固件 | post-synth LUT / FF | **post-route LUT / FF** | BRAM / IOB | **post-route WNS** | 等价 Fmax |
 |---|---|---|---|---|---|---|
 | **A（2026-09-14）** | 42 条指令 / 168 B | 11,412（18.00%）/ 3,816（3.01%） | **11,338（17.88%）/ 3,808（3.00%）** | 0 / 34 | **−1.239 ns** | ≈ 89.0 MHz |
 | **C（2026-09-15）** | 123 条指令 / 492 B（自检加固，见 §5.1/§10.4） | 12,349（19.48%）/ 3,859（3.04%） | **12,165（19.19%）/ 3,838（3.03%）** | 0 / 34 | **−1.430 ns** | ≈ 87.5 MHz |
+| **D（2026-09-17，phys_opt）** | 123 条指令 / 492 B（与 C 相同） | **12,357（19.49%）/ 3,880（3.06%）** | **12,171（19.20%）/ 3,864（3.05%）** | 0 / 34 | **−1.347 ns** | **88.13 MHz** |
 
-`create_clock -period 10.000`（100 MHz）约束下两次构建**都没有收敛**，实现状态均为
-`route_design Complete, Failed Timing!`：C 构建 268 个违例端点、TNS ≈ −301 ns
-（A 构建为 240 个、TNS ≈ −199 ns）。C 相对 A 的 LUT +827 / FF +30 属预期方向
+D 构建使用 C 的固件和当前 RTL（含复位释放去抖），启用 `Performance_Explore`，并将前置
+`phys_opt_design` 与布线后 `post_route_phys_opt_design` 均设为 `AggressiveExplore`。
+实现前的 routed WNS 为 −1.646 ns，布线后物理优化完成后的 WNS 为 −1.347 ns，物理优化阶段
+本身改善 **0.299 ns**；与历史 C 构建相比结果改善 **0.083 ns**（该比较还包含 RTL 版本
+变化，不能作为单独的 phys_opt 增益）。D 仍有 268 个违例端点，因此这是布局布线质量改善，
+不是 100 MHz 时序收敛。
+
+`create_clock -period 10.000`（100 MHz）约束下三次构建**都没有收敛**：A/C 的实现状态为
+`route_design Complete, Failed Timing!`，D 在布线后物理优化完成后仍有负 WNS；C 构建 268 个
+违例端点、TNS ≈ −301 ns，D 构建 268 个违例端点、TNS −273.660 ns（A 构建为 240 个、
+TNS ≈ −199 ns）。C 相对 A 的 LUT +827 / FF +30 属预期方向
 （imem 以 LUT 初值实现，固件变长后零区减少、可被常量折叠的逻辑变少），
 但**未做"同 RTL 换固件"的对照综合，故不作为定量结论**。
 
@@ -187,7 +196,8 @@ LUT 初值，进而影响 LUT 打包与布线，因此 LUT/FF 与 WNS **都随�
    已知缺口、成因归属与上面的修复路径。
 
 > 记录口径：报告/答辩中引用本节时必须写明"**post-route WNS −1.239 ns（构建 A，Fmax≈89 MHz）
-> / −1.430 ns（构建 C，Fmax≈87.5 MHz），两次构建的 100 MHz 约束均未收敛；违例全部位于核心
+> / −1.430 ns（构建 C，Fmax≈87.5 MHz）/ −1.347 ns（构建 D，phys_opt，Fmax≈88.13 MHz），
+> 三次构建的 100 MHz 约束均未收敛；违例全部位于核心
 > 组合读存储链，板级包装无贡献**"，并且**标明是哪一个构建/哪一个 bit 的数字**，
 > 不得写成"100 MHz 时序满足"。
 
@@ -521,3 +531,25 @@ ALU 级故障变异 **5/5 单 opcode 故障全部检出**（加固前有 3 个 o
 > `meta_q`，去抖计数与释放链纯同步，避免 recovery/removal 亚稳提前满足去抖门限）；
 > **释放时序逐拍不变**（`STABLE_CYCLES=0` 仍 2 拍释放），故上表/上文口径无需改，但
 > 仍需按 §3.1 重建 bit——**新 bit 同时含去抖与本次加固**。
+
+### 10.5 2026-09-17 重建 bit（phys_opt，待实板复测）
+
+本次在 10.4 的 123 条指令固件和当前复位去抖 RTL 上重新实现，工程策略为
+`Performance_Explore`，前置 `phys_opt_design` 与布线后
+`post_route_phys_opt_design` 均使用 `AggressiveExplore`。实现运行和 bitstream 生成均成功，
+但静态时序仍未达到 100 MHz，不能据此宣称时序收敛。
+
+| 项 | 值 |
+|---|---|
+| bit | `pipeline/vivado/board_exp1.runs/impl_1/exp1_board_top.bit`（3,825,899 B） |
+| 生成时间 | 2026-09-17 19:34:27 |
+| **SHA256** | `D866924E0CA88FC70B8EDD6CD344F9198B6D7CA48A8C7DCD42FA61A8480AD93F` |
+| 资源（post-route） | **12,171 LUT（19.20%）/ 3,864 FF（3.05%）/ 0 BRAM / 34 IOB** |
+| 时序（post-route phys_opt） | WNS **−1.347 ns** / TNS **−273.660 ns** / 268 个违例端点 / Fmax **≈88.13 MHz** |
+| DRC | 0 error；2 warnings（CFGBVS-1、PLBUFGOPT-1，沿用原工程约束） |
+| RTL 仿真 | RTL 未因 phys_opt 改动；沿用已有 `run_tb.ps1` 23/23 回归结果 |
+| 实板状态 | **待复测**；不得沿用构建 A 的“已验收”结论 |
+
+相对 10.4 的 C 构建，WNS 改善 0.083 ns；相对本轮 routed、尚未执行布线后物理优化时的
+−1.646 ns，`post_route_phys_opt_design` 改善 0.299 ns。该 bit 可按 §10.4 的同一组 LED、
+数码管和复位判据复测，确认后再补记实板日期与操作人。
